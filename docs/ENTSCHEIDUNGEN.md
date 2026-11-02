@@ -1,0 +1,54 @@
+# Entscheidungen zur Spezifikation
+
+Ergänzungen und Klärungen zu [ENTWICKLUNGSPLAN.md](ENTWICKLUNGSPLAN.md) (seit 02.11.2026 Version 2), abgestimmt mit dem Auftraggeber. Sie gehen der Spezifikation vor.
+
+| Nr. | Datum | Thema | Entscheidung |
+| --- | --- | --- | --- |
+| 1 | 26.10.2026 | ~~Wechsel von T11 mit Ort O9~~ | **Entfallen mit v2** (T11/O9 durch Pause ersetzt). Ursprünglich: O9 ist dann unzulässig; die App fragt zwingend den Ort ab, bevor die neue Episode entsteht (`block.js`: Code `ORT_NOETIG`, danach `wechsle()` mit T und O). |
+| 2 | 26.10.2026 | Ortswechsel während einer Geräteepisode | Nutzungsart und Haltung (auch noch offene Angaben) werden in die neue Episode übernommen. Wechsel zu einer anderen Tätigkeit (auch zwischen Geräten) leert N und H. |
+| 3 | 26.10.2026 | „Block beenden“ vor Ablauf | Knopf vorhanden. Abfrage „Daten behalten“ → Status `beendet`, wird exportiert; „verwerfen“ → neuer Status `verworfen`, bleibt gespeichert, wird nicht exportiert. Neues Blockfeld `endeArt`: `regulaer` · `manuell` · `abbruch`. |
+| 4 | 26.10.2026 | Rückgängig nach Nachtragen von N/H | Rückgängig löscht nur ganze Episoden, nimmt nachgetragene Angaben nicht zurück. |
+| 5 | 26.10.2026 | Lighthouse-PWA-Prüfung (Phase 5) | Aktuelle Lighthouse-Versionen haben keine PWA-Kategorie mehr; ersetzt durch eigene Playwright-Prüfungen (Manifest, Service Worker, Offline-Start). |
+| 6 | 26.10.2026 | CSV-Spalte `block_ende_art` | Zusätzliche Spalte direkt nach `block_status` (`regulaer` · `manuell` · `abbruch`), damit das Zusammenführungstool ein gewolltes vorzeitiges Ende nicht als Fehler meldet. |
+| 7 | 27.10.2026 | Wählbare Blockdauer 10 oder 15 min | Beim Anlegen eines Blocks wählbar (zuletzt gewählter Wert vorbelegt, sonst Standard). Erlaubte Dauern im Kodierschema: `blockDauerOptionenSek: [600, 900]`, Standard bleibt `blockDauerSek: 900`. Die gewählte Dauer wird im Block gespeichert (`blockDauerSek`) und als CSV-Spalte `block_dauer_soll_sek` (nach `block_ende`) exportiert. Das reguläre Ende ist Start + gewählte Dauer. Das Zusammenführungstool (Phase 6) prüft „Blockdauer ≠ Soll ohne Abbruchcode“ gegen diese Spalte statt gegen fest 900 s. |
+| 8 | 02.11.2026 | Spezifikation v2 / Kodierhandbuch v0.2 | Übernommen: Pausen statt T11/O9, Arbeitskontext, Nutzungsart bei T1/T2 (Pilot), „HX-Now-Gerät dabei“, CSV mit Episoden- und Pausenzeilen. Die Entscheidungen Nr. 3, 6 und 7 bleiben ausdrücklich bestehen (Wahl 10/15 min; „Block beenden“ mit behalten/verwerfen; `block_ende_art`). |
+| 9 | 02.11.2026 | Blockdauer mit Pausen | Die gewählte Dauer (10 oder 15 min) gilt als **beobachtete** Zeit; das reguläre Ende ist erreicht, wenn die Zeit ohne Pausen die Dauer erreicht. |
+| 10 | 02.11.2026 | Nutzungsart bei T1/T2 | Optional: wählbar (wenn `nutzungsartBeiT1T2: true`), eine fehlende Angabe bleibt leer und macht die Episode **nicht** unvollständig. Pflicht-Markierung nur bei T3 (`nutzungsartPflicht: true`). |
+| 11 | 02.11.2026 | Nutzungsart/Haltung nach „Fortsetzen“ | Werden übernommen (seit Nr. 12 wird ohnehin unverändert fortgesetzt). |
+| 12 | 02.11.2026 | Einfache Pause | „Fortsetzen“ ist ein einziger Tipp und setzt die Kodierung so fort, wie sie vor der Pause war (gleiche T, O, N, H in neuer Episode). Grund (P1–P5) und Notiz können während der Pause angetippt bzw. über „Kommentar“ erfasst werden, sind aber **optional**. Kein Fortsetzen-Dialog. Abweichend von Spezifikation v2 Abschnitt 4. |
+| 13 | 02.11.2026 | Prinzip Pflichtangaben | „Viele Eingaben möglich, nur das Notwendigste Pflicht.“ Einstellbar im Kodierschema (`pflichtangaben`). Standard: Block = Studien-Code, Phase, Bereich, Beobachter; Dienst und Arbeitskontext optional und auf der Abschlussseite nachtragbar. Versuch = Studien-Code, Phase. Tageskennzahlen = Datum, Bereich. Pausengrund optional, Abbruchgrund Pflicht, Kommentar bei A4 und Freitext bei P5 optional, „Gerät dabei?“ am Ende optional (sperrt den Export nicht). Studien-Code und Phase immer Pflicht. N/H bei T3 nicht blockierend (nur Markierung „unvollständig“). Optionale Felder sind mit „(optional)“ gekennzeichnet und durch erneutes Tippen abwählbar. |
+| 14 | 02.11.2026 | Nur ein Beobachter | Kodierschema `beobachter: ["B1"]`. Bei nur einem Kürzel blendet die App die Auswahl aus (Block, Versuch, Tageskennzahlen) und trägt es automatisch ein. Die Spalte `beobachter` bleibt im Export (stabiles Format; ein weiteres Kürzel im Schema blendet die Auswahl wieder ein). |
+
+## Technische Ergänzungen (ohne Abweichung von der Spezifikation)
+
+- **Episodenfeld `offeneZusaetze`** (Liste, z. B. `["haltung"]`): hält fest, welche Pflichtangaben bei T3 noch fehlen. Nötig, weil `N9` sowohl Platzhalter („noch nicht gewählt“) als auch bewusst gewählter Code („nicht erkennbar“) sein kann. `unvollstaendig` = Liste nicht leer.
+- **Episodennummern:** Rückgängig löscht immer nur die letzte Episode; daher sind die nicht gelöschten Episoden stets lückenlos 1…n. Gelöschte Episoden behalten ihre alte Nummer.
+- **Dauer in ganzen Sekunden:** Start und Ende werden relativ zum Blockstart gerundet (`zeit.js: dauerSek`). So ergibt die Summe der Episodendauern exakt die gerundete Blockdauer, ohne sich aufsummierende Rundungsfehler.
+- **Geräteuhr zurückgestellt:** Eine neue Episode beginnt nie vor der laufenden Episode (keine Überlappungen).
+- **Abbruch vor der ersten Episode** ist möglich; der Block hat dann keine Episoden.
+- **Block ohne Episoden** (Abbruch vor der ersten Episode): Die CSV enthält eine Zeile mit `datensatz = block`, leeren Episodenfeldern und `n_episoden_block = 0`, damit der Block in der Auswertung sichtbar bleibt.
+- **Änderungen nach dem Export** (Blockkommentar, Ergänzen von N/H, Tageskennzahlen neu speichern) setzen den Exportstatus zurück auf `offen`, weil die exportierte Datei veraltet ist. Nach „Eingang bestätigt“ ist ein Block schreibgeschützt.
+- **„Eingang bestätigt“** ist erst nach einem Export (`exportiert`) möglich und verlangt eine Sicherheitsabfrage.
+- **Verworfene Blöcke** erscheinen nicht in der Exportliste; sie können in der Datensicherung gesondert (mit Sicherheitsabfrage) gelöscht werden.
+- **Dateinamen:** Versuche `HXNOW_VERSUCH_<pseudonym>_<JJJJMMTT>_<HHMM>_<id8>.csv`, Tageskennzahlen `HXNOW_TAG_<bereich>_<JJJJMMTT>_<HHMM>.csv` (Uhrzeit der Erfassung), Sicherung `HXNOW_SICHERUNG_<JJJJMMTT>_<HHMM>.json` – ohne Geräte-ID.
+- **Export direkt aus „Block beenden“** (in 7.4 erlaubt, nicht verlangt) ist nicht umgesetzt: Nach dem Beenden erscheint die Abschlussseite mit dem Export-Knopf. Grund: Vor dem Teilen muss das Blockende gespeichert werden (`await`), danach ist die Nutzergeste in Safari nicht mehr sicher gültig.
+- **Zeitstempel in der CSV** sind sekundengenau (abgeschnitten), `dauer_sek` wird auf Millisekunden-Basis gerundet; beides kann daher um bis zu 1 s voneinander abweichen.
+
+### Ergänzungen mit Version 2 (02.11.2026)
+
+- **Kodierschema-Felder** `nutzungsartPflicht` und `setztGeraetDabei` (beide bei T3), damit die Regeln „N Pflicht nur bei T3“ und „T3 setzt Gerät dabei“ nicht im Code stehen. Die Phase, in der „Gerät dabei“ erfasst wird, ergibt sich aus `nurPhase` dieser Tätigkeit (POST).
+- **Pause vor der ersten Episode** ist nicht möglich (Hinweis „Bitte zuerst Tätigkeit und Ort wählen“), weil die erste Episode laut Spezifikation zum Blockstart beginnt. Soll sofort pausiert werden, zuerst T und O tippen.
+- **Pause und Rundung:** Episodendauern werden auf der Uhr der beobachteten Zeit, Pausendauern auf der Pausen-Uhr gerundet. Damit ist die Summe der Episoden-`dauer_sek` exakt `block_beobachtet_sek` und die Summe der Pausen exakt `block_pausen_sek`. Episoden + Pausen weichen höchstens 1 s von der gerundeten Wandzeit ab.
+- **Rückgängig der einzigen T3-Episode** nimmt „automatisch“ zurück (dann ist „nein“ wieder wählbar); der Zeitpunkt der Markierung bleibt erhalten. Ein manuell gesetzter Schalter kann wieder abgeschaltet werden, ein automatisch gesetzter nicht.
+- **Abschlussfrage „Gerät dabei?“:** Ist der Schalter gesetzt, wird beim Öffnen der Abschlussseite „ja“ gespeichert (Vorbelegung) und kann geändert werden. Ohne Antwort ist der Export nur gesperrt, wenn `pflichtangaben.geraetDabeiVorExport` gesetzt ist (Standard: nein, Nr. 13).
+- **Zusätzliche CSV-Spalte `hx_geraet_markiert`:** Zeitpunkt, zu dem der Schalter gesetzt wurde (ISO), leer in Prä.
+- **Datenbank Version 2** mit Store `pausen`; Version 1 wird beim ersten Start automatisch aktualisiert. Ältere JSON-Sicherungen ohne Pausen bleiben importierbar.
+- **Beenden und Abbruch während einer Pause** beenden die Pause mit (ein bereits angetippter Grund bleibt erhalten).
+
+### Ergänzungen mit Phase 5 (02.11.2026)
+
+- **Update nur auf Wunsch:** Der Service Worker ruft kein `skipWaiting()` beim Installieren auf. Eine neue Version wartet, bis auf der Startseite „Jetzt aktualisieren“ getippt wird (vorher wird geprüft, dass kein Block läuft oder pausiert ist). Ausnahme durch den Browser: War die App vollständig geschlossen (aus dem App-Umschalter beendet), startet sie mit der neuen Version; ein laufender Block wird dann wie nach einem Neuladen aus IndexedDB fortgesetzt.
+- **Erstinstallation** übernimmt sofort (`clients.claim()`), damit die App schon beim ersten Aufruf offline bereit ist.
+- **Cache-Version = App-Version:** `CACHE_VERSION` in `sw.js` muss `APP_VERSION` entsprechen, die Dateiliste alle ausgelieferten Dateien enthalten (Unit-Test `tests/unit/sw.test.js`). Jede Änderung an ausgelieferten Dateien – auch an `kodierschema.json` – braucht eine neue Version, sonst erreicht sie installierte Geräte nicht.
+- **Icons** werden per Skript erzeugt (`npm run icons`, `scripts/icons.js`) und eingecheckt; kein Build-Schritt zur Laufzeit.
+- **Testserver:** Das Cookie `sw-test-version` lässt `tests/server.js` eine geänderte `CACHE_VERSION` ausliefern (nur für E2E-Tests des Update-Ablaufs).

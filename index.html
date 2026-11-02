@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <!-- Nur eigene Dateien; keine Anfragen an fremde Server (Spezifikation Abschnitt 3.3) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#0b3d6b">
+  <title>HX Now Beobachtung</title>
+  <!-- iOS: Start vom Home-Bildschirm im Vollbild, eigener Name und eigenes Symbol -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Beobachtung">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="css/app.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <main id="app" aria-live="polite">
+    <p class="hinweis">Wird geladen …</p>
+    <!-- Wird beim Start der App ersetzt. Bleibt sie stehen, wurde die Datei meist per Doppelklick (file://) geöffnet. -->
+    <p class="hinweis">Bleibt diese Meldung stehen: Die App muss über einen Webserver geöffnet werden,
+      nicht per Doppelklick auf die Datei. Lokal: im Projektordner <code>npm run serve</code> ausführen
+      und <code>http://localhost:8080/</code> im Browser öffnen.</p>
+  </main>
+  <noscript><p class="fehler">Diese App benötigt JavaScript.</p></noscript>
+</body>
+</html>

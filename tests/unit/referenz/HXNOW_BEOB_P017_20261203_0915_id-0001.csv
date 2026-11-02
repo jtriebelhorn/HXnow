@@ -1,0 +1,13 @@
+﻿datensatz;block_id;geraete_id;schema_version;app_version;pseudonym;beobachter;bereich;dienst;phase;arbeitskontext;datum;block_start;block_ende;block_dauer_soll_sek;block_beobachtet_sek;block_pausen_anzahl;block_pausen_sek;block_status;block_ende_art;abbruch_code;block_kommentar;hx_geraet_dabei;hx_geraet_automatisch;hx_geraet_markiert;nr;start;ende;dauer_sek;taetigkeit;ort;nutzungsart;haltung;unvollstaendig;pause_grund;pause_freitext;kommentar;n_zeilen_block
+episode;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;1;2026-12-03T09:15:02+01:00;2026-12-03T09:15:49+01:00;47;T1;O1;N2;;0;;;"Visite; ""kurz""";6
+episode;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;2;2026-12-03T09:15:49+01:00;2026-12-03T09:16:02+01:00;14;T3;O2;N1;H1;0;;;;6
+episode;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;3;2026-12-03T09:16:02+01:00;2026-12-03T09:17:02+01:00;60;T5;O3;;;0;;;;6
+pause;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;4;2026-12-03T09:17:02+01:00;2026-12-03T09:18:16+01:00;74;;;;;;P5;"Alarm; Flur";;6
+episode;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;5;2026-12-03T09:18:16+01:00;2026-12-03T09:19:12+01:00;56;T5;O3;;;0;;;;6
+episode;id-0001;geraet-1;0.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:15+01:00;900;900;1;74;beendet;regulaer;;"Station voll
+viel los";J;1;2026-12-03T09:15:49+01:00;6;2026-12-03T09:19:12+01:00;2026-12-03T09:31:15+01:00;723;T3;O3;N2;;1;;;;6

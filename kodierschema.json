@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "0.2",
+  "studie": "HX Now im Klinikalltag",
+  "blockDauerSek": 900,
+  "blockDauerOptionenSek": [600, 900],
+  "warnungVorEndeSek": 60,
+  "pauseMaxSek": 300,
+  "nutzungsartBeiT1T2": true,
+  "pflichtangaben": {
+    "block": ["pseudonym", "phase", "bereich", "beobachter"],
+    "versuch": ["pseudonym", "phase"],
+    "tageskennzahlen": ["datum", "bereich"],
+    "pauseGrund": false,
+    "abbruchGrund": true,
+    "geraetDabeiVorExport": false
+  },
+  "pseudonym": { "muster": "^P\\d{3}$", "beispiel": "P017", "pruefziffer": false },
+  "beobachter": ["B1"],
+  "bereiche": [
+    { "code": "NEPH", "label": "Nephrologie" },
+    { "code": "ZNA", "label": "Notaufnahme" }
+  ],
+  "dienste": [
+    { "code": "F", "label": "Früh" },
+    { "code": "S", "label": "Spät" },
+    { "code": "N", "label": "Nacht" }
+  ],
+  "phasen": [
+    { "code": "PRE", "label": "Prä" },
+    { "code": "POST", "label": "Post" }
+  ],
+  "arbeitskontext": [
+    { "code": "K1", "gruppe": "Station", "label": "Visite" },
+    { "code": "K2", "gruppe": "Station", "label": "Übergabe" },
+    { "code": "K3", "gruppe": "Station", "label": "Stationsarbeit" },
+    { "code": "K4", "gruppe": "Funktionsbereich", "label": "Funktionsbereich (z. B. Dialyse)" },
+    { "code": "K5", "gruppe": "Ambulanz", "label": "Ambulanz" },
+    { "code": "K6", "gruppe": "Notaufnahme", "label": "Behandlungsbereich" },
+    { "code": "K7", "gruppe": "Notaufnahme", "label": "Notaufnahmestation" }
+  ],
+  "taetigkeiten": [
+    { "code": "T1",  "label": "PC stationär",          "kurz": "PC",      "geraet": true },
+    { "code": "T2",  "label": "Visitenwagen / Laptop", "kurz": "Wagen",   "geraet": true },
+    { "code": "T3",  "label": "HX Now",                "kurz": "HX",      "geraet": true, "nurPhase": "POST", "haltung": true, "nutzungsartPflicht": true, "setztGeraetDabei": true },
+    { "code": "T4",  "label": "Sonstiges Mobilgerät",  "kurz": "Mobil" },
+    { "code": "T5",  "label": "Patientenkontakt",      "kurz": "Patient" },
+    { "code": "T6",  "label": "Gespräch Kollegen/Pflege", "kurz": "Gespräch" },
+    { "code": "T7",  "label": "Telefonat",             "kurz": "Telefon" },
+    { "code": "T8",  "label": "Papierdokumente",       "kurz": "Papier" },
+    { "code": "T9",  "label": "Wegzeit",               "kurz": "Weg" },
+    { "code": "T10", "label": "Sonstiges",             "kurz": "Sonst." }
+  ],
+  "orte": [
+    { "code": "O1", "label": "Arztzimmer / Stützpunkt" },
+    { "code": "O2", "label": "Flur / Gang" },
+    { "code": "O3", "label": "Patientenzimmer" },
+    { "code": "O4", "label": "Behandlung Notaufnahme" },
+    { "code": "O5", "label": "Dialyse" },
+    { "code": "O6", "label": "Ambulanz" },
+    { "code": "O7", "label": "Außerhalb Bereich" },
+    { "code": "O8", "label": "Sonstiges" }
+  ],
+  "nutzungsart": [
+    { "code": "N1", "label": "Einsicht",        "giltFuer": ["T1", "T2", "T3"] },
+    { "code": "N2", "label": "Texteingabe",     "giltFuer": ["T1", "T2", "T3"] },
+    { "code": "N3", "label": "Sprache",         "giltFuer": ["T1", "T2", "T3"] },
+    { "code": "N4", "label": "Foto / Scan",     "giltFuer": ["T3"] },
+    { "code": "N9", "label": "Nicht erkennbar", "giltFuer": ["T1", "T2", "T3"] }
+  ],
+  "haltung": [
+    { "code": "H1", "label": "Gehend" },
+    { "code": "H2", "label": "Stehend" },
+    { "code": "H3", "label": "Sitzend" },
+    { "code": "H4", "label": "Wartend" }
+  ],
+  "pausengruende": [
+    { "code": "P1", "label": "Patient/in lehnt Anwesenheit ab" },
+    { "code": "P2", "label": "Ausschlusssituation" },
+    { "code": "P3", "label": "Person nicht sichtbar / kein Zutritt" },
+    { "code": "P4", "label": "Beobachterin angesprochen / gestört" },
+    { "code": "P5", "label": "Sonstiges" }
+  ],
+  "abbruchgruende": [
+    { "code": "A1", "label": "Wunsch der beobachteten Person" },
+    { "code": "A2", "label": "Ausschlusssituation" },
+    { "code": "A3", "label": "Dauerhaft nicht beobachtbar" },
+    { "code": "A4", "label": "Sonstiges" }
+  ],
+  "geraetDabeiOptionen": [
+    { "code": "J", "label": "ja" },
+    { "code": "N", "label": "nein" },
+    { "code": "U", "label": "nicht erkennbar" }
+  ],
+  "export": { "mailEmpfaenger": "", "mailBetreffPraefix": "HXNow-Beobachtung" },
+  "regelnAuswertung": { "mindestdauerSek": 5, "mindestdauerAusnahmen": ["T3"] }
+}

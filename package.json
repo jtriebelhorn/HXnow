@@ -1,0 +1,20 @@
+{
+  "name": "hxnow-beobachtung",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Beobachtungs-App „HX Now im Klinikalltag“ (Time-Motion-Studie, PWA ohne Backend)",
+  "type": "module",
+  "scripts": {
+    "serve": "node tests/server.js",
+    "test": "node --test \"tests/unit/**/*.test.js\"",
+    "test:e2e": "playwright test",
+    "test:alle": "npm test && npm run test:e2e",
+    "pruefen": "playwright test --config playwright.workflow.config.js --project=iphone-safari",
+    "pruefen:alle": "playwright test --config playwright.workflow.config.js",
+    "pruefen:serie": "node tests/workflow/serie.js",
+    "icons": "node scripts/icons.js"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
