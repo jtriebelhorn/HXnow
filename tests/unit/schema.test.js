@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validiereSchema, pruefeSchemaText, ladeSchema } from '../../js/schema.js';
+import { validiereSchema, pruefeSchemaText, ladeSchema, pflichtangaben, korrekturfensterMs, istTestPseudonym } from '../../js/schema.js';
 
 const ORIGINAL_TEXT = readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8');
 const original = () => JSON.parse(ORIGINAL_TEXT);
@@ -173,4 +173,20 @@ test('ladeSchema: gültige Datei', async () => {
   const r = await ladeSchema(async () => ({ ok: true, status: 200, text: async () => ORIGINAL_TEXT }));
   assert.deepEqual(r.fehler, []);
   assert.equal(r.schema.schemaVersion, '0.2');
+});
+
+test('Korrekturfenster, Test-Code und beendenGrund werden geprüft', () => {
+  const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s); };
+  assert.deepEqual(mit(() => {}), []);
+  assert.match(mit((s) => { s.korrekturfensterSek = 2.5; }).join(' '), /korrekturfensterSek/);
+  assert.match(mit((s) => { s.korrekturfensterSek = 11; }).join(' '), /korrekturfensterSek/);
+  assert.deepEqual(mit((s) => { delete s.korrekturfensterSek; }), []);
+  assert.match(mit((s) => { s.pseudonym.testCode = 'TEST'; }).join(' '), /Test-Code „TEST“ passt nicht/);
+  assert.match(mit((s) => { s.pseudonym.testCode = 'P017'; }).join(' '), /testCode/);
+  assert.match(mit((s) => { s.pflichtangaben.beendenGrund = 'ja'; }).join(' '), /beendenGrund/);
+  assert.equal(korrekturfensterMs(original()), 3000);
+  assert.equal(korrekturfensterMs({ ...original(), korrekturfensterSek: undefined }), 0);
+  assert.equal(istTestPseudonym(original(), ' p000 '), true);
+  assert.equal(istTestPseudonym(original(), 'P017'), false);
+  assert.equal(pflichtangaben({ ...original(), pflichtangaben: undefined }).beendenGrund, true);
 });

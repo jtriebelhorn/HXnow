@@ -13,7 +13,7 @@
 //
 // Kontext `ctx`: { schema, now: () => number, uuid: () => string }, für Tests injizierbar.
 
-import { NUTZUNGSART_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben } from './schema.js';
+import { NUTZUNGSART_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben, korrekturfensterMs } from './schema.js';
 
 export const STATUS = Object.freeze({
   LAUFEND: 'laufend',
@@ -114,6 +114,7 @@ export function erzeugeBlock(angaben, ctx) {
     endTs: null,
     status: STATUS.LAUFEND,
     endeArt: null,
+    endeGrund: '',
     abbruchCode: null,
     kommentar: '',
     hxGeraetMarkiertTs: null,
@@ -297,7 +298,11 @@ export function berechneEpisoden(zustand, jetzt = null) {
     const endeTs = laufend ? Math.max(e.startTs, jetzt ?? e.startTs) : Math.min(...kandidaten);
     // Ganze Sekunden auf der Uhr der beobachteten Zeit gerundet → Summe = gerundete beobachtete Zeit
     const beob = (ts) => Math.round((ts - block.startTs - pausenBis(zustand, ts, jetzt)) / 1000);
-    return { ...e, endeTs, laufend, dauerMs: endeTs - e.startTs, dauerSek: beob(endeTs) - beob(e.startTs) };
+    const uhr = gerundeteUhr(zustand, jetzt);
+    return {
+      ...e, endeTs, laufend, dauerMs: endeTs - e.startTs, dauerSek: beob(endeTs) - beob(e.startTs),
+      startSek: uhr(e.startTs), endeSek: uhr(endeTs),
+    };
   });
 }
 
@@ -309,8 +314,30 @@ export function berechnePausen(zustand, jetzt = null) {
     const endeTs = p.endTs ?? block.endTs ?? Math.max(p.startTs, jetzt ?? p.startTs);
     // Ganze Sekunden auf der Pausen-Uhr gerundet → Summe = gerundete Pausenzeit
     const pz = (ts) => Math.round(pausenBis(zustand, ts, jetzt) / 1000);
-    return { ...p, endeTs, laufend, dauerMs: endeTs - p.startTs, dauerSek: pz(endeTs) - pz(p.startTs) };
+    const uhr = gerundeteUhr(zustand, jetzt);
+    return {
+      ...p, endeTs, laufend, dauerMs: endeTs - p.startTs, dauerSek: pz(endeTs) - pz(p.startTs),
+      startSek: uhr(p.startTs), endeSek: uhr(endeTs),
+    };
   });
+}
+
+/**
+ * Sekunden ab Blockstart auf der gerundeten Uhr: beobachtete Zeit und Pausenzeit werden getrennt gerundet,
+ * genau wie die Dauern. Dadurch gilt im Export für jede Zeile ende − start = dauer_sek, die Zeitleiste
+ * bleibt lückenlos, und das Blockende ist Blockstart + beobachtete Zeit + Pausenzeit (ENTSCHEIDUNGEN Nr. 15).
+ */
+function gerundeteUhr(zustand, jetzt = null) {
+  const start = zustand.block.startTs;
+  return (ts) => {
+    const pause = pausenBis(zustand, ts, jetzt);
+    return Math.round((ts - start - pause) / 1000) + Math.round(pause / 1000);
+  };
+}
+
+/** Blockende in Sekunden ab Blockstart auf der gerundeten Uhr (beendeter Block). */
+export function blockEndeSek(zustand) {
+  return gerundeteUhr(zustand)(zustand.block.endTs);
 }
 
 /** Chronologische Zeitleiste aus Episoden und Pausen: [{ art: 'episode'|'pause', ... }]. */
@@ -408,8 +435,46 @@ export function wechsle(zustand, ziel, ctx) {
 
   if (t === akt.taetigkeit && o === akt.ort) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
 
+  const korrektur = korrigiere(zustand, akt, t, o, ctx);
+  if (korrektur) return korrektur;
+
   const zusatz = t === akt.taetigkeit ? zusatzUebernehmen(akt) : zusatzStart(schema, t);
   return mitNeuerEpisode(zustand, baueEpisode(zustand, ctx, schema, { taetigkeit: t, ort: o, ...zusatz }), ctx);
+}
+
+/**
+ * Korrekturfenster (ENTSCHEIDUNGEN Nr. 16): Ein T/O-Tipp kurz nach dem Anlegen einer Episode (`korrekturfensterSek`)
+ * ändert diese Episode, statt eine neue anzulegen – z. B. erst Ort, dann sofort Tätigkeit. Führt die Korrektur
+ * zur Kodierung der Vorgänger-Episode zurück, war die Episode ein Vertipper und wird wie bei „Rückgängig“ gelöscht.
+ * Die überschriebenen Werte bleiben in `korrekturen` der Episode gespeichert (Rohdaten).
+ * Nicht bei Tätigkeiten mit Mindestdauer-Ausnahme (HX Now): Deren kurze Nutzung bleibt eine eigene Episode.
+ * @returns Ergebnis oder null, wenn kein Korrekturfall vorliegt
+ */
+function korrigiere(zustand, akt, t, o, ctx) {
+  const { schema } = ctx;
+  const fenster = korrekturfensterMs(schema);
+  const ts = zeitpunkt(zustand, ctx);
+  if (fenster <= 0 || ts - (akt.erfasstTs ?? akt.startTs) >= fenster) return null;
+  const ausnahmen = schema.regelnAuswertung?.mindestdauerAusnahmen ?? [];
+  if (t !== akt.taetigkeit && ausnahmen.includes(akt.taetigkeit)) return null;
+
+  const korrekturen = [...(akt.korrekturen ?? []),
+    { ts, taetigkeit: akt.taetigkeit, ort: akt.ort, nutzungsart: akt.nutzungsart, haltung: akt.haltung }];
+  const aktiv = aktiveEpisoden(zustand);
+  const vorher = aktiv.length >= 2 ? aktiv[aktiv.length - 2] : null;
+  const pauseDazwischen = vorher && zustand.pausen.some((p) => p.startTs >= vorher.startTs && p.startTs <= akt.startTs);
+  if (vorher && !pauseDazwischen && vorher.taetigkeit === t && vorher.ort === o) {
+    const ep = { ...akt, geloescht: true, korrekturen };
+    const { zustand: z, block } = ohneGeraetDabeiWennLeer(ersetze(zustand, ep), ctx);
+    return erfolg(z, { episoden: [ep], block }, { korrigiert: true, neueEpisode: false, wiederAktiv: vorher });
+  }
+  const zusatz = t === akt.taetigkeit ? zusatzUebernehmen(akt) : zusatzStart(schema, t);
+  const ep = mitVollstaendigkeit(schema, { ...akt, taetigkeit: t, ort: o, ...zusatz, korrekturen });
+  let z = ersetze(zustand, ep);
+  const block = geraetDabeiDurch(z, ep, ctx);
+  if (block) z = { ...z, block };
+  const { zustand: z2, block: block2 } = ohneGeraetDabeiWennLeer(z, ctx);
+  return erfolg(z2, { episoden: [ep], block: block2 ?? block }, { korrigiert: true, neueEpisode: false, episode: ep });
 }
 
 /** Tipp auf eine Nutzungsart-Taste (N…). */
@@ -465,13 +530,7 @@ export function rueckgaengig(zustand, ctx) {
     return abgelehnt(zustand, 'UEBER_PAUSE', 'Die erste Episode nach einer Pause kann nicht rückgängig gemacht werden.');
   }
   const ep = { ...letzte, geloescht: true };
-  let z = ersetze(zustand, ep);
-  // Automatisch gesetztes „Gerät dabei“ zurücknehmen, wenn keine HX-Now-Episode mehr übrig ist
-  let block = null;
-  if (z.block.hxGeraetAutomatisch && !aktiveEpisoden(z).some((e) => finde(ctx.schema.taetigkeiten, e.taetigkeit)?.setztGeraetDabei)) {
-    block = { ...z.block, hxGeraetAutomatisch: false };
-    z = { ...z, block };
-  }
+  const { zustand: z, block } = ohneGeraetDabeiWennLeer(ersetze(zustand, ep), ctx);
   return erfolg(z, { episoden: [ep], block }, { wiederAktiv: vorher });
 }
 
@@ -664,11 +723,16 @@ export function brecheAb(zustand, abbruchCode, kommentar, ctx) {
 /**
  * „Block beenden“ vor Ablauf ohne Abbruch (auch während einer Pause). endTs = jetzt.
  * behalten = true → Status „beendet“ (wird exportiert); false → „verworfen“ (bleibt gespeichert, kein Export).
+ * Grund (Freitext) Pflicht beim Behalten, wenn `pflichtangaben.beendenGrund` (ENTSCHEIDUNGEN Nr. 17).
  */
-export function beendeManuell(zustand, { behalten = true } = {}, ctx) {
+export function beendeManuell(zustand, { behalten = true, grund = '' } = {}, ctx) {
   const sperre = eingabeSperre(zustand, ctx, { auchPausiert: true });
   if (sperre) return sperre;
-  return beende(zustand, ctx, { status: behalten ? STATUS.BEENDET : STATUS.VERWORFEN, endeArt: ENDE_ART.MANUELL });
+  const text = String(grund ?? '').trim();
+  if (behalten && !text && pflichtangaben(ctx.schema).beendenGrund) {
+    return abgelehnt(zustand, 'GRUND_FEHLT', 'Bitte den Grund für das vorzeitige Ende angeben.');
+  }
+  return beende(zustand, ctx, { status: behalten ? STATUS.BEENDET : STATUS.VERWORFEN, endeArt: ENDE_ART.MANUELL, endeGrund: text });
 }
 
 function beende(zustand, ctx, felder) {
@@ -798,6 +862,7 @@ function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
     // Rückgängig löscht immer nur die letzte Episode → nicht gelöschte Episoden sind lückenlos 1..n
     nr: aktiv.length + 1,
     startTs: startTs ?? zeitpunkt(zustand, ctx),
+    erfasstTs: zeitpunkt(zustand, ctx), // Zeitpunkt des Tipps, der die Episode angelegt hat (Korrekturfenster)
     taetigkeit: werte.taetigkeit,
     ort: werte.ort,
     nutzungsart: werte.nutzungsart ?? null,
@@ -810,13 +875,26 @@ function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
 
 /** Fügt eine Episode hinzu; HX Now in der Post-Phase setzt „Gerät dabei“ automatisch. */
 function mitNeuerEpisode(zustand, ep, ctx) {
-  let block = null;
-  const td = finde(ctx.schema.taetigkeiten, ep.taetigkeit);
-  if (td?.setztGeraetDabei && mitGeraetDabei(zustand, ctx.schema) && !zustand.block.hxGeraetAutomatisch) {
-    block = { ...zustand.block, hxGeraetAutomatisch: true, hxGeraetMarkiertTs: zustand.block.hxGeraetMarkiertTs ?? ctx.now() };
-  }
+  const block = geraetDabeiDurch(zustand, ep, ctx);
   const z = { ...zustand, block: block ?? zustand.block, episoden: [...zustand.episoden, ep] };
   return erfolg(z, { episoden: [ep], block }, { neueEpisode: true, episode: ep });
+}
+
+/** Geänderter Block, wenn die Episode „Gerät dabei“ automatisch setzt (HX Now in der Post-Phase), sonst null. */
+function geraetDabeiDurch(zustand, ep, ctx) {
+  const td = finde(ctx.schema.taetigkeiten, ep.taetigkeit);
+  if (!td?.setztGeraetDabei || !mitGeraetDabei(zustand, ctx.schema) || zustand.block.hxGeraetAutomatisch) return null;
+  return { ...zustand.block, hxGeraetAutomatisch: true, hxGeraetMarkiertTs: zustand.block.hxGeraetMarkiertTs ?? ctx.now() };
+}
+
+/** Automatisch gesetztes „Gerät dabei“ zurücknehmen, wenn keine HX-Now-Episode mehr übrig ist. */
+function ohneGeraetDabeiWennLeer(zustand, ctx) {
+  if (!zustand.block.hxGeraetAutomatisch
+    || aktiveEpisoden(zustand).some((e) => finde(ctx.schema.taetigkeiten, e.taetigkeit)?.setztGeraetDabei)) {
+    return { zustand, block: null };
+  }
+  const block = { ...zustand.block, hxGeraetAutomatisch: false };
+  return { zustand: { ...zustand, block }, block };
 }
 
 function ersetze(zustand, ep) {

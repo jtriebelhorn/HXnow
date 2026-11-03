@@ -1,12 +1,12 @@
 // Abgleich Soll (simulierte Eingaben) gegen Ist (Export-CSV und Rohdaten in IndexedDB).
 import { leseCsv, isoBerlin, isoZuMs, ISO_MUSTER } from './lesen.js';
 
-// Erwarteter Spaltenkopf laut Spezifikation v2 Abschnitt 8 und docs/ENTSCHEIDUNGEN.md (Nr. 6, 7, hx_geraet_markiert)
+// Erwarteter Spaltenkopf laut Spezifikation v2 Abschnitt 8 und docs/ENTSCHEIDUNGEN.md (Nr. 6, 7, 17, hx_geraet_markiert)
 export const ERWARTETE_SPALTEN = [
   'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
   'bereich', 'dienst', 'phase', 'arbeitskontext', 'datum', 'block_start', 'block_ende',
   'block_dauer_soll_sek', 'block_beobachtet_sek', 'block_pausen_anzahl', 'block_pausen_sek',
-  'block_status', 'block_ende_art', 'abbruch_code', 'block_kommentar',
+  'block_status', 'block_ende_art', 'block_ende_grund', 'abbruch_code', 'block_kommentar',
   'hx_geraet_dabei', 'hx_geraet_automatisch', 'hx_geraet_markiert',
   'nr', 'start', 'ende', 'dauer_sek', 'taetigkeit', 'ort', 'nutzungsart', 'haltung', 'unvollstaendig',
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
@@ -62,6 +62,11 @@ export function pruefeBlock(soll, csvText, db) {
     if (i === zeilen.length - 1 && z.ende !== z.block_ende) luecken.push('letzte Zeile endet nicht mit block_ende');
   });
   p.pruefe('Zeitleiste lückenlos rekonstruierbar (Start = Ende der Vorzeile)', luecken.length === 0, luecken.join(', '));
+  const nachgerechnet = zeilen
+    .map((z, i) => ({ i, diff: (isoZuMs(z.ende) - isoZuMs(z.start)) / 1000, dauer: Number(z.dauer_sek) }))
+    .filter((x) => x.diff !== x.dauer)
+    .map((x) => `Zeile ${x.i + 1}: ende − start = ${x.diff} s, dauer_sek = ${x.dauer}`);
+  p.pruefe('Nachrechenbar: ende − start = dauer_sek in jeder Zeile', nachgerechnet.length === 0, nachgerechnet.join(', '));
 
   // Summen
   const summe = (art) => zeilen.filter((z) => z.datensatz === art).reduce((s, z) => s + Number(z.dauer_sek), 0);
@@ -69,7 +74,7 @@ export function pruefeBlock(soll, csvText, db) {
   p.pruefe('Summe Episoden = block_beobachtet_sek', summe('episode') === Number(z0.block_beobachtet_sek), `${summe('episode')} ≠ ${z0.block_beobachtet_sek}`);
   p.pruefe('Summe Pausen = block_pausen_sek', summe('pause') === Number(z0.block_pausen_sek), `${summe('pause')} ≠ ${z0.block_pausen_sek}`);
   const wand = (isoZuMs(z0.block_ende) - isoZuMs(z0.block_start)) / 1000;
-  p.pruefe('Episoden + Pausen ≈ Wandzeit (±1 s)', Math.abs(summe('episode') + summe('pause') - wand) <= 1, `${summe('episode') + summe('pause')} vs ${wand}`);
+  p.pruefe('Episoden + Pausen = block_ende − block_start', summe('episode') + summe('pause') === wand, `${summe('episode') + summe('pause')} vs ${wand}`);
   if (soll.endeArt === 'regulaer') {
     p.pruefe('Reguläres Ende: beobachtete Zeit = Solldauer', Number(z0.block_beobachtet_sek) === soll.meta.dauerSek, `${z0.block_beobachtet_sek} ≠ ${soll.meta.dauerSek}`);
   }
@@ -89,6 +94,7 @@ export function pruefeRohdaten(soll, db) {
   gleich('Block endTs', b.endTs, soll.endTs);
   gleich('Block status', b.status, soll.status);
   gleich('Block endeArt', b.endeArt, soll.endeArt);
+  gleich('Block endeGrund', b.endeGrund, soll.endeGrund);
   gleich('Block abbruchCode', b.abbruchCode, soll.abbruchCode);
   gleich('Block kommentar', b.kommentar, soll.kommentar);
   for (const k of ['pseudonym', 'phase', 'bereich', 'beobachter', 'dienst', 'arbeitskontext']) gleich(`Block ${k}`, b[k] ?? null, soll.meta[k] ?? null);
@@ -106,6 +112,8 @@ export function pruefeRohdaten(soll, db) {
     gleich(`Episode ${s.nr} Nutzungsart`, e.nutzungsart, s.n);
     gleich(`Episode ${s.nr} Haltung`, e.haltung, s.h);
     gleich(`Episode ${s.nr} Kommentar`, e.kommentar, s.kommentar);
+    gleich(`Episode ${s.nr} erfasst (Tipp)`, e.erfasstTs, s.erfasstTs);
+    gleich(`Episode ${s.nr} Anzahl Korrekturen`, (e.korrekturen ?? []).length, s.korr);
   });
   const pausen = [...db.pausen].sort((x, y) => x.startTs - y.startTs);
   gleich('Anzahl Pausen', pausen.length, soll.pausen.length);

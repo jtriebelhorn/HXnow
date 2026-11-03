@@ -43,11 +43,20 @@ export function stammdatenFormular(app, beiAenderung, { art = 'versuch' } = {}) 
     beiAenderung();
   };
 
+  // Probeläufe mit dem reservierten Test-Code (ENTSCHEIDUNGEN Nr. 18): Export als HXNOW_TEST_…, nicht ausgewertet
+  const testCode = schema.pseudonym.testCode;
+  const testKnopf = testCode ? el('button', {
+    type: 'button', class: 'klein', 'data-test': 'probelauf-code',
+    onclick: () => { codeFeld.value = testCode; codeFeld.dispatchEvent(new Event('input')); },
+  }, `Probelauf (${testCode})`) : null;
+
   const knoten = [
     el('label', { class: 'feld' },
       el('span', { class: 'feldname' }, 'Studien-Code'),
       codeFeld, codeFehler,
-      el('span', { class: 'hinweis' }, 'Nur Pseudonym, keine Namen.')),
+      el('span', { class: 'hinweis' }, 'Nur Pseudonym, keine Namen.',
+        testCode ? ` Für Tests und Schulung ${testCode} verwenden – wird nicht ausgewertet.` : '')),
+    testKnopf,
     auswahlGruppe({ name: 'phase', titel: 'Phase', eintraege: schema.phasen, wert: werte.phase, beiAuswahl: setze('phase'), spalten: 2, optional: optional('phase') }),
     auswahlGruppe({ name: 'bereich', titel: 'Bereich', eintraege: schema.bereiche, wert: werte.bereich, beiAuswahl: setze('bereich'), spalten: 2, optional: optional('bereich') }),
     // Nur ein Beobachter im Kodierschema → Kürzel automatisch, keine Auswahl anzeigen

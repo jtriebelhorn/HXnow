@@ -182,7 +182,7 @@ Verhalten:
 | `kommentar` | Text | Episodenkommentar |
 | `n_zeilen_block` | `24` | Anzahl Zeilen dieses Blocks, zur Vollständigkeitsprüfung |
 
-Zusätzliche Spalten laut ENTSCHEIDUNGEN: `block_dauer_soll_sek`, `block_ende_art`, `hx_geraet_markiert`. Die tatsächliche Spaltenreihenfolge steht in `js/export.js` (`SPALTEN_BEOBACHTUNG`) und in der Referenzdatei `tests/unit/referenz/`.
+Zusätzliche Spalten laut ENTSCHEIDUNGEN: `block_dauer_soll_sek`, `block_ende_art`, `block_ende_grund`, `hx_geraet_markiert`. Bedeutung aller Spalten: [CODEBUCH_EXPORT.md](CODEBUCH_EXPORT.md). Die tatsächliche Spaltenreihenfolge steht in `js/export.js` (`SPALTEN_BEOBACHTUNG`) und in der Referenzdatei `tests/unit/referenz/`.
 
 Versuche und Tageskennzahlen werden als eigene kleine CSV-Dateien exportiert (`HXNOW_VERSUCH_…`, `HXNOW_TAG_…`), Spalten analog zu den Stores.
 

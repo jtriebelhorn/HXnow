@@ -389,7 +389,7 @@ describe('Pause', () => {
   test('Beenden während der Pause schließt die Pause ebenfalls', () => {
     const ctx = testKontext();
     const z = ok(B.pausiere(neuerBlock(ctx), ctx.bei(100))).zustand;
-    const r = ok(B.beendeManuell(z, { behalten: true }, ctx.bei(130)));
+    const r = ok(B.beendeManuell(z, { behalten: true, grund: 'Dienstende' }, ctx.bei(130)));
     assert.equal(r.schreiben.pausen[0].endTs, START + 130_000);
   });
 });
@@ -561,8 +561,19 @@ describe('Abbruch und Beenden', () => {
 
   test('Block beenden: behalten → beendet, sonst verworfen', () => {
     const ctx = testKontext();
-    assert.equal(ok(B.beendeManuell(neuerBlock(ctx), { behalten: true }, ctx.bei(60))).schreiben.block.status, 'beendet');
+    assert.equal(ok(B.beendeManuell(neuerBlock(ctx), { behalten: true, grund: 'Dienstende' }, ctx.bei(60))).schreiben.block.status, 'beendet');
     assert.equal(ok(B.beendeManuell(neuerBlock(ctx), { behalten: false }, ctx.bei(60))).schreiben.block.status, 'verworfen');
+  });
+
+  test('Block beenden und behalten: Grund Pflicht (pflichtangaben.beendenGrund), wird gespeichert', () => {
+    const ctx = testKontext();
+    abgelehnt(B.beendeManuell(neuerBlock(ctx), { behalten: true, grund: '  ' }, ctx.bei(60)), 'GRUND_FEHLT');
+    const r = ok(B.beendeManuell(neuerBlock(ctx), { behalten: true, grund: ' Person geht in den OP ' }, ctx.bei(60)));
+    assert.deepEqual([r.schreiben.block.endeArt, r.schreiben.block.endeGrund], ['manuell', 'Person geht in den OP']);
+    const locker = { ...SCHEMA, pflichtangaben: { ...SCHEMA.pflichtangaben, beendenGrund: false } };
+    const ctx2 = { ...testKontext(), schema: locker };
+    ctx2.bei = (sek) => { ctx2.zeitMs = sek * 1000; return ctx2; };
+    assert.equal(ok(B.beendeManuell(neuerBlock(ctx2), { behalten: true }, ctx2.bei(60))).schreiben.block.endeGrund, '');
   });
 });
 
@@ -600,11 +611,17 @@ describe('Episodenenden, Dauern, Zeitleiste', () => {
         if (z.block.status === 'beendet') break;
       }
       const abbruch = lauf % 4 === 0;
-      if (B.istOffen(z)) z = abbruch ? B.brecheAb(z, 'A3', '', ctx).zustand : B.beendeManuell(z, {}, ctx).zustand;
+      if (B.istOffen(z)) z = abbruch ? B.brecheAb(z, 'A3', '', ctx).zustand : B.beendeManuell(z, { grund: 'Test' }, ctx).zustand;
       const zl = B.zeitleiste(z);
       const wand = z.block.endTs - z.block.startTs;
       assert.equal(zl.reduce((s, x) => s + x.dauerMs, 0), wand, `Lauf ${lauf}: Wandzeit`);
       assert.ok(Math.abs(zl.reduce((s, x) => s + x.dauerSek, 0) - wand / 1000) <= 1);
+      // Gerundete Uhr: ende − start = dauerSek, lückenlos, letzte Zeile endet mit dem Blockende
+      zl.forEach((x, i) => {
+        assert.equal(x.endeSek - x.startSek, x.dauerSek, `Lauf ${lauf}: Zeile ${i + 1} ende − start`);
+        assert.equal(x.startSek, i === 0 ? 0 : zl[i - 1].endeSek, `Lauf ${lauf}: Zeile ${i + 1} lückenlos`);
+      });
+      if (zl.length) assert.equal(zl.at(-1).endeSek, B.blockEndeSek(z), `Lauf ${lauf}: Blockende`);
       const eps = zl.filter((x) => x.art === 'episode');
       const ps = zl.filter((x) => x.art === 'pause');
       assert.equal(eps.reduce((s, e) => s + e.dauerMs, 0), B.beobachtetMs(z), `Lauf ${lauf}: beobachtet`);
@@ -652,5 +669,93 @@ describe('Wiederherstellung', () => {
     assert.deepEqual(B.zeitleiste(w, START + 90_000), B.zeitleiste(z, START + 90_000));
     assert.equal(B.restzeitMs(w, SCHEMA, START + 90_000), 870_000);
     assert.equal(B.laufendePause(w).pauseId, B.laufendePause(z).pauseId);
+  });
+});
+
+describe('Korrekturfenster (korrekturfensterSek, ENTSCHEIDUNGEN Nr. 16)', () => {
+  const eps = (z) => B.aktiveEpisoden(z).map((e) => [e.nr, e.taetigkeit, e.ort, (e.startTs - START) / 1000]);
+
+  test('erst Ort, gleich danach Tätigkeit → eine Episode; alte Werte bleiben in „korrekturen“', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0)); // T1/O1 seit 0 s
+    z = ok(B.tippeOrt(z, 'O3', ctx.bei(40))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(41.5)));
+    assert.equal(r.korrigiert, true);
+    assert.deepEqual(eps(r.zustand), [[1, 'T1', 'O1', 0], [2, 'T5', 'O3', 40]]);
+    const ep = r.schreiben.episoden[0];
+    assert.equal(ep.erfasstTs, START + 40_000);
+    assert.deepEqual(ep.korrekturen, [{ ts: START + 41_500, taetigkeit: 'T1', ort: 'O3', nutzungsart: null, haltung: null }]);
+  });
+
+  test('nach Ablauf des Fensters entsteht eine neue Episode', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeOrt(z, 'O3', ctx.bei(40))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(43)));
+    assert.equal(r.korrigiert, undefined);
+    assert.deepEqual(eps(r.zustand).map((e) => e.slice(1, 3)), [['T1', 'O1'], ['T1', 'O3'], ['T5', 'O3']]);
+  });
+
+  test('Vertipper zurück zur vorherigen Kodierung → Episode gelöscht, Vorgänger läuft weiter', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeTaetigkeit(z, 'T7', ctx.bei(30))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T1', ctx.bei(31)));
+    assert.equal(r.korrigiert, true);
+    assert.deepEqual(eps(r.zustand), [[1, 'T1', 'O1', 0]]);
+    assert.equal(r.schreiben.episoden[0].geloescht, true);
+    assert.equal(r.schreiben.episoden[0].korrekturen[0].taetigkeit, 'T7');
+  });
+
+  test('Tätigkeitswechsel setzt Nutzungsart zurück, reiner Ortswechsel übernimmt sie', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeOrt(z, 'O2', ctx.bei(20))).zustand;
+    z = ok(B.tippeNutzungsart(z, 'N2', ctx.bei(20.5))).zustand;
+    z = ok(B.tippeOrt(z, 'O3', ctx.bei(21))).zustand; // korrigiert nur den Ort
+    assert.deepEqual([B.aktuelleEpisode(z).ort, B.aktuelleEpisode(z).nutzungsart], ['O3', 'N2']);
+    z = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(22))).zustand;
+    assert.deepEqual([B.aktuelleEpisode(z).taetigkeit, B.aktuelleEpisode(z).nutzungsart], ['T5', null]);
+    assert.equal(B.aktiveEpisoden(z).length, 2);
+  });
+
+  test('HX Now (Mindestdauer-Ausnahme) wird nie überschrieben', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(30))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(31)));
+    assert.equal(r.neueEpisode, true);
+    assert.deepEqual(eps(r.zustand).map((e) => e[1]), ['T1', 'T3', 'T5']);
+    // Ortskorrektur bei HX Now bleibt möglich
+    z = ok(B.tippeTaetigkeit(r.zustand, 'T3', ctx.bei(60))).zustand;
+    const r2 = ok(B.tippeOrt(z, 'O2', ctx.bei(61)));
+    assert.deepEqual([r2.korrigiert, B.aktuelleEpisode(r2.zustand).taetigkeit, B.aktuelleEpisode(r2.zustand).ort], [true, 'T3', 'O2']);
+  });
+
+  test('Korrektur zu HX Now setzt „Gerät dabei“ automatisch', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeTaetigkeit(z, 'T4', ctx.bei(30))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(31)));
+    assert.deepEqual([r.korrigiert, r.zustand.block.hxGeraetAutomatisch, B.aktuelleEpisode(r.zustand).taetigkeit], [true, true, 'T3']);
+  });
+
+  test('nach „Fortsetzen“: Korrektur ändert die neue Episode, löscht sie aber nie (Pause davor)', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.pausiere(z, ctx.bei(30))).zustand;
+    z = ok(B.setzeFort(z, {}, ctx.bei(60))).zustand;
+    z = ok(B.tippeTaetigkeit(z, 'T6', ctx.bei(61))).zustand;
+    const r = ok(B.tippeTaetigkeit(z, 'T1', ctx.bei(62)));
+    assert.deepEqual(eps(r.zustand), [[1, 'T1', 'O1', 0], [2, 'T1', 'O1', 60]]);
+  });
+
+  test('korrekturfensterSek 0 → jeder Wechsel ist eine neue Episode', () => {
+    const ctx = { ...testKontext(), schema: { ...SCHEMA, korrekturfensterSek: 0 } };
+    ctx.bei = (sek) => { ctx.zeitMs = sek * 1000; return ctx; };
+    let z = neuerBlock(ctx.bei(0));
+    z = ok(B.tippeOrt(z, 'O3', ctx.bei(40))).zustand;
+    z = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(40.5))).zustand;
+    assert.equal(B.aktiveEpisoden(z).length, 3);
   });
 });

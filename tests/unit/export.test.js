@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as B from '../../js/block.js';
 import * as X from '../../js/export.js';
-import { SCHEMA, START, testKontext, ANGABEN_POST } from './hilfen.js';
+import { SCHEMA, START, testKontext, ANGABEN_POST, ANGABEN_PRE } from './hilfen.js';
 
 process.env.TZ = 'Europe/Berlin';
 
@@ -43,6 +43,39 @@ test('Block-CSV entspricht exakt der Referenzdatei (BOM, Semikolon, CRLF, Quotin
 test('Dateiname: Pseudonym, lokales Datum/Uhrzeit, erste 8 Zeichen der Block-ID', () => {
   const name = X.dateinameBlock({ pseudonym: 'P017', startTs: Date.UTC(2026, 11, 3, 8, 15, 2), blockId: '3f2a9c1e-1111-4222-8333-444455556666' });
   assert.equal(name, 'HXNOW_BEOB_P017_20261203_0915_3f2a9c1e.csv');
+});
+
+test('Probelauf mit Test-Code (P000): Dateinamen beginnen mit HXNOW_TEST_', () => {
+  const blockId = '3f2a9c1e-1111-4222-8333-444455556666';
+  const startTs = Date.UTC(2026, 11, 3, 8, 15, 2);
+  assert.equal(X.dateinameBlock({ pseudonym: 'P000', startTs, blockId }, SCHEMA), 'HXNOW_TEST_BEOB_P000_20261203_0915_3f2a9c1e.csv');
+  assert.equal(X.dateinameBlock({ pseudonym: 'P017', startTs, blockId }, SCHEMA), 'HXNOW_BEOB_P017_20261203_0915_3f2a9c1e.csv');
+  const v = { versuchId: blockId, geraeteId: 'g', pseudonym: 'P000', beobachter: 'B1', bereich: 'NEPH', dienst: 'F', phase: 'PRE', ts: startTs };
+  assert.match(X.versuchDatei(v, SCHEMA).dateiname, /^HXNOW_TEST_VERSUCH_P000_/);
+});
+
+test('Zeitstempel konsistent: ende − start = dauer_sek in jeder Zeile, auch bei Millisekunden-Tipps', () => {
+  const ctx = testKontext().bei(0.7);
+  let z = ok(B.erzeugeBlock(ANGABEN_PRE, ctx)); // Start mit 700 ms Anteil
+  z = ok(B.tippeOrt(z, 'O1', ctx));
+  z = ok(B.tippeTaetigkeit(z, 'T5', ctx));
+  for (const [sek, t] of [[24.9, 'T4'], [29.2, 'T9'], [49.4, 'T1'], [50.6, 'T7'], [57.1, 'T1']]) {
+    z = ok(B.tippeTaetigkeit(z, t, ctx.bei(sek)));
+  }
+  z = ok(B.pausiere(z, ctx.bei(80.5)));
+  z = ok(B.setzeFort(z, {}, ctx.bei(95.2)));
+  z = ok(B.beendeManuell(z, { grund: 'Test' }, ctx.bei(120.4)));
+  const zeilen = X.blockDatei(z, SCHEMA).inhalt.slice(1).split('\r\n').filter(Boolean).map((l) => l.split(';'));
+  const k = zeilen.shift();
+  const sp = (n) => k.indexOf(n);
+  const ms = (iso) => Date.parse(iso);
+  zeilen.forEach((w, i) => {
+    assert.equal((ms(w[sp('ende')]) - ms(w[sp('start')])) / 1000, Number(w[sp('dauer_sek')]), `Zeile ${i + 1}`);
+    if (i > 0) assert.equal(w[sp('start')], zeilen[i - 1][sp('ende')]);
+  });
+  assert.equal(zeilen[0][sp('start')], zeilen[0][sp('block_start')]);
+  assert.equal(zeilen.at(-1)[sp('ende')], zeilen[0][sp('block_ende')]);
+  assert.equal(zeilen[0][sp('block_ende_grund')], 'Test');
 });
 
 test('CSV-Felder nach RFC 4180', () => {

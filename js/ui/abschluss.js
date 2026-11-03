@@ -3,7 +3,7 @@
 // Änderungen nach dem Export setzen den Exportstatus zurück auf „offen“ (die exportierte Datei ist dann veraltet);
 // nach „Eingang bestätigt“ ist der Block schreibgeschützt.
 import { el, ersetze, kommentarFeld, meldung, auswahlGruppe } from './dom.js';
-import { pflichtangaben } from '../schema.js';
+import { pflichtangaben, istTestPseudonym } from '../schema.js';
 import * as B from '../block.js';
 import * as db from '../db.js';
 import { blockDatei } from '../export.js';
@@ -126,6 +126,9 @@ export async function zeigeAbschluss(app, { blockId }) {
 
     ersetze(app.wurzel,
       el('h1', {}, 'Block abgeschlossen'),
+      istTestPseudonym(schema, b.pseudonym)
+        ? el('div', { class: 'banner-test', 'data-test': 'probelauf' }, `Probelauf (${b.pseudonym}) – Datei beginnt mit HXNOW_TEST_ und wird nicht ausgewertet`)
+        : null,
       geraetFrage(z, gesperrt),
       el('dl', { class: 'eckdaten', 'data-test': 'eckdaten' },
         el('dt', {}, 'Studien-Code'), el('dd', { 'data-test': 'abschluss-pseudonym' }, b.pseudonym),
@@ -133,6 +136,8 @@ export async function zeigeAbschluss(app, { blockId }) {
         el('dt', {}, 'Kontext'), el('dd', { 'data-test': 'abschluss-kontext' }, b.arbeitskontext ? `${b.arbeitskontext} ${label('arbeitskontext', b.arbeitskontext)}` : '–'),
         el('dt', {}, 'Beginn'), el('dd', {}, `${datumLokal(b.startTs)} ${uhrzeit(b.startTs)}`),
         el('dt', {}, 'Status'), el('dd', { 'data-test': 'abschluss-status' }, status),
+        b.endeGrund ? el('dt', {}, 'Grund') : null,
+        b.endeGrund ? el('dd', { 'data-test': 'abschluss-ende-grund' }, b.endeGrund) : null,
         el('dt', {}, 'Beobachtet'), el('dd', { 'data-test': 'abschluss-dauer' }, `${formatiereCountdown(s.beobachtetMs)} min`),
         el('dt', {}, 'Geplant'), el('dd', { 'data-test': 'abschluss-geplant' }, `${B.geplanteDauerSek(b, schema) / 60} min`),
         el('dt', {}, 'Pausen'), el('dd', { 'data-test': 'abschluss-pausen' }, s.pausenAnzahl === 0 ? 'keine' : `${s.pausenAnzahl} (${formatiereCountdown(s.pausenMs)} min)`),

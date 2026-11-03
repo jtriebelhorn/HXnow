@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.4.0 – 03.11.2026
+Nach Auswertung der ersten Pilotdateien (P017, P018):
+- Export: Zeitstempel aus derselben gerundeten Uhr wie die Dauern – in jeder Zeile gilt `ende − start = dauer_sek`
+  (vorher bis zu 1 s Widerspruch, ENTSCHEIDUNGEN Nr. 15).
+- Korrekturfenster (`korrekturfensterSek`, Standard 3 s): Tätigkeit/Ort direkt nach einem Wechsel ändern die neue
+  Episode statt eine 1-s-Scheinepisode anzulegen; Vertipper zurück zur vorherigen Kodierung entfallen. HX Now bleibt
+  immer eigene Episode. Überschriebene Werte bleiben in den Rohdaten (Nr. 16).
+- „Block beenden – Daten behalten“ fragt den Grund ab (Pflicht, `pflichtangaben.beendenGrund`); neue CSV-Spalte
+  `block_ende_grund` (Nr. 17).
+- Probeläufe mit Test-Code `P000`: Knopf „Probelauf“ beim Anlegen, Kennzeichnung in Kodierung, Abschluss und Liste,
+  Dateien `HXNOW_TEST_…` (Nr. 18).
+- Neues Codebuch aller Exportspalten: `docs/CODEBUCH_EXPORT.md`; Kodierhandbuch ergänzt.
+- Prüf-Workflow: Soll-Protokoll mit Korrekturfenster, neue Prüfungen „ende − start = dauer_sek“ und
+  „Episoden + Pausen = block_ende − block_start“ (exakt).
+
 ## 0.3.0 – 02.11.2026
 - Phase 5 – Offline und PWA: Service Worker mit versioniertem Cache (Cache-first) für alle App-Dateien inkl.
   `kodierschema.json`; nach dem ersten Aufruf startet die App vollständig ohne Netz (auch im Flugmodus).

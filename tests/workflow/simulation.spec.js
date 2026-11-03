@@ -290,9 +290,11 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     } else if (ende.art === 'beenden') {
       await tippe('beenden');
       const ts = await jetzt();
-      if (ende.behalten) await tippe('beenden-behalten');
-      else { await tippe('beenden-verwerfen'); await tippe('bestaetigen-ja'); }
-      soll.beendet(ts, ende.behalten);
+      if (ende.behalten) {
+        await page.locator('[data-test=beenden-grund]').fill(ende.grund);
+        await tippe('beenden-behalten');
+      } else { await tippe('beenden-verwerfen'); await tippe('bestaetigen-ja'); }
+      soll.beendet(ts, ende.behalten, ende.grund ?? '');
       await expect(page.locator('[data-test=abschluss-status]')).toBeVisible();
     }
 
@@ -358,6 +360,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
       kennzahlen: {
         Episoden: soll.episoden.length, Pausen: soll.pausen.length, 'Rückgängig': zaehler.rueckgaengig,
         Kommentare: zaehler.kommentare, Doppeltipps: zaehler.doppeltipps, 'Episoden < 5 s': zaehler.kurzepisoden,
+        Korrekturen: soll.korrekturen,
         'Beobachtet (s)': Math.round(soll.beobachtetMs(soll.endTs) / 1000),
       },
       pruefungen: ergebnis.pruefungen,
@@ -444,7 +447,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     beschreibung: 'Behandlungsbereich (K6). Nach ca. 7 min wird der Block vorzeitig beendet (Daten behalten).',
     meta: { pseudonym: pseudo(), phase: 'POST', bereich: 'ZNA', dienst: 'S', arbeitskontext: 'K6', dauerSek: 900 },
     ereignisse: [],
-    ende: { art: 'beenden', behalten: true, beiSek: r.ganz(380, 460) },
+    ende: { art: 'beenden', behalten: true, beiSek: r.ganz(380, 460), grund: 'Ärztin zum Schockraum gerufen; „dringend“' },
     abschluss: {},
   });
   await zwischen();

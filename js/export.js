@@ -5,7 +5,8 @@
 // WICHTIG (Safari): versucheTeilen() muss synchron aus einem Klick-Handler aufgerufen werden,
 // ohne vorheriges `await`. Die Datei wird daher synchron aus dem Zustand im Speicher erzeugt.
 
-import { zeitleiste, geplanteDauerSek, mitGeraetDabei } from './block.js';
+import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek } from './block.js';
+import { istTestPseudonym } from './schema.js';
 import { isoMitOffset, datumLokal, dateinameZeit } from './zeit.js';
 
 const BOM = '\uFEFF';
@@ -14,13 +15,14 @@ const ZEILENENDE = '\r\n';
 
 /**
  * Spalten der Block-CSV (Spezifikation v2 Abschnitt 8). Zusätzlich laut docs/ENTSCHEIDUNGEN.md:
- * `block_dauer_soll_sek` (Nr. 7), `block_ende_art` (Nr. 6), `hx_geraet_markiert` (Zeitpunkt des Schalters).
+ * `block_dauer_soll_sek` (Nr. 7), `block_ende_art` (Nr. 6), `block_ende_grund` (Nr. 17),
+ * `hx_geraet_markiert` (Zeitpunkt des Schalters). Bedeutung aller Spalten: docs/CODEBUCH_EXPORT.md.
  */
 export const SPALTEN_BEOBACHTUNG = Object.freeze([
   'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
   'bereich', 'dienst', 'phase', 'arbeitskontext', 'datum', 'block_start', 'block_ende',
   'block_dauer_soll_sek', 'block_beobachtet_sek', 'block_pausen_anzahl', 'block_pausen_sek',
-  'block_status', 'block_ende_art', 'abbruch_code', 'block_kommentar',
+  'block_status', 'block_ende_art', 'block_ende_grund', 'abbruch_code', 'block_kommentar',
   'hx_geraet_dabei', 'hx_geraet_automatisch', 'hx_geraet_markiert',
   'nr', 'start', 'ende', 'dauer_sek', 'taetigkeit', 'ort', 'nutzungsart', 'haltung', 'unvollstaendig',
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
@@ -60,9 +62,14 @@ function dateinameTeil(s) {
 // Block (Beobachtung)
 // ---------------------------------------------------------------------------
 
-export function dateinameBlock(block) {
+/** Präfix der Dateinamen; Probeläufe mit dem Test-Code (z. B. P000) beginnen mit HXNOW_TEST_ (ENTSCHEIDUNGEN Nr. 18). */
+function praefix(schema, pseudonym, art) {
+  return istTestPseudonym(schema ?? {}, pseudonym) ? `HXNOW_TEST_${art}` : `HXNOW_${art}`;
+}
+
+export function dateinameBlock(block, schema = null) {
   const { datum, uhrzeit } = dateinameZeit(block.startTs);
-  return `HXNOW_BEOB_${dateinameTeil(block.pseudonym)}_${datum}_${uhrzeit}_${block.blockId.slice(0, 8)}.csv`;
+  return `${praefix(schema, block.pseudonym, 'BEOB')}_${dateinameTeil(block.pseudonym)}_${datum}_${uhrzeit}_${block.blockId.slice(0, 8)}.csv`;
 }
 
 /**
@@ -80,14 +87,18 @@ export function blockDatei(zustand, schema) {
   const eps = zl.filter((x) => x.art === 'episode');
   const pausen = zl.filter((x) => x.art === 'pause');
   const post = mitGeraetDabei(zustand, schema);
+  // Zeitstempel auf der gerundeten Uhr (Blockstart sekundengenau + gerundete Sekunden), damit in jeder Zeile
+  // ende − start = dauer_sek gilt (ENTSCHEIDUNGEN Nr. 15). Rohdaten mit Millisekunden: IndexedDB/JSON-Sicherung.
+  const basis = b.startTs - (b.startTs % 1000);
+  const zeit = (sek) => isoMitOffset(basis + sek * 1000);
   const blockFelder = [
     b.blockId, b.geraeteId, b.schemaVersion, b.appVersion, b.pseudonym, b.beobachter,
-    b.bereich, b.dienst, b.phase, b.arbeitskontext ?? '', datumLokal(b.startTs), isoMitOffset(b.startTs), isoMitOffset(b.endTs),
+    b.bereich, b.dienst, b.phase, b.arbeitskontext ?? '', datumLokal(b.startTs), zeit(0), zeit(blockEndeSek(zustand)),
     geplanteDauerSek(b, schema),
     eps.reduce((s, e) => s + e.dauerSek, 0), // beobachtete Zeit = Summe der Episoden (exakt konsistent)
     pausen.length,
     pausen.reduce((s, p) => s + p.dauerSek, 0),
-    b.status, b.endeArt ?? '', b.abbruchCode ?? '', b.kommentar ?? '',
+    b.status, b.endeArt ?? '', b.endeGrund ?? '', b.abbruchCode ?? '', b.kommentar ?? '',
     post ? (b.hxGeraetDabei ?? '') : '',
     b.hxGeraetAutomatisch ? 1 : 0,
     post && b.hxGeraetMarkiertTs !== null && b.hxGeraetMarkiertTs !== undefined ? isoMitOffset(b.hxGeraetMarkiertTs) : '',
@@ -97,27 +108,27 @@ export function blockDatei(zustand, schema) {
     ? [['block', ...blockFelder, ...leerZeile, 0]]
     : zl.map((x, i) => [
       x.art, ...blockFelder,
-      i + 1, isoMitOffset(x.startTs), isoMitOffset(x.endeTs), x.dauerSek,
+      i + 1, zeit(x.startSek), zeit(x.endeSek), x.dauerSek,
       ...(x.art === 'episode'
         ? [x.taetigkeit, x.ort, x.nutzungsart ?? '', x.haltung ?? '', x.unvollstaendig ? 1 : 0, '', '', x.kommentar ?? '']
         : ['', '', '', '', '', x.grund ?? '', x.freitext ?? '', '']),
       zl.length,
     ]);
-  return { dateiname: dateinameBlock(b), inhalt: csvText(SPALTEN_BEOBACHTUNG, zeilen), typ: 'text/csv' };
+  return { dateiname: dateinameBlock(b, schema), inhalt: csvText(SPALTEN_BEOBACHTUNG, zeilen), typ: 'text/csv' };
 }
 
 // ---------------------------------------------------------------------------
 // Versuch („nicht angetroffen“) und Tageskennzahlen
 // ---------------------------------------------------------------------------
 
-export function versuchDatei(v) {
+export function versuchDatei(v, schema = null) {
   const { datum, uhrzeit } = dateinameZeit(v.ts);
   const zeile = [
     'versuch', v.versuchId, v.geraeteId, v.schemaVersion ?? '', v.appVersion ?? '', v.pseudonym, v.beobachter,
     v.bereich, v.dienst, v.phase, datumLokal(v.ts), isoMitOffset(v.ts), v.kommentar ?? '',
   ];
   return {
-    dateiname: `HXNOW_VERSUCH_${dateinameTeil(v.pseudonym)}_${datum}_${uhrzeit}_${v.versuchId.slice(0, 8)}.csv`,
+    dateiname: `${praefix(schema, v.pseudonym, 'VERSUCH')}_${dateinameTeil(v.pseudonym)}_${datum}_${uhrzeit}_${v.versuchId.slice(0, 8)}.csv`,
     inhalt: csvText(SPALTEN_VERSUCH, [zeile]),
     typ: 'text/csv',
   };

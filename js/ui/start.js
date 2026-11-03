@@ -7,6 +7,7 @@ import { blockDatei, versuchDatei, tagDatei } from '../export.js';
 import { uhrzeit, datumLokal, formatiereCountdown } from '../zeit.js';
 import { exportiere, andereWege, bestaetigeEingang } from './exportieren.js';
 import { updateHinweis } from './update.js';
+import { istTestPseudonym } from '../schema.js';
 
 const TAG_MS = 24 * 3600 * 1000;
 
@@ -28,7 +29,7 @@ export async function zeigeStart(app) {
   // Exportdateien werden hier vorbereitet, damit der Klick auf „Exportieren“ synchron teilen kann.
   const eintraege = [
     ...daten.bloecke.filter((b) => offen(b) && (b.status === 'beendet' || b.status === 'abgebrochen')).map((b) => ({
-      art: 'Block', ts: b.endTs ?? b.startTs, test: 'eintrag-block',
+      art: istTestPseudonym(schema, b.pseudonym) ? 'Block · Probelauf' : 'Block', ts: b.endTs ?? b.startTs, test: 'eintrag-block',
       titel: `${b.pseudonym} · ${phase(schema, b.phase)} · ${datumLokal(b.startTs)} ${uhrzeit(b.startTs).slice(0, 5)}`,
       details: `${STATUS_TEXT[b.status]}${b.abbruchCode ? ` (${b.abbruchCode})` : ''}, ${formatiereCountdown((b.endTs ?? b.startTs) - b.startTs)} min`,
       exportStatus: b.exportStatus,
@@ -37,10 +38,10 @@ export async function zeigeStart(app) {
       oeffnen: () => app.zeige('abschluss', { blockId: b.blockId }),
     })),
     ...daten.versuche.filter(offen).map((v) => ({
-      art: 'Nicht angetroffen', ts: v.ts, test: 'eintrag-versuch',
+      art: istTestPseudonym(schema, v.pseudonym) ? 'Nicht angetroffen · Probelauf' : 'Nicht angetroffen', ts: v.ts, test: 'eintrag-versuch',
       titel: `${v.pseudonym} · ${phase(schema, v.phase)} · ${datumLokal(v.ts)} ${uhrzeit(v.ts).slice(0, 5)}`,
       details: '', exportStatus: v.exportStatus,
-      datei: versuchDatei(v),
+      datei: versuchDatei(v, schema),
       ziel: { store: db.STORES.VERSUCHE, schluessel: v.versuchId, nachher: neuZeichnen },
     })),
     ...daten.tageskennzahlen.filter(offen).map((k) => ({

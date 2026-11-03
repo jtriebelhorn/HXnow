@@ -279,8 +279,12 @@ test('Block beenden: Daten behalten bzw. verwerfen', async ({ page }) => {
   await tippe(page, 't-T1');
   await page.clock.fastForward('05:00');
   await page.click('[data-test=beenden]');
+  // Grund ist Pflicht (pflichtangaben.beendenGrund): ohne Text kein „behalten“
+  await expect(page.locator('[data-test=beenden-behalten]')).toBeDisabled();
+  await page.fill('[data-test=beenden-grund]', 'Person zum Notfall gerufen');
   await page.click('[data-test=beenden-behalten]');
   await expect(page.locator('[data-test=abschluss-status]')).toHaveText('Vorzeitig beendet (Daten behalten)');
+  await expect(page.locator('[data-test=abschluss-ende-grund]')).toHaveText('Person zum Notfall gerufen');
   await page.click('[data-test=zur-startseite]');
   await expect(page.locator('[data-test=eintrag-block]')).toHaveCount(1);
 
@@ -349,4 +353,44 @@ test('Info und Datensicherung ohne Platzhaltertexte', async ({ page }) => {
   await pruefeTastengroessen(page, 'Info');
   await expect(page.locator('[data-test=info-schema-version]')).toHaveText('0.2');
   await expect(page.locator('[data-test=info-geraete-id]')).toHaveText(/^[0-9a-f-]{36}$/);
+});
+
+test('Probelauf mit Test-Code: Knopf setzt P000, Hinweis in Kodierung und Liste, Datei HXNOW_TEST_', async ({ page }) => {
+  await mockeTeilen(page);
+  await oeffne(page);
+  await page.click('[data-test=neuer-block]');
+  await page.click('[data-test=probelauf-code]');
+  await expect(page.locator('[data-test=pseudonym]')).toHaveValue('P000');
+  await page.click('[data-test=phase-PRE]');
+  await page.click('[data-test=bereich-NEPH]');
+  await page.click('[data-test=block-starten]');
+  await expect(page.locator('[data-test=probelauf]')).toContainText('Probelauf (P000)');
+  await tippe(page, 'o-O1');
+  await tippe(page, 't-T1');
+  await page.clock.fastForward('00:30');
+  await page.click('[data-test=beenden]');
+  await page.fill('[data-test=beenden-grund]', 'Schulung');
+  await page.click('[data-test=beenden-behalten]');
+  await expect(page.locator('[data-test=probelauf]')).toContainText('HXNOW_TEST_');
+  await page.click('[data-test=zur-startseite]');
+  await expect(page.locator('[data-test=eintrag-block]')).toContainText('Probelauf');
+  await page.click('[data-test=eintrag-block] [data-test=exportieren]');
+  await expect.poll(async () => (await geteilt(page)).length).toBe(1);
+  expect((await geteilt(page))[0].name).toMatch(/^HXNOW_TEST_BEOB_P000_/);
+});
+
+test('Korrekturfenster: Ort und gleich danach Tätigkeit ergeben eine Episode', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page);
+  await tippe(page, 'o-O1');
+  await tippe(page, 't-T1');
+  await page.clock.fastForward('00:40');
+  await tippe(page, 'o-O3');
+  await page.clock.fastForward('00:01');
+  await tippe(page, 't-T5');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#2');
+  const daten = await leseDb(page);
+  const aktiv = daten.episoden.filter((e) => !e.geloescht).sort((a, b) => a.nr - b.nr);
+  expect(aktiv.map((e) => `${e.taetigkeit}/${e.ort}`)).toEqual(['T1/O1', 'T5/O3']);
+  expect(aktiv[1].korrekturen).toHaveLength(1);
 });

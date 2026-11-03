@@ -4,12 +4,15 @@ import * as B from '../../js/block.js';
 import { erzeugeSitzung } from '../../js/sitzung.js';
 import { SCHEMA, START, testKontext, ANGABEN_POST } from './hilfen.js';
 
+// Korrekturfenster aus: Hier geht es um die Reihenfolge schneller Tipps, nicht um Korrekturen.
+const OHNE_KORREKTUR = { ...SCHEMA, korrekturfensterSek: 0 };
+
 function aufbau({ schreibe } = {}) {
   const geschrieben = [];
   let uhrMs = START;
   const ctx = testKontext().bei(0);
   const s = erzeugeSitzung({
-    schema: SCHEMA,
+    schema: OHNE_KORREKTUR,
     uuid: ctx.uuid,
     uhr: () => uhrMs,
     schreibe: schreibe ?? (async (w) => { await new Promise((r) => setTimeout(r, 5)); geschrieben.push(structuredClone(w)); }),

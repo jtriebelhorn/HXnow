@@ -45,6 +45,7 @@ Das Kodierhandbuch legt fest, wie die beobachtende Person die Arbeitszeit der Te
 - **Kontinuierliche Zeitkodierung:** Jede Episode wird mit Startzeit (hh:mm:ss) erfasst; sie endet mit dem Beginn der nächsten Episode, einer Pause oder dem Blockende. Die Summe aller Episoden ergibt die beobachtete Blockzeit.
 - **Episodenwechsel:** Eine neue Episode beginnt, sobald sich die Tätigkeits-/Gerätekategorie **oder** der Ort ändert. Bei Geräteepisoden (T1–T3) beginnt zusätzlich eine neue Episode, wenn die Nutzungsart wechselt, bei T3 auch bei Wechsel der Körperhaltung.
 - **Mindestdauer:** Tätigkeiten unter \[5\] Sekunden werden nicht als eigene Episode kodiert, sondern der laufenden Episode zugeschlagen. Ausnahme: jede erkennbare Nutzung von HX Now wird kodiert, auch wenn sie kürzer ist (für die Zählung der Nutzungsepisoden).
+- **Korrektur direkt nach einem Wechsel:** Ändern sich Tätigkeit und Ort gleichzeitig, beide Tasten direkt nacheinander tippen. Ein zweiter Tipp innerhalb von \[3\] Sekunden gilt als Teil desselben Wechsels bzw. als Korrektur eines Vertippers und erzeugt keine eigene Episode. Ausnahme: Eine kodierte HX-Now-Nutzung bleibt immer als eigene Episode erhalten.
 - **Unterbrechungen:** Wird eine Tätigkeit unterbrochen und danach fortgesetzt, entstehen zwei Episoden derselben Kategorie.
 - **Prioritätsregel bei gleichzeitigen Tätigkeiten:** Es gilt die Kategorie, die in der folgenden Rangfolge zuerst kommt:
   1. Gerätenutzung (T1–T4), wenn die Person sichtbar mit dem Gerät interagiert (tippt, scrollt, spricht hinein, blickt auf den Bildschirm)
@@ -157,7 +158,7 @@ Ob die beobachtete Person ein HX-Now-Gerät bei sich hat, wird ohne Ansprache ve
 
 ### 6.1 Blockprotokoll
 
-Je Block werden erfasst: Block-ID, Studien-Code, Datum, Bereich, Arbeitskontext (K1–K7), Dienst (Früh, Spät, Nacht), Start- und Endzeit, Pausen (Beginn, Ende, Grund P1–P5), Abbruch (ja/nein, Code A1–A4), in der Post-Phase HX-Now-Gerät dabei (ja/nein/nicht erkennbar) und Kommentar. Je Episode: Startzeit, Tätigkeit/Gerät (T1–T10), Ort (O1–O8), bei T1–T3 Nutzungsart (N), bei T3 zusätzlich Haltung (H), optional Kommentar. Die Erfassung erfolgt mit einer Beobachtungs-App auf einem Smartphone oder Tablet: Jede Kategorie wird per Tastendruck gewählt, die App vergibt den Zeitstempel sekundengenau. Die Eingabemaske bildet die hier genannten Felder ab; es werden keine weiteren Daten erfasst.
+Je Block werden erfasst: Block-ID, Studien-Code, Datum, Bereich, Arbeitskontext (K1–K7), Dienst (Früh, Spät, Nacht), Start- und Endzeit, Pausen (Beginn, Ende, Grund P1–P5), Abbruch (ja/nein, Code A1–A4), bei vorzeitigem Beenden der Grund (Freitext), in der Post-Phase HX-Now-Gerät dabei (ja/nein/nicht erkennbar) und Kommentar. Je Episode: Startzeit, Tätigkeit/Gerät (T1–T10), Ort (O1–O8), bei T1–T3 Nutzungsart (N), bei T3 zusätzlich Haltung (H), optional Kommentar. Die Erfassung erfolgt mit einer Beobachtungs-App auf einem Smartphone oder Tablet: Jede Kategorie wird per Tastendruck gewählt, die App vergibt den Zeitstempel sekundengenau. Die Eingabemaske bildet die hier genannten Felder ab; es werden keine weiteren Daten erfasst. Aufbau und Bedeutung aller Spalten der Exportdateien: [CODEBUCH_EXPORT.md](CODEBUCH_EXPORT.md).
 
 ### 6.2 Tageskennzahlen
 
@@ -169,10 +170,10 @@ Je Beobachtungstag und Bereich werden zur Einordnung der Arbeitslast erfasst:
 
 ### 6.3 Qualitätssicherung
 
-- **Schulung:** Einweisung der beobachtenden Person in Studienprotokoll, Kodierhandbuch und Verhaltensregeln durch die Studienleitung.
+- **Schulung:** Einweisung der beobachtenden Person in Studienprotokoll, Kodierhandbuch und Verhaltensregeln durch die Studienleitung. Übungs- und Testblöcke immer mit dem Studien-Code \[P000\] erfassen; sie werden als Probelauf gekennzeichnet (Dateien `HXNOW_TEST_…`) und nicht ausgewertet.
 - **Pilotbeobachtungen:** mindestens \[5\] Blöcke in beiden Bereichen vor der Prä-Phase; danach Anpassung des Kodierhandbuchs und Festschreibung (Version 1.0).
 - **Übereinstimmung:** \[Optional: Bei \[10\] % der Pilot- bzw. Studienblöcke kodiert eine zweite geschulte Person parallel; Ziel Cohens Kappa ≥ 0,7 für Tätigkeit/Gerät. Im Protokoll bisher nicht vorgesehen.\]
-- **Datenprüfung:** tägliche Kontrolle auf Lücken, Überlappungen und beobachtete Blockzeiten (ohne Pausen) ungleich 15 Minuten ohne Abbruchcode.
+- **Datenprüfung:** tägliche Kontrolle auf Lücken, Überlappungen und beobachtete Blockzeiten (ohne Pausen) ungleich der gewählten Blockdauer ohne Abbruchcode bzw. ohne Grund für ein vorzeitiges Ende.
 - **Änderungen:** Nach der Festschreibung werden keine Kategorien mehr geändert. Unvermeidbare Klarstellungen werden mit Datum und Begründung im Änderungsprotokoll dokumentiert und gelten für Prä- und Post-Phase gleichermaßen.
 
 | Version | Datum | Änderung |

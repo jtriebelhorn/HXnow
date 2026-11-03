@@ -5,6 +5,7 @@
   "blockDauerOptionenSek": [600, 900],
   "warnungVorEndeSek": 60,
   "pauseMaxSek": 300,
+  "korrekturfensterSek": 3,
   "nutzungsartBeiT1T2": true,
   "pflichtangaben": {
     "block": ["pseudonym", "phase", "bereich", "beobachter"],
@@ -12,9 +13,10 @@
     "tageskennzahlen": ["datum", "bereich"],
     "pauseGrund": false,
     "abbruchGrund": true,
-    "geraetDabeiVorExport": false
+    "geraetDabeiVorExport": false,
+    "beendenGrund": true
   },
-  "pseudonym": { "muster": "^P\\d{3}$", "beispiel": "P017", "pruefziffer": false },
+  "pseudonym": { "muster": "^P\\d{3}$", "beispiel": "P017", "testCode": "P000", "pruefziffer": false },
   "beobachter": ["B1"],
   "bereiche": [
     { "code": "NEPH", "label": "Nephrologie" },

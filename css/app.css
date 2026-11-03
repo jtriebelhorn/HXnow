@@ -124,6 +124,17 @@ button[aria-pressed="true"] { background: var(--aktiv); border-color: var(--akti
 }
 .banner-info p { margin: 0 0 12px; }
 
+.banner-test {
+  background: var(--warnung-flaeche);
+  border: 2px dashed var(--warnung);
+  color: var(--warnung);
+  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 8px var(--abstand);
+  margin-bottom: var(--abstand);
+  text-align: center;
+}
+
 .banner-rot {
   background: var(--fehler);
   color: #ffffff;

@@ -32,6 +32,7 @@ const PFLICHT_STANDARD = Object.freeze({
   pauseGrund: false,
   abbruchGrund: true,
   geraetDabeiVorExport: false,
+  beendenGrund: true,
 });
 
 /**
@@ -48,7 +49,19 @@ export function pflichtangaben(schema) {
     pauseGrund: typeof k.pauseGrund === 'boolean' ? k.pauseGrund : PFLICHT_STANDARD.pauseGrund,
     abbruchGrund: typeof k.abbruchGrund === 'boolean' ? k.abbruchGrund : PFLICHT_STANDARD.abbruchGrund,
     geraetDabeiVorExport: typeof k.geraetDabeiVorExport === 'boolean' ? k.geraetDabeiVorExport : PFLICHT_STANDARD.geraetDabeiVorExport,
+    beendenGrund: typeof k.beendenGrund === 'boolean' ? k.beendenGrund : PFLICHT_STANDARD.beendenGrund,
   };
+}
+
+/** Korrekturfenster in ms: so lange nach dem Anlegen einer Episode ändert ein T/O-Tipp diese Episode (0 = aus). */
+export function korrekturfensterMs(schema) {
+  return Number.isInteger(schema.korrekturfensterSek) ? schema.korrekturfensterSek * 1000 : 0;
+}
+
+/** Ist der Studien-Code der reservierte Code für Probeläufe (z. B. P000)? */
+export function istTestPseudonym(schema, pseudonym) {
+  const t = schema.pseudonym?.testCode;
+  return Boolean(t) && String(pseudonym ?? '').trim().toUpperCase() === t;
 }
 
 /** Wählbare Blockdauern in Sekunden (ohne Angabe nur die Standarddauer). */
@@ -103,6 +116,9 @@ export function validiereSchema(s) {
   if (!istGanzzahl(s.pauseMaxSek) || s.pauseMaxSek <= 0) {
     f('Feld „pauseMaxSek“ muss eine positive ganze Zahl sein (z. B. 300).');
   }
+  if (s.korrekturfensterSek !== undefined && (!istGanzzahl(s.korrekturfensterSek) || s.korrekturfensterSek < 0 || s.korrekturfensterSek > 10)) {
+    f('Feld „korrekturfensterSek“ muss eine ganze Zahl von 0 bis 10 sein (z. B. 3; 0 = aus).');
+  }
   if (!istBool(s.nutzungsartBeiT1T2)) {
     f('Feld „nutzungsartBeiT1T2“ muss true oder false sein.');
   }
@@ -120,7 +136,7 @@ export function validiereSchema(s) {
           if (!erlaubt.includes(feld)) f(`„pflichtangaben.${name}“: unbekanntes Feld „${feld}“ (erlaubt: ${erlaubt.join(', ')}).`);
         }
       }
-      for (const name of ['pauseGrund', 'abbruchGrund', 'geraetDabeiVorExport']) {
+      for (const name of ['pauseGrund', 'abbruchGrund', 'geraetDabeiVorExport', 'beendenGrund']) {
         const w = s.pflichtangaben[name];
         if (w !== undefined && !istBool(w)) f(`„pflichtangaben.${name}“ muss true oder false sein.`);
       }
@@ -148,6 +164,15 @@ export function validiereSchema(s) {
         f('„pseudonym.beispiel“ muss ein Text sein.');
       } else if (regex && !regex.test(s.pseudonym.beispiel)) {
         f(`Das Beispiel „${s.pseudonym.beispiel}“ passt nicht zum Muster „${s.pseudonym.muster}“.`);
+      }
+    }
+    if (s.pseudonym.testCode !== undefined) {
+      if (!istText(s.pseudonym.testCode)) {
+        f('„pseudonym.testCode“ muss ein Text sein (z. B. "P000").');
+      } else if (regex && !regex.test(s.pseudonym.testCode)) {
+        f(`Der Test-Code „${s.pseudonym.testCode}“ passt nicht zum Muster „${s.pseudonym.muster}“.`);
+      } else if (s.pseudonym.testCode === s.pseudonym.beispiel) {
+        f('„pseudonym.testCode“ darf nicht gleich dem Beispiel sein.');
       }
     }
     if (s.pseudonym.pruefziffer !== undefined && !istBool(s.pseudonym.pruefziffer)) {

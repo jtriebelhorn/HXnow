@@ -11,10 +11,12 @@ export class SollBlock {
     this.endTs = null;
     this.status = 'laufend';
     this.endeArt = null;
+    this.endeGrund = '';
     this.abbruchCode = null;
     this.kommentar = '';
     this.episoden = []; // { nr, startTs, t, o, n, h, offen:Set, kommentar }
     this.geloescht = 0;
+    this.korrekturen = 0; // T/O-Tipps im Korrekturfenster (Episode geändert statt neu)
     this.pausen = []; // { startTs, endTs, grund, notiz }
     this.wahl = { t: null, o: null }; // vor der ersten Episode
     this.geraetMarkiertTs = null;
@@ -50,6 +52,8 @@ export class SollBlock {
     const ep = {
       nr: this.episoden.length + 1,
       startTs: this.episoden.length === 0 ? this.startTs : ts,
+      erfasstTs: ts, // Tipp, der die Episode angelegt hat
+      korr: 0,
       t, o,
       n: uebernehmen ? vorher.n : (pflicht.includes('n') ? 'N9' : null),
       h: uebernehmen ? vorher.h : null,
@@ -57,11 +61,50 @@ export class SollBlock {
       kommentar: '',
     };
     this.episoden.push(ep);
+    this.geraetDurch(ts, t);
+    return ep;
+  }
+
+  geraetDurch(ts, t) {
     if (this.post && this.t(t).setztGeraetDabei && !this.geraetAutomatisch) {
       this.geraetAutomatisch = true;
       this.geraetMarkiertTs ??= ts;
     }
-    return ep;
+  }
+
+  /**
+   * Korrekturfenster (ENTSCHEIDUNGEN Nr. 16): Wechsel kurz nach dem Anlegen der laufenden Episode ändert diese.
+   * Zurück zur Kodierung der Vorgänger-Episode (ohne Pause dazwischen) = Vertipper → Episode entfällt.
+   * HX Now (Mindestdauer-Ausnahme) wird nie zu einer anderen Tätigkeit umgeschrieben.
+   * @returns true, wenn der Tipp als Korrektur verarbeitet wurde
+   */
+  korrigiere(ts, t, o) {
+    const a = this.akt;
+    const fenster = (this.schema.korrekturfensterSek ?? 0) * 1000;
+    if (!fenster || ts - a.erfasstTs >= fenster) return false;
+    if (t !== a.t && (this.schema.regelnAuswertung?.mindestdauerAusnahmen ?? []).includes(a.t)) return false;
+    this.korrekturen += 1;
+    const v = this.episoden.at(-2);
+    const pauseDazwischen = v && this.pausen.some((p) => p.startTs >= v.startTs && p.startTs <= a.startTs);
+    if (v && !pauseDazwischen && v.t === t && v.o === o) {
+      this.log(ts, `→ Korrektur: Episode ${a.nr} entfällt, Episode ${v.nr} läuft weiter`);
+      this.episoden.pop();
+      this.geloescht += 1;
+      if (this.geraetAutomatisch && !this.episoden.some((e) => this.t(e.t).setztGeraetDabei)) this.geraetAutomatisch = false;
+      return true;
+    }
+    this.log(ts, `→ Korrektur: Episode ${a.nr} wird ${t}/${o}`);
+    if (t !== a.t) {
+      const { felder, pflicht } = this.zusatz(t);
+      a.n = pflicht.includes('n') ? 'N9' : null;
+      a.h = null;
+      a.offen = new Set(felder);
+    }
+    a.t = t;
+    a.o = o;
+    a.korr += 1;
+    this.geraetDurch(ts, t);
+    return true;
   }
 
   // ------------------------------------------------------------ Tipps (liefern true, wenn sich etwas ändert)
@@ -74,6 +117,7 @@ export class SollBlock {
       return true;
     }
     if (a.t === t) return false;
+    if (this.korrigiere(ts, t, a.o)) return true;
     this.neueEpisode(ts, t, a.o, false);
     return true;
   }
@@ -87,6 +131,7 @@ export class SollBlock {
       return true;
     }
     if (a.o === o) return false;
+    if (this.korrigiere(ts, a.t, o)) return true;
     this.neueEpisode(ts, a.t, o, true);
     return true;
   }
@@ -147,7 +192,10 @@ export class SollBlock {
   }
   regulaer() { const ts = this.regulaeresEndeTs(); this.log(ts, 'Blockzeit erreicht – reguläres Ende'); this.beende(ts, { status: 'beendet', endeArt: 'regulaer' }); }
   abbruch(ts, code, kommentar) { this.log(ts, `Abbruch ${code}`); this.beende(ts, { status: 'abgebrochen', endeArt: 'abbruch', abbruchCode: code, kommentar: kommentar || this.kommentar }); }
-  beendet(ts, behalten) { this.log(ts, `Block beenden (${behalten ? 'behalten' : 'verwerfen'})`); this.beende(ts, { status: behalten ? 'beendet' : 'verworfen', endeArt: 'manuell' }); }
+  beendet(ts, behalten, grund = '') {
+    this.log(ts, `Block beenden (${behalten ? `behalten, Grund ${JSON.stringify(grund)}` : 'verwerfen'})`);
+    this.beende(ts, { status: behalten ? 'beendet' : 'verworfen', endeArt: 'manuell', endeGrund: behalten ? grund : '' });
+  }
 
   // ------------------------------------------------------------ Erwartete Zeitleiste und CSV-Zeilen
   /** Zeitleiste mit Enden und Dauern (Rundung: Episoden auf beobachteter Uhr, Pausen auf Pausen-Uhr). */
@@ -177,6 +225,16 @@ export class SollBlock {
     return this.geraetMarkiertTs !== null || this.geraetAutomatisch ? 'J' : '';
   }
 
+  /**
+   * Erwartete Uhrzeit im Export (ENTSCHEIDUNGEN Nr. 15): Blockstart auf die Sekunde abgeschnitten plus
+   * gerundete beobachtete Zeit plus gerundete Pausenzeit bis zu diesem Zeitpunkt.
+   */
+  exportZeit(iso, ts) {
+    const pause = this.pausenMsBis(ts);
+    const sek = Math.round((ts - this.startTs - pause) / 1000) + Math.round(pause / 1000);
+    return iso(Math.floor(this.startTs / 1000) * 1000 + sek * 1000);
+  }
+
   /** Erwartete CSV-Zeilen als Objekte Spalte → Text (ohne block_id/geraete_id/app_version). */
   csvZeilen(iso) {
     const zl = this.zeitleiste();
@@ -193,13 +251,14 @@ export class SollBlock {
       arbeitskontext: this.meta.arbeitskontext ?? '',
       datum,
       block_start: iso(this.startTs),
-      block_ende: iso(this.endTs),
+      block_ende: this.exportZeit(iso, this.endTs),
       block_dauer_soll_sek: String(this.meta.dauerSek),
       block_beobachtet_sek: String(eps.reduce((s, e) => s + e.dauerSek, 0)),
       block_pausen_anzahl: String(ps.length),
       block_pausen_sek: String(ps.reduce((s, p) => s + p.dauerSek, 0)),
       block_status: this.status,
       block_ende_art: this.endeArt,
+      block_ende_grund: this.endeGrund,
       abbruch_code: this.abbruchCode ?? '',
       block_kommentar: this.kommentar,
       hx_geraet_dabei: this.geraetDabeiErwartet(),
@@ -207,7 +266,10 @@ export class SollBlock {
       hx_geraet_markiert: this.post && this.geraetMarkiertTs !== null ? iso(this.geraetMarkiertTs) : '',
     };
     return zl.map((x, i) => {
-      const z = { datensatz: x.art, ...block, nr: String(i + 1), start: iso(x.startTs), ende: iso(x.endeTs), dauer_sek: String(x.dauerSek) };
+      const z = {
+        datensatz: x.art, ...block, nr: String(i + 1),
+        start: this.exportZeit(iso, x.startTs), ende: this.exportZeit(iso, x.endeTs), dauer_sek: String(x.dauerSek),
+      };
       if (x.art === 'episode') {
         const { pflicht } = this.zusatz(x.e.t);
         Object.assign(z, {

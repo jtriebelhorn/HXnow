@@ -4,7 +4,7 @@
 import { el, ersetze, dialog, bestaetige, kommentarFeld, meldung, auswahlGruppe } from './dom.js';
 import * as B from '../block.js';
 import { formatiereCountdown } from '../zeit.js';
-import { pflichtangaben } from '../schema.js';
+import { pflichtangaben, istTestPseudonym } from '../schema.js';
 
 const TAKT_MS = 250;
 
@@ -99,29 +99,36 @@ export async function zeigeKodierung(app, { blockId }) {
   }
 
   function beenden() {
-    dialog('Block vorzeitig beenden?', (schliessen) => [
+    const grundPflicht = pflichtangaben(schema).beendenGrund;
+    const grund = kommentarFeld({
+      testId: 'beenden-grund', titel: 'Grund für das vorzeitige Ende', optional: !grundPflicht, zeilen: 2,
+      beiEingabe: (text) => { behalten.disabled = grundPflicht && !text.trim(); },
+    });
+    const behalten = el('button', {
+      type: 'button', class: 'primaer', 'data-test': 'beenden-behalten', disabled: grundPflicht,
+      onclick: async () => { const text = grund.feld.value; schliessen(); await beende(true, text); },
+    }, 'Beenden – Daten behalten');
+    const schliessen = dialog('Block vorzeitig beenden?', (zu) => [
       el('p', {}, 'Der Block endet jetzt, vor Ablauf der Blockzeit. Für einen Abbruch mit Grund bitte „Abbruch“ verwenden.'),
+      grund,
       el('div', { class: 'stapel' },
-        el('button', {
-          type: 'button', class: 'primaer', 'data-test': 'beenden-behalten',
-          onclick: async () => { schliessen(); await beende(true); },
-        }, 'Beenden – Daten behalten'),
+        behalten,
         el('button', {
           type: 'button', class: 'gefahr', 'data-test': 'beenden-verwerfen',
           onclick: async () => {
-            schliessen();
+            zu();
             const ja = await bestaetige('Daten verwerfen?',
               'Der Block wird als „verworfen“ markiert und nicht exportiert. Er bleibt auf dem Gerät gespeichert.',
               { ja: 'Verwerfen', nein: 'Zurück', gefahr: true });
             if (ja) await beende(false);
           },
         }, 'Beenden – Daten verwerfen'),
-        el('button', { type: 'button', 'data-test': 'beenden-zurueck', onclick: schliessen }, 'Weiter beobachten')),
+        el('button', { type: 'button', 'data-test': 'beenden-zurueck', onclick: () => zu() }, 'Weiter beobachten')),
     ], { testId: 'dialog-beenden' });
   }
 
-  async function beende(behalten) {
-    const r = await ausfuehren((zz, c) => B.beendeManuell(zz, { behalten }, c));
+  async function beende(behalten, grund = '') {
+    const r = await ausfuehren((zz, c) => B.beendeManuell(zz, { behalten, grund }, c));
     if (r?.ok) zumAbschluss();
   }
 
@@ -308,6 +315,9 @@ export async function zeigeKodierung(app, { blockId }) {
         el('span', { class: 'kopf-kontext', 'data-test': 'kopf-kontext' },
           block.arbeitskontext ? `${block.arbeitskontext} ${label('arbeitskontext', block.arbeitskontext)}` : '')),
       countdown),
+    istTestPseudonym(schema, block.pseudonym)
+      ? el('div', { class: 'banner-test', 'data-test': 'probelauf' }, `Probelauf (${block.pseudonym}) – wird nicht ausgewertet`)
+      : null,
     inhalt,
     el('footer', { class: 'fuss-kodierung' },
       pauseKnopf,
