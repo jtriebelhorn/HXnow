@@ -17,14 +17,14 @@ function referenzBlock() {
   z = ok(B.tippeTaetigkeit(z, 'T1', ctx));
   z = ok(B.tippeNutzungsart(z, 'N2', ctx)); // bei T1 optional
   z = ok(B.setzeEpisodenKommentar(z, 'Visite; "kurz"', ctx));
-  ctx.bei(47.4); z = ok(B.wechsle(z, { taetigkeit: 'T3', ort: 'O2' }, ctx)); // setzt „Gerät dabei“ automatisch
+  ctx.bei(47.4); z = ok(B.wechsle(z, { taetigkeit: 'T3', ort: 'O4' }, ctx)); // setzt „Gerät dabei“ automatisch
   z = ok(B.tippeNutzungsart(z, 'N1', ctx));
   z = ok(B.tippeHaltung(z, 'H1', ctx));
-  ctx.bei(60.6); z = ok(B.wechsle(z, { taetigkeit: 'T5', ort: 'O3' }, ctx));
+  ctx.bei(60.6); z = ok(B.wechsle(z, { taetigkeit: 'T5', ort: 'O2' }, ctx));
   ctx.bei(70); z = ok(B.tippeTaetigkeit(z, 'T6', ctx));
   z = ok(B.rueckgaengig(z, ctx)); // gelöscht → nicht im Export
   ctx.bei(120.5); z = ok(B.pausiere(z, ctx));
-  ctx.bei(194); z = ok(B.setzeFort(z, { grund: 'P5', freitext: 'Alarm; Flur', taetigkeit: 'T5', ort: 'O3' }, ctx));
+  ctx.bei(194); z = ok(B.setzeFort(z, { grund: 'P5', freitext: 'Alarm; Flur', taetigkeit: 'T5', ort: 'O2' }, ctx));
   ctx.bei(250.2); z = ok(B.tippeTaetigkeit(z, 'T3', ctx));
   z = ok(B.tippeNutzungsart(z, 'N2', ctx)); // Haltung bleibt offen → unvollständig
   ctx.bei(262.8); z = ok(B.tippeNeben(z, 'T5', ctx)); // Patient/in gleichzeitig → neue Zeile, neben_T5 = 1
@@ -210,7 +210,7 @@ test('Spalten: neben_<Code> je gleichzeitiger Tätigkeit direkt nach „haltung�
 test('HX Now gleichzeitig: neben_T3 = 1 und Nutzungsart in neben_T3_nutzung', () => {
   const ctx = testKontext().bei(0);
   let z = ok(B.erzeugeBlock(ANGABEN_POST, ctx));
-  z = ok(B.tippeOrt(z, 'O3', ctx));
+  z = ok(B.tippeOrt(z, 'O2', ctx));
   z = ok(B.tippeTaetigkeit(z, 'T5', ctx));
   z = ok(B.tippeNeben(z, 'T3', ctx.bei(30)));
   z = ok(B.tippeNebenNutzung(z, 'T3', 'N3', ctx.bei(31)));

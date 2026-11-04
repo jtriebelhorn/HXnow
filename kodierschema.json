@@ -52,13 +52,12 @@
     { "code": "T10", "label": "Sonstiges",             "kurz": "Sonst." }
   ],
   "orte": [
-    { "code": "O10", "label": "Unterwegs", "unterwegs": true, "haltung": "H1" },
-    { "code": "O1", "label": "Arztzimmer / Stützpunkt" },
-    { "code": "O2", "label": "Flur / Gang" },
-    { "code": "O3", "label": "Patientenzimmer" },
-    { "code": "O4", "label": "Behandlung Notaufnahme" },
-    { "code": "O5", "label": "Dialyse" },
-    { "code": "O6", "label": "Ambulanz" },
+    { "code": "O1", "label": "Arztzimmer" },
+    { "code": "O2", "label": "Beim Patienten" },
+    { "code": "O3", "label": "Bei der Pflege" },
+    { "code": "O4", "label": "Flur" },
+    { "code": "O5", "label": "Pausenraum" },
+    { "code": "O6", "label": "Unterwegs", "unterwegs": true, "haltung": "H1" },
     { "code": "O7", "label": "Außerhalb Bereich" },
     { "code": "O8", "label": "Sonstiges" }
   ],

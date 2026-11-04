@@ -1,6 +1,6 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.1 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+Gilt ab App-Version 0.5.2 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
 (Version in der Spalte `schema_version`).
 
@@ -60,9 +60,9 @@ Eine Zeile je Episode und je Pause, chronologisch (Long-Format). Die Blockangabe
 | `ende` | Ende der Episode bzw. Pause | Zeit; = `start` der nächsten Zeile |
 | `dauer_sek` | Dauer | Sekunden; immer `ende − start` |
 | `taetigkeit` | Haupttätigkeit/Gerät (Prioritätsregel) | `T1`–`T10`; leer bei Pause. `T9` = Gehen ohne weitere Tätigkeit |
-| `ort` | Ort | `O1`–`O8`, `O10` = unterwegs (O9 nicht vergeben); leer bei Pause |
+| `ort` | Ort innerhalb des Bereichs | `O1` Arztzimmer, `O2` beim Patienten, `O3` bei der Pflege, `O4` Flur, `O5` Pausenraum, `O6` unterwegs, `O7` außerhalb des Bereichs, `O8` Sonstiges; leer bei Pause |
 | `nutzungsart` | Nutzungsart | `N1`–`N5` (`N5` = Warten), `N9`; nur bei T1–T3, leer = nicht kodiert |
-| `haltung` | Körperhaltung | `H1`–`H4`; nur bei T3; am Ort O10 immer `H1` |
+| `haltung` | Körperhaltung | `H1`–`H4`; nur bei T3; am Ort O6 immer `H1` |
 | `neben_T5`, `neben_T6`, `neben_T7`, `neben_T3`, `neben_T4` | gleichzeitige Tätigkeit (Patient/in, Kollegen/Pflege, Telefon, HX Now, Mobilgerät) neben der Haupttätigkeit | `1` = gleichzeitig, `0` = nicht; leer bei Pause. Welche Spalten es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
 | `neben_T3_nutzung` | was bei gleichzeitiger HX-Now-Nutzung gemacht wird | `N1`–`N5`, `N9`; leer = nicht angegeben bzw. HX Now nicht gleichzeitig (optional) |
 | `unvollstaendig` | Pflichtangabe (Nutzungsart/Haltung bei T3) fehlt | `1`, `0`; leer bei Pause |
@@ -96,7 +96,7 @@ der eine Episode angelegt hat (`erfasstTs`). Blöcke aus Version 0.4.0 können a
   von 1–2 s. Sie werden in der Auswertung über `regelnAuswertung.mindestdauerSek` (5 s) der vorangehenden Episode
   zugeschlagen; Ausnahme `mindestdauerAusnahmen` (T3). Für Kennzahlen zu gleichzeitigen Tätigkeiten oder Orten die
   Mindestdauer auf die jeweilige Größe anwenden, nicht auf die einzelne Zeile.
-- **Gehzeit** = Summe `dauer_sek` mit `ort = O10`, gleich welche Tätigkeit. Das Ziel eines Weges ist der Ort der
+- **Gehzeit** = Summe `dauer_sek` mit `ort = O6`, gleich welche Tätigkeit. Das Ziel eines Weges ist der Ort der
   nächsten Zeile.
 - **Dokumentation mit beteiligter Patientin bzw. beteiligtem Patienten** = Zeilen mit `taetigkeit` T1–T3 und
   `neben_T5 = 1`.

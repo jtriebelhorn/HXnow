@@ -91,7 +91,7 @@ test('Eintrag ohne label / Tätigkeit ohne kurz', () => {
   const s = original();
   delete s.orte[3].label;
   delete s.taetigkeiten[0].kurz;
-  erwarteFehler(s, '„orte“, Eintrag 4 (O3): „label“ fehlt');
+  erwarteFehler(s, '„orte“, Eintrag 4 (O4): „label“ fehlt');
   erwarteFehler(s, 'Tätigkeit T1: „kurz“');
 });
 

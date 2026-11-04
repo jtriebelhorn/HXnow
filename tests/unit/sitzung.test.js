@@ -47,11 +47,11 @@ test('schnelle Tipps werden nacheinander verarbeitet, Zeitstempel = Zeitpunkt de
   await s.aktion((z, c) => B.tippeTaetigkeit(z, 'T1', c));
   setzeUhr(10); const a = s.aktion((z, c) => B.tippeTaetigkeit(z, 'T2', c));
   setzeUhr(11); const b = s.aktion((z, c) => B.tippeTaetigkeit(z, 'T5', c));
-  setzeUhr(12); const c2 = s.aktion((z, c) => B.tippeOrt(z, 'O3', c));
+  setzeUhr(12); const c2 = s.aktion((z, c) => B.tippeOrt(z, 'O2', c));
   setzeUhr(99);
   await Promise.all([a, b, c2]);
   const eps = B.aktiveEpisoden(s.zustand);
   assert.deepEqual(eps.map((e) => [e.nr, e.taetigkeit, e.ort, (e.startTs - START) / 1000]),
-    [[1, 'T1', 'O1', 0], [2, 'T2', 'O1', 10], [3, 'T5', 'O1', 11], [4, 'T5', 'O3', 12]]);
+    [[1, 'T1', 'O1', 0], [2, 'T2', 'O1', 10], [3, 'T5', 'O1', 11], [4, 'T5', 'O2', 12]]);
   assert.equal(geschrieben.length, 4);
 });

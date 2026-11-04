@@ -33,14 +33,14 @@ test('kompletter Block: 20 Episoden, 2 Pausen, T3 mit N/H, T1 mit N, Gerät dabe
   await pruefeSchalter(page);
 
   const schritte = [
-    'o-O1', 't-T1', 'n-N2', 't-T2', 'o-O2', 't-T3', 'n-N1', 'h-H1', 'n-N3', 'h-H2', 'o-O3', 'PAUSE1',
+    'o-O1', 't-T1', 'n-N2', 't-T2', 'o-O4', 't-T3', 'n-N1', 'h-H1', 'n-N3', 'h-H2', 'o-O2', 'PAUSE1',
     't-T5', 't-T6', 'o-O1', 't-T7', 't-T8', 't-T3', 'n-N4', 'h-H4', 'PAUSE2', 't-T9', 'o-O7', 't-T4', 't-T10', 'o-O8',
   ];
   for (const s of schritte) {
     await page.clock.fastForward('00:20');
     if (s === 'PAUSE1') {
       await pauseUndWeiter(page); // ohne Grund: Fortsetzen mit einem Tipp
-      await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O3 Patientenzimmer · T3 HX Now · N3 · H2');
+      await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O2 Beim Patienten · T3 HX Now · N3 · H2');
       continue;
     }
     if (s === 'PAUSE2') {
@@ -87,8 +87,8 @@ test('kompletter Block: 20 Episoden, 2 Pausen, T3 mit N/H, T1 mit N, Gerät dabe
   const eps = db.episoden.filter((e) => !e.geloescht).sort((a, b) => a.nr - b.nr);
   expect(eps.map((e) => e.nr)).toEqual(Array.from({ length: 20 }, (_, i) => i + 1));
   expect(eps.filter((e) => e.taetigkeit === 'T3').map((e) => [e.ort, e.nutzungsart, e.haltung])).toEqual([
-    ['O2', 'N1', 'H1'], ['O2', 'N3', 'H1'], ['O2', 'N3', 'H2'], ['O3', 'N3', 'H2'],
-    ['O3', 'N3', 'H2'], // nach Pause 1 unverändert fortgesetzt
+    ['O4', 'N1', 'H1'], ['O4', 'N3', 'H1'], ['O4', 'N3', 'H2'], ['O2', 'N3', 'H2'],
+    ['O2', 'N3', 'H2'], // nach Pause 1 unverändert fortgesetzt
     ['O1', 'N4', 'H4'],
     ['O1', 'N4', 'H4'], // nach Pause 2 unverändert fortgesetzt
   ]);
@@ -218,7 +218,7 @@ test('Prä-Phase: T3 deaktiviert, kein Gerät-Schalter, keine Abschlussfrage; T1
   await expect(page.locator('[data-test=t-T11]')).toHaveCount(0);
   await expect(page.locator('[data-test=o-O9]')).toHaveCount(0);
   await expect(page.locator('[data-test=geraet-dabei]')).toHaveCount(0);
-  await tippe(page, 'o-O4');
+  await tippe(page, 'o-O2');
   await tippe(page, 't-T5');
   await page.clock.fastForward('15:00');
   await expect(page.locator('[data-test=frage-geraet]')).toHaveCount(0);
@@ -396,8 +396,8 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await tippe(page, 't-T1');
   await tippe(page, 'n-N5'); // Warten am PC
   await page.clock.fastForward('00:20');
-  await tippe(page, 'o-O10'); // aufstehen und losgehen
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O10 Unterwegs · T9 Gehen ohne weitere Tätigkeit');
+  await tippe(page, 'o-O6'); // aufstehen und losgehen
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O6 Unterwegs · T9 Gehen ohne weitere Tätigkeit');
   await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
   await page.click('[data-test=t-T1]');
   await expect(page.locator('#meldung')).toContainText('unterwegs nicht möglich');
@@ -408,7 +408,7 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await expect(page.locator('[data-test=h-H1]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-test=h-H3]')).toBeDisabled();
   await page.clock.fastForward('00:10');
-  await tippe(page, 'o-O3');
+  await tippe(page, 'o-O2');
   await expect(page.locator('[data-test=zeile-haltung]')).toHaveClass(/offen/); // am Bett: Haltung neu angeben
   await tippe(page, 'h-H2');
   await tippe(page, 'n-N2');
@@ -439,15 +439,15 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   const aktiv = daten.episoden.filter((e) => !e.geloescht).sort((a, b) => a.nr - b.nr);
   expect(aktiv.map((e) => [e.ort, e.taetigkeit, e.nutzungsart, e.haltung, e.neben.join('+')])).toEqual([
     ['O1', 'T1', 'N5', null, ''],
-    ['O10', 'T9', null, null, ''],
-    ['O10', 'T7', null, null, ''],
-    ['O10', 'T3', 'N9', 'H1', ''],
-    ['O3', 'T3', 'N2', 'H2', ''],
-    ['O3', 'T3', 'N2', 'H2', 'T5'],
-    ['O3', 'T3', 'N2', 'H2', ''],
-    ['O3', 'T5', null, null, ''],
-    ['O3', 'T5', null, null, 'T3'],
-    ['O3', 'T3', 'N9', null, ''],
+    ['O6', 'T9', null, null, ''],
+    ['O6', 'T7', null, null, ''],
+    ['O6', 'T3', 'N9', 'H1', ''],
+    ['O2', 'T3', 'N2', 'H2', ''],
+    ['O2', 'T3', 'N2', 'H2', 'T5'],
+    ['O2', 'T3', 'N2', 'H2', ''],
+    ['O2', 'T5', null, null, ''],
+    ['O2', 'T5', null, null, 'T3'],
+    ['O2', 'T3', 'N9', null, ''],
   ]);
   expect(aktiv[8].nebenNutzung).toEqual({ T3: 'N4' });
   expect(daten.bloecke[0].hxGeraetAutomatisch).toBe(true);
@@ -456,7 +456,7 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
 test('Prä-Phase: HX Now ist weder Tätigkeit noch gleichzeitig wählbar', async ({ page }) => {
   await oeffne(page);
   await starteBlock(page, { phase: 'PRE' });
-  await tippe(page, 'o-O3');
+  await tippe(page, 'o-O2');
   await tippe(page, 't-T5');
   await expect(page.locator('[data-test=t-T3]')).toBeDisabled();
   await page.click('[data-test=neben-oeffnen]');

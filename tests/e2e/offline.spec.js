@@ -71,7 +71,7 @@ test('Neue Version während eines laufenden Blocks: kein Neuladen, kein Hinweis,
   await expect(page.locator('[data-test=countdown]')).toBeVisible();
   await expect(page.locator('[data-test=update-hinweis]')).toHaveCount(0);
   expect(await page.evaluate(() => navigator.serviceWorker.controller.state)).toBe('activated');
-  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.5.1');
+  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.5.2');
   expect((await leseDb(page)).episoden.filter((e) => !e.geloescht)).toHaveLength(2);
 });
 

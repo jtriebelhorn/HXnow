@@ -8,7 +8,7 @@ test('Block starten, 5 Episoden, Neuladen → identischer Zustand inkl. laufende
   await tippe(page, 'o-O1');
   await tippe(page, 't-T1');                         // Episode 1 (Start = Blockstart)
   await page.clock.fastForward('00:30'); await tippe(page, 't-T5');   // 2
-  await page.clock.fastForward('00:45'); await tippe(page, 'o-O3');   // 3
+  await page.clock.fastForward('00:45'); await tippe(page, 'o-O2');   // 3
   await page.clock.fastForward('01:00'); await tippe(page, 't-T3');   // 4
   await tippe(page, 'n-N2');                                          // ergänzt 4
   await page.clock.fastForward('00:20'); await tippe(page, 't-T6');   // 5
@@ -28,7 +28,7 @@ test('Block starten, 5 Episoden, Neuladen → identischer Zustand inkl. laufende
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#5');
   await expect(page.locator('[data-test=laufzeit]')).toHaveText('7 s');
   await expect(page.locator('[data-test=t-T6]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('[data-test=o-O3]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-test=o-O2]')).toHaveAttribute('aria-pressed', 'true');
   expect(await leseDb(page)).toEqual(vorher);
 
   // weiterkodieren nach dem Neuladen funktioniert
@@ -43,7 +43,7 @@ test('Block starten, 5 Episoden, Neuladen → identischer Zustand inkl. laufende
 test('Block läuft ab, während die App geschlossen ist → Abschlussseite beim Öffnen, Ende = Start + 15:00', async ({ page }) => {
   await oeffne(page);
   await starteBlock(page);
-  await tippe(page, 'o-O2');
+  await tippe(page, 'o-O4');
   await tippe(page, 't-T9');
   await page.goto('about:blank');
   await page.clock.fastForward('40:00');
@@ -93,5 +93,5 @@ test('pausierter Block: Neuladen → Pause läuft weiter, Countdown steht still,
   await page.click('[data-test=pause]'); // Fortsetzen: ein Tipp
   await expect(page.locator('[data-test=countdown]')).toHaveText('12:30'); // 150 s beobachtet
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#3');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O1 Arztzimmer / Stützpunkt · T6 Gespräch Kollegen/Pflege');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O1 Arztzimmer · T6 Gespräch Kollegen/Pflege');
 });

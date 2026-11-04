@@ -101,24 +101,24 @@ describe('Erste Episode', () => {
     const ctx = testKontext().bei(0);
     let z = ok(B.erzeugeBlock(ANGABEN_POST, ctx)).zustand;
     ctx.bei(4);
-    let r = ok(B.tippeOrt(z, 'O3', ctx));
+    let r = ok(B.tippeOrt(z, 'O2', ctx));
     assert.equal(r.neueEpisode, false);
     z = r.zustand;
     ctx.bei(9);
     r = ok(B.tippeTaetigkeit(z, 'T5', ctx));
     const e = aktuell(r.zustand);
-    assert.deepEqual([e.nr, e.startTs, e.taetigkeit, e.ort], [1, START, 'T5', 'O3']);
+    assert.deepEqual([e.nr, e.startTs, e.taetigkeit, e.ort], [1, START, 'T5', 'O2']);
   });
 });
 
 describe('Episodenwechsel', () => {
   test('neue T → neue Episode, Ort übernommen; neuer O → Tätigkeit übernommen', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O3']);
+    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O2']);
     ctx.bei(30); z = ok(B.tippeTaetigkeit(z, 'T6', ctx)).zustand;
-    ctx.bei(45); z = ok(B.tippeOrt(z, 'O2', ctx)).zustand;
+    ctx.bei(45); z = ok(B.tippeOrt(z, 'O4', ctx)).zustand;
     assert.deepEqual(aktive(z).map((e) => [e.nr, e.taetigkeit, e.ort, e.startTs - START]),
-      [[1, 'T5', 'O3', 0], [2, 'T6', 'O3', 30_000], [3, 'T6', 'O2', 45_000]]);
+      [[1, 'T5', 'O2', 0], [2, 'T6', 'O2', 30_000], [3, 'T6', 'O4', 45_000]]);
   });
 
   test('Tipp auf bereits aktive Taste bewirkt nichts', () => {
@@ -169,7 +169,7 @@ describe('T3 (HX Now) nur in der Post-Phase', () => {
 
 describe('Nutzungsart und Haltung', () => {
   function mitT3(ctx) {
-    const z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O2']);
+    const z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O4']);
     return ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(20))).zustand;
   }
 
@@ -219,7 +219,7 @@ describe('Nutzungsart und Haltung', () => {
   test('T1/T2 mit nutzungsartBeiT1T2 = false: keine Nutzungsart', () => {
     const ctx = { ...testKontext(), schema: ohneN };
     ctx.bei = (s) => { ctx.zeitMs = s * 1000; return ctx; };
-    const z = neuerBlock(ctx, ANGABEN_POST, ['T2', 'O3']);
+    const z = neuerBlock(ctx, ANGABEN_POST, ['T2', 'O2']);
     assert.deepEqual(aktuell(z).offeneZusaetze, []);
     abgelehnt(B.tippeNutzungsart(z, 'N1', ctx), 'ZUSATZ_UNZULAESSIG');
     assert.deepEqual(B.zusatzFelder(ohneN, 'T3'), ['nutzungsart', 'haltung'], 'T3 bleibt Pflicht');
@@ -229,7 +229,7 @@ describe('Nutzungsart und Haltung', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx, ANGABEN_POST, ['T1', 'O1']);
     z = ok(B.tippeNutzungsart(z, 'N2', ctx)).zustand;
-    z = ok(B.tippeOrt(z, 'O3', ctx.bei(10))).zustand;
+    z = ok(B.tippeOrt(z, 'O2', ctx.bei(10))).zustand;
     assert.equal(aktuell(z).nutzungsart, 'N2');
     z = ok(B.tippeTaetigkeit(z, 'T2', ctx.bei(20))).zustand;
     assert.deepEqual([aktuell(z).nutzungsart, aktuell(z).offeneZusaetze], [null, ['nutzungsart']]);
@@ -241,8 +241,8 @@ describe('Nutzungsart und Haltung', () => {
     const ctx = testKontext();
     let z = mitT3(ctx);
     z = ok(B.tippeNutzungsart(z, 'N4', ctx)).zustand;
-    const e = aktuell(ok(B.tippeOrt(z, 'O3', ctx.bei(35))).zustand);
-    assert.deepEqual([e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['T3', 'O3', 'N4', null, true, ['haltung']]);
+    const e = aktuell(ok(B.tippeOrt(z, 'O2', ctx.bei(35))).zustand);
+    assert.deepEqual([e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['T3', 'O2', 'N4', null, true, ['haltung']]);
   });
 
   test('Haltung ohne T3 und Nutzungsart bei T4–T10 abgelehnt', () => {
@@ -274,7 +274,7 @@ describe('Pause', () => {
     const ctx = testKontext();
     let z = ok(B.pausiere(neuerBlock(ctx), ctx.bei(10))).zustand;
     abgelehnt(B.tippeTaetigkeit(z, 'T2', ctx), 'PAUSIERT');
-    abgelehnt(B.tippeOrt(z, 'O2', ctx), 'PAUSIERT');
+    abgelehnt(B.tippeOrt(z, 'O4', ctx), 'PAUSIERT');
     abgelehnt(B.rueckgaengig(z, ctx), 'PAUSIERT');
     abgelehnt(B.pausiere(z, ctx), 'PAUSIERT');
     const leer = ok(B.erzeugeBlock(ANGABEN_POST, ctx)).zustand;
@@ -283,14 +283,14 @@ describe('Pause', () => {
 
   test('Fortsetzen mit einem Tipp: gleiche Tätigkeit, Ort, N und H wie vor der Pause; Grund optional', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O2']);
+    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O4']);
     ctx.bei(20); z = ok(B.tippeTaetigkeit(z, 'T3', ctx)).zustand;
     z = ok(B.tippeNutzungsart(z, 'N2', ctx)).zustand;
     z = ok(B.pausiere(z, ctx.bei(40))).zustand;
     const r = ok(B.setzeFort(z, {}, ctx.bei(70)));
     const e = aktuell(r.zustand);
     assert.deepEqual([e.nr, e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.offeneZusaetze, e.startTs - START],
-      [3, 'T3', 'O2', 'N2', null, ['haltung'], 70_000]);
+      [3, 'T3', 'O4', 'N2', null, ['haltung'], 70_000]);
     assert.deepEqual([r.schreiben.pausen[0].grund, r.schreiben.pausen[0].freitext], [null, '']);
     abgelehnt(B.setzeFort(neuerBlock(ctx), {}, ctx), 'NICHT_PAUSIERT');
   });
@@ -327,22 +327,22 @@ describe('Pause', () => {
     const z = ok(B.pausiere(neuerBlock(ctx), ctx.bei(10))).zustand;
     abgelehnt(B.setzeFort(z, { grund: 'P9' }, ctx), 'CODE_UNBEKANNT');
     abgelehnt(B.setzeFort(z, { ort: 'O9' }, ctx), 'CODE_UNBEKANNT');
-    const e = aktuell(ok(B.setzeFort(z, { taetigkeit: 'T6', ort: 'O3' }, ctx)).zustand);
-    assert.deepEqual([e.taetigkeit, e.ort], ['T6', 'O3']);
+    const e = aktuell(ok(B.setzeFort(z, { taetigkeit: 'T6', ort: 'O2' }, ctx)).zustand);
+    assert.deepEqual([e.taetigkeit, e.ort], ['T6', 'O2']);
   });
 
   test('Fortsetzen: Pause mit Grund geschlossen, neue Episode mit T/O; N/H übernommen bei gleicher Tätigkeit', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O2']);
+    let z = neuerBlock(ctx, ANGABEN_POST, ['T5', 'O4']);
     ctx.bei(20); z = ok(B.tippeTaetigkeit(z, 'T3', ctx)).zustand;
     z = ok(B.tippeNutzungsart(z, 'N1', ctx)).zustand;
     z = ok(B.tippeHaltung(z, 'H2', ctx)).zustand;
     ctx.bei(60); z = ok(B.pausiere(z, ctx)).zustand;
     ctx.bei(134);
-    const r = ok(B.setzeFort(z, { grund: 'P1', taetigkeit: 'T3', ort: 'O3' }, ctx));
+    const r = ok(B.setzeFort(z, { grund: 'P1', taetigkeit: 'T3', ort: 'O2' }, ctx));
     assert.deepEqual(r.schreiben.pausen[0], { ...r.schreiben.pausen[0], endTs: START + 134_000, grund: 'P1', freitext: '' });
     const e = aktuell(r.zustand);
-    assert.deepEqual([e.nr, e.startTs - START, e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig], [3, 134_000, 'T3', 'O3', 'N1', 'H2', false]);
+    assert.deepEqual([e.nr, e.startTs - START, e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig], [3, 134_000, 'T3', 'O2', 'N1', 'H2', false]);
     assert.equal(r.zustand.block.status, 'laufend');
     // andere Tätigkeit nach der Pause → Zusatz neu
     let z2 = ok(B.pausiere(r.zustand, ctx.bei(150))).zustand;
@@ -424,7 +424,7 @@ describe('Reguläres Blockende nach beobachteter Zeit', () => {
     ctx.bei(901);
     const r = abgelehnt(B.tippeTaetigkeit(z, 'T5', ctx), 'ABGELAUFEN');
     assert.equal(r.schreiben.block.endTs, START + 900_000);
-    for (const x of [B.tippeOrt(z, 'O2', ctx), B.pausiere(z, ctx), B.rueckgaengig(z, ctx), B.brecheAb(z, 'A1', '', ctx), B.setzeEpisodenKommentar(z, 'x', ctx)]) {
+    for (const x of [B.tippeOrt(z, 'O4', ctx), B.pausiere(z, ctx), B.rueckgaengig(z, ctx), B.brecheAb(z, 'A1', '', ctx), B.setzeEpisodenKommentar(z, 'x', ctx)]) {
       abgelehnt(x, 'ABGELAUFEN');
     }
     abgelehnt(B.tippeTaetigkeit(r.zustand, 'T5', ctx), 'NICHT_LAUFEND');
@@ -523,7 +523,7 @@ describe('Rückgängig', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx);
     ctx.bei(10); z = ok(B.tippeTaetigkeit(z, 'T2', ctx)).zustand;
-    ctx.bei(20); z = ok(B.tippeOrt(z, 'O2', ctx)).zustand;
+    ctx.bei(20); z = ok(B.tippeOrt(z, 'O4', ctx)).zustand;
     const r = ok(B.rueckgaengig(z, ctx));
     assert.equal(r.schreiben.episoden[0].geloescht, true);
     assert.equal(r.zustand.episoden.length, 3, 'gelöschte Episode bleibt gespeichert');
@@ -602,9 +602,9 @@ describe('Episodenenden, Dauern, Zeitleiste', () => {
         ctx.zeitMs = Math.floor(t * 1000) + Math.floor(rnd() * 999);
         const w = rnd();
         let r;
-        if (z.block.status === 'pausiert') r = B.setzeFort(z, { grund: 'P3', taetigkeit: `T${1 + Math.floor(rnd() * 10)}`, ort: 'O2' }, ctx);
+        if (z.block.status === 'pausiert') r = B.setzeFort(z, { grund: 'P3', taetigkeit: `T${1 + Math.floor(rnd() * 10)}`, ort: 'O4' }, ctx);
         else if (w < 0.5) r = B.tippeTaetigkeit(z, `T${1 + Math.floor(rnd() * 10)}`, ctx);
-        else if (w < 0.70) r = B.tippeOrt(z, `O${1 + Math.floor(rnd() * 10)}`, ctx); // inkl. O9 (unbekannt) und O10
+        else if (w < 0.70) r = B.tippeOrt(z, `O${1 + Math.floor(rnd() * 9)}`, ctx); // inkl. unbekanntem O9
         else if (w < 0.78) r = B.tippeNeben(z, ['T5', 'T6', 'T7', 'T3', 'T4'][Math.floor(rnd() * 5)], ctx);
         else if (w < 0.85) r = B.rueckgaengig(z, ctx);
         else r = B.pausiere(z, ctx);
@@ -677,46 +677,46 @@ describe('Ohne Korrekturfenster (ENTSCHEIDUNGEN Nr. 16 verworfen)', () => {
   test('erst Ort, gleich danach Tätigkeit → zwei Episoden; kurze Episoden bleiben roh erhalten', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0)); // O1/T1 seit 0 s
-    z = ok(B.tippeOrt(z, 'O3', ctx.bei(40))).zustand;
+    z = ok(B.tippeOrt(z, 'O2', ctx.bei(40))).zustand;
     const r = ok(B.tippeTaetigkeit(z, 'T5', ctx.bei(41.5)));
     assert.deepEqual(B.aktiveEpisoden(r.zustand).map((e) => [e.nr, e.ort, e.taetigkeit, (e.startTs - START) / 1000]),
-      [[1, 'O1', 'T1', 0], [2, 'O3', 'T1', 40], [3, 'O3', 'T5', 41.5]]);
+      [[1, 'O1', 'T1', 0], [2, 'O2', 'T1', 40], [3, 'O2', 'T5', 41.5]]);
     assert.equal(r.zustand.episoden.some((e) => e.korrekturen), false);
   });
 });
 
-describe('Unterwegs (Ort O10, ENTSCHEIDUNGEN Nr. 20)', () => {
+describe('Unterwegs (Ort O6, ENTSCHEIDUNGEN Nr. 20)', () => {
   const eps = (z) => B.aktiveEpisoden(z).map((e) => [e.ort, e.taetigkeit, e.haltung]);
 
   test('Unterwegs während PC/Visitenwagen → „Gehen ohne weitere Tätigkeit“ (T9)', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0)); // O1/T1
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand;
-    assert.deepEqual(eps(z).at(-1), ['O10', 'T9', null]);
-    z = ok(B.tippeOrt(z, 'O3', ctx.bei(50))).zustand;
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
+    assert.deepEqual(eps(z).at(-1), ['O6', 'T9', null]);
+    z = ok(B.tippeOrt(z, 'O2', ctx.bei(50))).zustand;
     z = ok(B.tippeTaetigkeit(z, 'T2', ctx.bei(52))).zustand;
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(80))).zustand;
-    assert.deepEqual(eps(z).at(-1), ['O10', 'T9', null]);
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(80))).zustand;
+    assert.deepEqual(eps(z).at(-1), ['O6', 'T9', null]);
   });
 
   test('Telefonat und Patientenkontakt laufen unterwegs weiter', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T7', 'O1']);
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand;
-    assert.deepEqual(eps(z).at(-1), ['O10', 'T7', null]);
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
+    assert.deepEqual(eps(z).at(-1), ['O6', 'T7', null]);
   });
 
   test('PC oder Visitenwagen unterwegs wird abgelehnt – erst den Ort wählen', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand;
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
     abgelehnt(B.tippeTaetigkeit(z, 'T1', ctx.bei(40)), 'ORTSFEST');
     abgelehnt(B.tippeTaetigkeit(z, 'T2', ctx.bei(40)), 'ORTSFEST');
     // vor der ersten Episode: erst Unterwegs, dann PC → abgelehnt; erst PC, dann Unterwegs → T9
     const leer = ok(B.erzeugeBlock(ANGABEN_POST, ctx.bei(0))).zustand;
-    abgelehnt(B.tippeTaetigkeit(ok(B.tippeOrt(leer, 'O10', ctx)).zustand, 'T1', ctx), 'ORTSFEST');
-    const z2 = ok(B.tippeOrt(ok(B.tippeTaetigkeit(leer, 'T1', ctx)).zustand, 'O10', ctx)).zustand;
-    assert.deepEqual(eps(z2), [['O10', 'T9', null]]);
+    abgelehnt(B.tippeTaetigkeit(ok(B.tippeOrt(leer, 'O6', ctx)).zustand, 'T1', ctx), 'ORTSFEST');
+    const z2 = ok(B.tippeOrt(ok(B.tippeTaetigkeit(leer, 'T1', ctx)).zustand, 'O6', ctx)).zustand;
+    assert.deepEqual(eps(z2), [['O6', 'T9', null]]);
     // Fortsetzen nach einer Pause ebenso
     const p = ok(B.pausiere(z, ctx.bei(50))).zustand;
     abgelehnt(B.setzeFort(p, { taetigkeit: 'T1' }, ctx.bei(60)), 'ORTSFEST');
@@ -727,14 +727,14 @@ describe('Unterwegs (Ort O10, ENTSCHEIDUNGEN Nr. 20)', () => {
     let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T3', 'O1']);
     assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze], [null, ['nutzungsart', 'haltung']]);
     z = ok(B.tippeHaltung(z, 'H3', ctx.bei(5))).zustand;
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand;
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
     assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze], ['H1', ['nutzungsart']]);
     abgelehnt(B.tippeHaltung(z, 'H2', ctx.bei(32)), 'HALTUNG_FEST');
     assert.equal(ok(B.tippeHaltung(z, 'H1', ctx.bei(32))).unveraendert, true);
-    z = ok(B.tippeOrt(z, 'O3', ctx.bei(50))).zustand;
+    z = ok(B.tippeOrt(z, 'O2', ctx.bei(50))).zustand;
     assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze, aktuell(z).unvollstaendig], [null, ['nutzungsart', 'haltung'], true]);
     // Wechsel zu HX Now, während man unterwegs ist
-    z = ok(B.tippeTaetigkeit(ok(B.tippeOrt(z, 'O10', ctx.bei(70))).zustand, 'T3', ctx.bei(71))).zustand;
+    z = ok(B.tippeTaetigkeit(ok(B.tippeOrt(z, 'O6', ctx.bei(70))).zustand, 'T3', ctx.bei(71))).zustand;
     assert.equal(aktuell(z).haltung, 'H1');
   });
 });
@@ -744,16 +744,16 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
 
   test('Schalter an → neue Episode; bleibt über Tätigkeits- und Ortswechsel an; aus → neue Episode', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T3', 'O3']);
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T3', 'O2']);
     z = ok(B.tippeNutzungsart(z, 'N2', ctx.bei(2))).zustand;
     z = ok(B.tippeNeben(z, 'T5', ctx.bei(10))).zustand;
     assert.deepEqual([aktuell(z).nutzungsart, aktuell(z).neben], ['N2', ['T5']]);
     z = ok(B.tippeNeben(z, 'T7', ctx.bei(20))).zustand;
     z = ok(B.tippeTaetigkeit(z, 'T4', ctx.bei(30))).zustand;
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(40))).zustand;
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(40))).zustand;
     z = ok(B.tippeNeben(z, 'T5', ctx.bei(50))).zustand;
-    assert.deepEqual(eps(z), [['O3', 'T3', '', 0], ['O3', 'T3', 'T5', 10], ['O3', 'T3', 'T5+T7', 20],
-      ['O3', 'T4', 'T5+T7', 30], ['O10', 'T4', 'T5+T7', 40], ['O10', 'T4', 'T7', 50]]);
+    assert.deepEqual(eps(z), [['O2', 'T3', '', 0], ['O2', 'T3', 'T5', 10], ['O2', 'T3', 'T5+T7', 20],
+      ['O2', 'T4', 'T5+T7', 30], ['O6', 'T4', 'T5+T7', 40], ['O6', 'T4', 'T7', 50]]);
   });
 
   test('Wird die gleichzeitige Tätigkeit zur Tätigkeit, entfällt der Schalter; bei „Gehen“ entfallen alle', () => {
@@ -765,20 +765,20 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
     assert.deepEqual(aktuell(z).neben, ['T6']);
     abgelehnt(B.tippeNeben(z, 'T7', ctx.bei(25)), 'GLEICHE_TAETIGKEIT');
     z = ok(B.tippeTaetigkeit(z, 'T1', ctx.bei(30))).zustand;
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(40))).zustand; // PC → Gehen
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(40))).zustand; // PC → Gehen
     assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).neben], ['T9', []]);
     abgelehnt(B.tippeNeben(z, 'T5', ctx.bei(45)), 'NUR_GEHEN');
   });
 
   test('HX Now gleichzeitig setzt „Gerät dabei“ (Post); in Prä nicht wählbar; Rückgängig nimmt es zurück', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
     const r = ok(B.tippeNeben(z, 'T3', ctx.bei(10)));
     assert.equal(r.zustand.block.hxGeraetAutomatisch, true);
     const zurueck = ok(B.rueckgaengig(r.zustand, ctx.bei(12)));
     assert.equal(zurueck.zustand.block.hxGeraetAutomatisch, false);
     assert.deepEqual(aktuell(zurueck.zustand).neben, []);
-    const pre = neuerBlock(ctx.bei(0), ANGABEN_PRE, ['T5', 'O3']);
+    const pre = neuerBlock(ctx.bei(0), ANGABEN_PRE, ['T5', 'O2']);
     abgelehnt(B.tippeNeben(pre, 'T3', ctx.bei(10)), 'NUR_PHASE');
     abgelehnt(B.tippeNeben(pre, 'T1', ctx.bei(10)), 'CODE_UNBEKANNT');
   });
@@ -799,7 +799,7 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
 describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGEN Nr. 23)', () => {
   test('erst setzen ohne neue Episode, Wechsel → neue Episode; entfällt mit dem Schalter', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
     assert.deepEqual(B.nebenMitNutzung(SCHEMA), ['T3']);
     abgelehnt(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(5)), 'NICHT_GLEICHZEITIG');
     z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
@@ -810,7 +810,7 @@ describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGE
     abgelehnt(B.tippeNebenNutzung(z, 'T3', 'N7', ctx.bei(12)), 'NICHT_ZULAESSIG');
     z = ok(B.tippeNebenNutzung(z, 'T3', 'N4', ctx.bei(20))).zustand;
     assert.deepEqual([aktive(z).length, aktuell(z).nebenNutzung], [3, { T3: 'N4' }]);
-    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand; // läuft über Ortswechsel weiter
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand; // läuft über Ortswechsel weiter
     assert.deepEqual(aktuell(z).nebenNutzung, { T3: 'N4' });
     z = ok(B.tippeNeben(z, 'T3', ctx.bei(40))).zustand; // aus
     assert.deepEqual([aktuell(z).neben, aktuell(z).nebenNutzung], [[], {}]);
@@ -818,7 +818,7 @@ describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGE
 
   test('HX Now wird Haupttätigkeit → gleichzeitige Nutzungsart entfällt', () => {
     const ctx = testKontext();
-    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
     z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
     z = ok(B.tippeNebenNutzung(z, 'T3', 'N2', ctx.bei(11))).zustand;
     z = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(20))).zustand;

@@ -284,7 +284,8 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .raster-t { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .raster-t .taste { min-height: 52px; }
 
-.raster-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.raster-o { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.raster-o .taste { min-height: 52px; }
 .raster-o .taste { padding: 2px 4px; }
 .raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }

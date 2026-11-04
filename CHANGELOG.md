@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.2 – 04.11.2026
+- Orte beschreiben, wo die Person im Bereich ist (ENTSCHEIDUNGEN Nr. 24): O1 Arztzimmer, O2 beim Patienten,
+  O3 bei der Pflege, O4 Flur, O5 Pausenraum, O6 unterwegs, O7 außerhalb des Bereichs, O8 Sonstiges.
+  Entfallen: Behandlung Notaufnahme, Dialyse, Ambulanz. Ortstasten in zwei Reihen.
+
 ## 0.5.1 – 04.11.2026
 - Kodieransicht übersichtlicher: farbige Bereiche mit Überschrift – Ort (türkis), Tätigkeit mit Nutzung und Haltung
   (blau), Gleichzeitig (violett); Anzeige der laufenden Episode als farbige Marken.
@@ -11,7 +16,7 @@
 ## 0.5.0 – 04.11.2026
 Kodierschema 0.3 / Kodierhandbuch-Entwurf 0.3 (ENTSCHEIDUNGEN Nr. 16 verworfen, Nr. 19–22):
 - Erst Ort, dann Tätigkeit: Ortstasten stehen über den Tätigkeitstasten, Anzeige „O… · T…“.
-- Neuer Ort O10 „Unterwegs“: Gehzeit unabhängig von der Tätigkeit (Telefonat, HX Now … laufen weiter);
+- Neuer Ort „Unterwegs“ (ab 0.5.2: O6): Gehzeit unabhängig von der Tätigkeit (Telefonat, HX Now … laufen weiter);
   T9 heißt „Gehen ohne weitere Tätigkeit“. PC/Visitenwagen werden unterwegs automatisch zu T9, HX Now unterwegs
   bekommt automatisch die Haltung „gehend“.
 - Schalter „Gleichzeitig“ (Patient/in, Kollegen/Pflege, Telefon, HX Now, Mobilgerät) neben der Haupttätigkeit;

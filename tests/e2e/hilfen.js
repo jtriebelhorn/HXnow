@@ -29,7 +29,7 @@ export async function starteBlock(page, { pseudonym = 'P017', phase = 'POST', be
   await expect(page.locator('[data-test=countdown]')).toHaveText(`${dauer / 60}:00`);
 }
 
-/** Tippt eine Taste (t-T1, o-O2, n-N1, h-H1 …) und wartet, bis sie als aktiv angezeigt wird (= gespeichert). */
+/** Tippt eine Taste (t-T1, o-O4, n-N1, h-H1 …) und wartet, bis sie als aktiv angezeigt wird (= gespeichert). */
 export async function tippe(page, test) {
   await page.click(`[data-test=${test}]`);
   await expect(page.locator(`[data-test=${test}]`)).toHaveAttribute('aria-pressed', 'true');

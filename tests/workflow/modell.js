@@ -43,12 +43,13 @@ const T_GEWICHTE = {
   K6: { T5: 4, T9: 3, T7: 2, T6: 2, T1: 2, T3: 2, T2: 1, T4: 0.5, T10: 0.5 }, // Notaufnahme
 };
 
-// Plausible Orte je Kontext und Tätigkeit (O10 = unterwegs; T9 „Gehen ohne weitere Tätigkeit“ nur unterwegs)
+// Plausible Orte je Kontext und Tätigkeit: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege,
+// O4 Flur, O5 Pausenraum, O6 unterwegs; T9 „Gehen ohne weitere Tätigkeit“ nur unterwegs)
 const ORTE = {
-  K1: { T1: ['O1'], T2: ['O3', 'O2'], T3: ['O3', 'O10', 'O1'], T4: ['O10', 'O1'], T5: ['O3'], T6: ['O2', 'O1', 'O10'], T7: ['O10', 'O1'], T8: ['O1', 'O3'], T9: ['O10'], T10: ['O1', 'O8'] },
-  K3: { T1: ['O1'], T2: ['O2', 'O3'], T3: ['O1', 'O10'], T4: ['O1', 'O8'], T5: ['O3'], T6: ['O1', 'O2'], T7: ['O1', 'O10'], T8: ['O1'], T9: ['O10'], T10: ['O1', 'O8'] },
-  K4: { T1: ['O5', 'O1'], T2: ['O5'], T3: ['O5', 'O3', 'O10'], T4: ['O5'], T5: ['O5', 'O3'], T6: ['O5', 'O2'], T7: ['O5', 'O10'], T8: ['O5'], T9: ['O10'], T10: ['O5'] },
-  K6: { T1: ['O1', 'O4'], T2: ['O4'], T3: ['O4', 'O10', 'O8'], T4: ['O2'], T5: ['O4', 'O10'], T6: ['O4', 'O2', 'O1'], T7: ['O10', 'O1', 'O4'], T8: ['O1', 'O4'], T9: ['O10'], T10: ['O8', 'O1'] },
+  K1: { T1: ['O1', 'O3'], T2: ['O2', 'O4'], T3: ['O2', 'O6', 'O1'], T4: ['O6', 'O1'], T5: ['O2'], T6: ['O3', 'O4', 'O6'], T7: ['O6', 'O1'], T8: ['O1', 'O2'], T9: ['O6'], T10: ['O5', 'O8'] },
+  K3: { T1: ['O1', 'O3'], T2: ['O4', 'O2'], T3: ['O1', 'O6', 'O3'], T4: ['O1', 'O5'], T5: ['O2'], T6: ['O3', 'O1', 'O4'], T7: ['O1', 'O6'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O8'] },
+  K4: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O3', 'O6'], T4: ['O1'], T5: ['O2'], T6: ['O3', 'O4'], T7: ['O1', 'O6'], T8: ['O3'], T9: ['O6'], T10: ['O5'] },
+  K6: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O6', 'O8'], T4: ['O4'], T5: ['O2', 'O6'], T6: ['O3', 'O4', 'O1'], T7: ['O6', 'O1', 'O3'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O1'] },
 };
 
 /** Nächste Tätigkeit (≠ aktuelle) für Kontext und Phase. */
@@ -68,15 +69,15 @@ export function ortFuer(r, kontext, t, aktuellerOrt) {
 
 /** Nutzungsart: bei T3 meist Einsicht oder Sprache, bei PC/Wagen meist Texteingabe. null = nicht kodiert. */
 export function nutzungsart(r, t, ort) {
-  if (t === 'T3') return r.gewichtet({ N1: 5, N2: 2, N3: 2, N4: ort === 'O3' || ort === 'O4' ? 1.5 : 0.3, N5: 0.4, N9: 0.5 });
+  if (t === 'T3') return r.gewichtet({ N1: 5, N2: 2, N3: 2, N4: ort === 'O2' ? 1.5 : 0.3, N5: 0.4, N9: 0.5 });
   if (t === 'T1' || t === 'T2') return r.ja(0.3) ? null : r.gewichtet({ N2: 4, N1: 3, N3: 0.5, N5: 1, N9: 0.5 });
   return null;
 }
 
 /** Haltung bei T3 passend zum Ort (unterwegs immer gehend). */
 export function haltung(r, ort) {
-  if (ort === 'O10') return 'H1';
-  if (ort === 'O2') return r.gewichtet({ H2: 3, H4: 2, H1: 0.5 });
+  if (ort === 'O6') return 'H1';
+  if (ort === 'O4') return r.gewichtet({ H2: 3, H4: 2, H1: 0.5 });
   if (ort === 'O8') return r.gewichtet({ H4: 3, H2: 1, H1: 0.5 });
   if (ort === 'O1') return r.gewichtet({ H3: 3, H2: 2 });
   return r.gewichtet({ H2: 3, H3: 1, H4: 1 });
