@@ -1,5 +1,5 @@
 // Blockabschluss (Spezifikation v2, 7.4): Post-Phase zuerst „War ein HX-Now-Gerät dabei?“, Zusammenfassung
-// (beobachtete Zeit, Pausen), Ergänzen unvollständiger Episoden, Blockkommentar, Export und „Eingang bestätigt“.
+// (beobachtete Zeit, Pausen), Ablauf mit Nebentätigkeiten, Blockkommentar, Export und „Eingang bestätigt“.
 // Änderungen nach dem Export setzen den Exportstatus zurück auf „offen“ (die exportierte Datei ist dann veraltet);
 // nach „Eingang bestätigt“ ist der Block schreibgeschützt.
 import { el, ersetze, kommentarFeld, meldung, auswahlGruppe } from './dom.js';
@@ -109,18 +109,6 @@ export async function zeigeAbschluss(app, { blockId }) {
     const ziel = { store: db.STORES.BLOECKE, schluessel: blockId, nachher: aktualisiere };
     const frageOffen = B.mitGeraetDabei(z, schema) && !b.hxGeraetDabei && pflichtangaben(schema).geraetDabeiVorExport;
 
-    const unvollstaendig = s.unvollstaendig.map((e) => el('div', { class: 'ergaenzen', 'data-test': `ergaenzen-${e.nr}` },
-      el('p', {}, `Episode ${e.nr} · ${uhrzeit(e.startTs)} · ${e.taetigkeit} ${label('taetigkeiten', e.taetigkeit)} · ${e.dauerSek} s`),
-      e.offeneZusaetze.map((feld) => {
-        const codes = B.zusatzCodes(schema, feld, e.taetigkeit);
-        return el('div', { class: 'zusatz offen' },
-          el('span', { class: 'zusatz-titel' }, feld === 'nutzungsart' ? 'Nutzung' : 'Haltung'),
-          el('div', { class: `zusatz-tasten anzahl-${codes.length}` }, codes.map((n) => el('button', {
-            type: 'button', class: 'taste n', 'data-test': `ergaenzen-${e.nr}-${n.code}`, disabled: gesperrt,
-            onclick: () => aendere((zz, c) => B.ergaenzeEpisode(zz, e.episodeId, feld, n.code, c), `Episode ${e.nr} ergänzt.`),
-          }, el('span', { class: 'kurz' }, n.label), el('span', { class: 'code' }, n.code)))));
-      })));
-
     const kommentar = kommentarFeld({ wert: b.kommentar, testId: 'block-kommentar' });
     kommentar.feld.disabled = gesperrt;
 
@@ -147,13 +135,6 @@ export async function zeigeAbschluss(app, { blockId }) {
 
       fehlendeAngaben(z, gesperrt),
 
-      unvollstaendig.length > 0
-        ? el('section', { class: 'warnkasten', 'data-test': 'unvollstaendig' },
-          el('h2', {}, `${unvollstaendig.length} unvollständige ${unvollstaendig.length === 1 ? 'Episode' : 'Episoden'}`),
-          el('p', {}, 'Bitte fehlende Angaben ergänzen, falls bekannt.'),
-          unvollstaendig)
-        : null,
-
       // Export: Datei wird im Klick-Handler synchron aus dem Zustand im Speicher erzeugt (kein await vor dem Teilen).
       b.status === 'verworfen' ? null : el('div', { class: 'stapel abstand-oben' },
         frageOffen ? el('p', { class: 'feldfehler', 'data-test': 'export-gesperrt' }, 'Vor dem Export bitte beantworten: War ein HX-Now-Gerät dabei?') : null,
@@ -178,19 +159,27 @@ export async function zeigeAbschluss(app, { blockId }) {
           el('td', { class: 'zahl' }, formatiereCountdown(a.dauerMs)),
           el('td', { class: 'zahl' }, `${a.prozent.toFixed(1).replace('.', ',')} %`))))),
 
-      el('details', { class: 'episodenliste' },
-        el('summary', {}, 'Alle Episoden und Pausen anzeigen'),
+      s.nebenAnteile.length === 0 ? null : el('h2', {}, 'Anteile je Nebentätigkeit (beobachtete Zeit)'),
+      s.nebenAnteile.length === 0 ? null : el('table', { class: 'tabelle', 'data-test': 'anteile-neben' },
+        el('thead', {}, el('tr', {}, el('th', {}, 'Nebentätigkeit'), el('th', { class: 'zahl' }, 'Zeit'), el('th', { class: 'zahl' }, 'Anteil'))),
+        el('tbody', {}, s.nebenAnteile.map((a) => el('tr', {},
+          el('td', {}, `${a.code} ${a.label}`),
+          el('td', { class: 'zahl' }, formatiereCountdown(a.dauerMs)),
+          el('td', { class: 'zahl' }, `${a.prozent.toFixed(1).replace('.', ',')} %`))))),
+
+      el('details', { class: 'episodenliste', open: true },
+        el('summary', {}, 'Ablauf: alle Episoden und Pausen'),
         el('table', { class: 'tabelle', 'data-test': 'episoden' },
-          el('thead', {}, el('tr', {}, ['Nr', 'Start', 's', 'T', 'O', 'N', 'H'].map((h) => el('th', {}, h)))),
+          el('thead', {}, el('tr', {}, ['Nr', 'Start', 's', 'O', 'T', 'N', 'H', 'NT'].map((h) => el('th', {}, h)))),
           el('tbody', {}, zl.map((x, i) => (x.art === 'pause'
             ? el('tr', { class: 'pause-zeile' },
               el('td', {}, i + 1), el('td', {}, uhrzeit(x.startTs)), el('td', { class: 'zahl' }, x.dauerSek),
-              el('td', { colspan: 4 }, `Pause${x.grund ? ` ${x.grund} ${label('pausengruende', x.grund)}` : ''}${x.freitext ? `: ${x.freitext}` : ''}`))
+              el('td', { colspan: 5 }, `Pause${x.grund ? ` ${x.grund} ${label('pausengruende', x.grund)}` : ''}${x.freitext ? `: ${x.freitext}` : ''}`))
             : el('tr', {},
               el('td', {}, i + 1), el('td', {}, uhrzeit(x.startTs)), el('td', { class: 'zahl' }, x.dauerSek),
-              el('td', {}, x.taetigkeit), el('td', {}, x.ort),
-              el('td', {}, x.offeneZusaetze.includes('nutzungsart') ? '?' : (x.nutzungsart ?? '')),
-              el('td', {}, x.offeneZusaetze.includes('haltung') ? '?' : (x.haltung ?? '')))))))),
+              el('td', {}, x.ort), el('td', {}, x.taetigkeit),
+              el('td', {}, x.nutzungsart ?? ''), el('td', {}, x.haltung ?? ''),
+              el('td', { 'data-test': 'episode-neben' }, B.nebenText(schema, x)))))))),
 
       el('h2', {}, 'Kommentar zum Block'),
       kommentar,

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.5 – 04.11.2026
+- Nebentätigkeiten sind nachvollziehbar: Die Abschlussseite zeigt den Ablauf aufgeklappt mit Spalte NT und die
+  Anteile je Nebentätigkeit; die CSV hat die lesbare Spalte `nebentaetigkeiten`.
+- Eigene Codes NT3–NT7 statt T-Codes (CSV-Spalten `NT3` … `NT7`, `NT3_nutzung`); „Gleichzeitig“ heißt jetzt
+  „Nebentätigkeit“ (ENTSCHEIDUNGEN Nr. 25).
+- HX Now als Nebentätigkeit: auch die Haltung ist kodierbar (`NT3_haltung`).
+- Keine Nachfrage mehr am Blockende: Nicht Angegebenes gilt automatisch als Sonstige (N9, neu H9, Nr. 26).
+
 ## 0.5.4 – 04.11.2026
 - „Gleichzeitig“ ist jetzt auch bei T9 möglich (Telefonat oder HX Now im Gehen); T9 heißt nur noch „Gehen“.
   Schalter bleiben beim Wechsel zu T9 an.

@@ -1,6 +1,6 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.4 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+Gilt ab App-Version 0.5.5 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
 (Version in der Spalte `schema_version`).
 
@@ -61,11 +61,13 @@ Eine Zeile je Episode und je Pause, chronologisch (Long-Format). Die Blockangabe
 | `dauer_sek` | Dauer | Sekunden; immer `ende − start` |
 | `taetigkeit` | Haupttätigkeit/Gerät (Prioritätsregel) | `T1`–`T10`; leer bei Pause. `T9` = Gehen |
 | `ort` | Ort innerhalb des Bereichs | `O1` Arztzimmer, `O2` beim Patienten, `O3` bei der Pflege, `O4` Flur, `O5` Pausenraum, `O6` unterwegs, `O7` außerhalb des Bereichs, `O8` Sonstiges; leer bei Pause |
-| `nutzungsart` | Nutzungsart | `N1`–`N5` (`N5` = Warten), `N9`; nur bei T1–T3, leer = nicht kodiert |
-| `haltung` | Körperhaltung | `H1`–`H4`; nur bei T3; am Ort O6 immer `H1` |
-| `neben_T5`, `neben_T6`, `neben_T7`, `neben_T3`, `neben_T4` | gleichzeitige Tätigkeit (Patient/in, Kollegen/Pflege, Telefon, HX Now, Mobilgerät) neben der Haupttätigkeit | `1` = gleichzeitig, `0` = nicht; leer bei Pause. Welche Spalten es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
-| `neben_T3_nutzung` | was bei gleichzeitiger HX-Now-Nutzung gemacht wird | `N1`–`N5`, `N9`; leer = nicht angegeben bzw. HX Now nicht gleichzeitig (optional) |
-| `unvollstaendig` | Pflichtangabe (Nutzungsart/Haltung bei T3) fehlt | `1`, `0`; leer bei Pause |
+| `nutzungsart` | Nutzungsart | `N1`–`N5` (`N5` = Warten), `N9` = Sonstige; nur bei T1–T3. T3 ohne Auswahl: `N9`; T1/T2 ohne Auswahl: leer |
+| `haltung` | Körperhaltung | `H1`–`H4`, `H9` = Sonstige (auch ohne Auswahl); nur bei T3; am Ort O6 immer `H1` |
+| `nebentaetigkeiten` | laufende Nebentätigkeiten, lesbar | z. B. `NT3+NT6`; leer = keine |
+| `NT3`, `NT4`, `NT5`, `NT6`, `NT7` | Nebentätigkeit HX Now, Mobilgerät, Patientenkontakt, Gespräch Kollegen/Pflege, Telefonat | `1` = läuft, `0` = nicht; leer bei Pause. Welche es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
+| `NT3_nutzung` | was bei der Nebentätigkeit HX Now gemacht wird | `N1`–`N5`, `N9` = Sonstige (auch wenn nichts gewählt wurde); leer, wenn NT3 nicht läuft |
+| `NT3_haltung` | Haltung bei der Nebentätigkeit HX Now | `H1`–`H4`, `H9` = Sonstige (auch wenn nichts gewählt wurde); am Ort O6 immer `H1`; leer, wenn NT3 nicht läuft |
+| `unvollstaendig` | Nutzungsart oder Haltung bei T3 wurde nicht gewählt und gilt deshalb als Sonstige (`N9`, `H9`) | `1`, `0`; leer bei Pause |
 | `pause_grund` | Pausengrund | `P1`–`P5`, leer = nicht angegeben; nur bei Pause |
 | `pause_freitext` | Notiz zur Pause | Freitext; nur bei Pause |
 | `kommentar` | Kommentar zur Episode | Freitext |
@@ -94,15 +96,15 @@ der eine Episode angelegt hat (`erfasstTs`). Blöcke aus Version 0.4.0 können a
 
 - **Kurze Episoden:** Jeder Tipp ist eine eigene Zeile, auch Zwischenschritte beim Wechsel (erst Ort, dann Tätigkeit)
   von 1–2 s. Sie werden in der Auswertung über `regelnAuswertung.mindestdauerSek` (5 s) der vorangehenden Episode
-  zugeschlagen; Ausnahme `mindestdauerAusnahmen` (T3). Für Kennzahlen zu gleichzeitigen Tätigkeiten oder Orten die
+  zugeschlagen; Ausnahme `mindestdauerAusnahmen` (T3). Für Kennzahlen zu Nebentätigkeiten oder Orten die
   Mindestdauer auf die jeweilige Größe anwenden, nicht auf die einzelne Zeile.
-- **Tätigkeiten im Gehen und andere Gesamtzeiten:** Eine Tätigkeit kann Haupttätigkeit oder gleichzeitig sein. Für ihre
-  Gesamtzeit daher beides zählen, z. B. Telefonzeit = `taetigkeit = T7` oder `neben_T7 = 1`, HX-Now-Nutzung =
-  `taetigkeit = T3` oder `neben_T3 = 1`.
+- **Tätigkeiten im Gehen und andere Gesamtzeiten:** Eine Tätigkeit kann Haupt- oder Nebentätigkeit sein. Für ihre
+  Gesamtzeit daher beides zählen, z. B. Telefonzeit = `taetigkeit = T7` oder `NT7 = 1`, HX-Now-Nutzung =
+  `taetigkeit = T3` oder `NT3 = 1`.
 - **Gehzeit** = Summe `dauer_sek` mit `ort = O6`, gleich welche Tätigkeit. Das Ziel eines Weges ist der Ort der
   nächsten Zeile.
 - **Dokumentation mit beteiligter Patientin bzw. beteiligtem Patienten** = Zeilen mit `taetigkeit` T1–T3 und
-  `neben_T5 = 1`.
+  `NT5 = 1`.
 - **Wartezeit am Gerät** = Zeilen mit `nutzungsart = N5`.
 
 ## Person nicht angetroffen (`HXNOW_VERSUCH_…`)

@@ -52,8 +52,9 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     await expect(box).toContainText(`#${a.nr}`);
     await expect(box).toContainText(`${a.o} `);
     await expect(box).toContainText(` ${a.t} `);
-    if (a.neben.length) await expect(box).toContainText(`gleichzeitig ${a.neben.map((c) => (a.nn[c] ? `${c} (${a.nn[c]})` : c)).join(', ')}`);
-    else await expect(box).not.toContainText('gleichzeitig');
+    const nebenSoll = (c) => (soll.nebenGeraete.includes(c) ? `N${c} (${a.nn[c] ?? 'N9'}, ${a.nh[c] ?? 'H9'})` : `N${c}`);
+    if (a.neben.length) await expect(box).toContainText(`Neben: ${a.neben.map(nebenSoll).join(', ')}`);
+    else await expect(box).not.toContainText('Neben:');
     if (a.n && !a.offen.has('n')) await expect(box).toContainText(a.n);
     if (a.h && !a.offen.has('h')) await expect(box).toContainText(a.h);
   }
@@ -216,6 +217,11 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
             const n = nutzungsart(r, code, a.o);
             await vor(r.dauerMs(0.4, 2));
             const ts2 = await jetzt(); await tippe(`nn-${code}-${n}`); soll.tippeNebenNutzung(ts2, code, n); await synchron(soll);
+            if (r.ja(0.7)) {
+              const h = haltung(r, soll.akt.o);
+              await vor(r.dauerMs(0.4, 2));
+              const ts3 = await jetzt(); await tippe(`nh-${code}-${h}`); soll.tippeNebenHaltung(ts3, code, h); await synchron(soll);
+            }
           }
           if (r.ja(0.4)) await kopf.tap(); // wieder zuklappen
           return;
@@ -327,18 +333,6 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     if (soll.status !== 'verworfen') {
       if (a.kontext) { await tippe(`ergaenze-arbeitskontext-${a.kontext}`); soll.meta.arbeitskontext = a.kontext; soll.log(await jetzt(), `Kontext ${a.kontext} nachgetragen`); await expect(page.locator('[data-test=abschluss-kontext]')).toContainText(a.kontext); }
       if (a.dienst) { await tippe(`ergaenze-dienst-${a.dienst}`); soll.meta.dienst = a.dienst; soll.log(await jetzt(), `Dienst ${a.dienst} nachgetragen`); await expect(page.locator('[data-test=ergaenze-dienst-S]')).toHaveCount(0); }
-      if (a.unvollstaendigErgaenzen) {
-        for (const e of soll.episoden) {
-          const { pflicht } = soll.zusatz(e.t);
-          for (const f of [...e.offen].filter((x) => pflicht.includes(x))) {
-            const code = f === 'n' ? 'N1' : 'H2';
-            await tippe(`ergaenzen-${e.nr}-${code}`);
-            e[f] = code; e.offen.delete(f);
-            soll.log(await jetzt(), `Episode ${e.nr}: ${f === 'n' ? 'Nutzungsart' : 'Haltung'} ${code} nachgetragen`);
-            await expect(page.locator(`[data-test=ergaenzen-${e.nr}-${code}]`)).toHaveCount(0);
-          }
-        }
-      }
       if (a.geraet && soll.post) {
         await tippe(`geraet-${a.geraet}`);
         soll.geraetAntwort = a.geraet;
@@ -438,11 +432,11 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
   await vor(r.dauerMs(300, 900));
   await spieleBlock({
     titel: 'Post 1 – Notaufnahme mit HX Now, Pause P5 mit Notiz bei gesperrtem iPhone',
-    beschreibung: 'Behandlungsbereich (K6). HX Now wird mehrfach genutzt (setzt „Gerät dabei“ automatisch). Pause P5 mit Notiz, während der Pause ist das iPhone gesperrt. Unvollständige HX-Now-Episoden werden am Ende ergänzt; „Gerät dabei“ ist mit „ja“ vorbelegt.',
+    beschreibung: 'Behandlungsbereich (K6). HX Now wird mehrfach genutzt (setzt „Gerät dabei“ automatisch). Pause P5 mit Notiz, während der Pause ist das iPhone gesperrt. Nicht angegebene Nutzung und Haltung gelten automatisch als Sonstige; „Gerät dabei“ ist mit „ja“ vorbelegt.',
     meta: { pseudonym: pseudo(), phase: 'POST', bereich: 'ZNA', dienst: 'S', arbeitskontext: 'K6', dauerSek: 900 },
     ereignisse: [{ beiSek: r.ganz(300, 420), art: 'pause', dauerSek: r.ganz(60, 200), grund: 'P5', notiz: 'Schockraum; "Alarm" Stufe 2', gesperrt: true }],
     ende: { art: 'regulaer' },
-    abschluss: { unvollstaendigErgaenzen: true },
+    abschluss: {},
   });
   await zwischen();
   await spieleBlock({

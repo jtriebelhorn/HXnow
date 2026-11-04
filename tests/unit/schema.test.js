@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validiereSchema, pruefeSchemaText, ladeSchema, pflichtangaben, nebentaetigkeiten, istTestPseudonym } from '../../js/schema.js';
+import { validiereSchema, pruefeSchemaText, ladeSchema, pflichtangaben, nebentaetigkeiten, ntCode, istTestPseudonym } from '../../js/schema.js';
 
 const ORIGINAL_TEXT = readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8');
 const original = () => JSON.parse(ORIGINAL_TEXT);
@@ -189,7 +189,9 @@ test('Test-Code und beendenGrund werden geprüft', () => {
 test('Gleichzeitige Tätigkeiten und Unterwegs werden geprüft (ENTSCHEIDUNGEN Nr. 19, 20)', () => {
   const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s).join(' '); };
   const t = (s, code) => s.taetigkeiten.find((x) => x.code === code);
-  assert.deepEqual(nebentaetigkeiten(original()), ['T5', 'T6', 'T7', 'T3', 'T4']);
+  assert.deepEqual(nebentaetigkeiten(original()), ['T3', 'T4', 'T5', 'T6', 'T7']);
+  assert.equal(ntCode('T3'), 'NT3');
+  assert.match(mit((s) => { s.haltung = s.haltung.filter((h) => h.code !== 'H9'); }), /H9/);
   assert.deepEqual(nebentaetigkeiten({ ...original(), nebentaetigkeiten: undefined }), []);
   assert.equal(mit((s) => { delete s.nebentaetigkeiten; }), '');
   assert.match(mit((s) => { s.nebentaetigkeiten = 'T5'; }), /nebentaetigkeiten/);

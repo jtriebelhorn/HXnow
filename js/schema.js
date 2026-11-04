@@ -7,8 +7,9 @@ const CODE_LISTEN = [
   'nutzungsart', 'haltung', 'pausengruende', 'abbruchgruende', 'geraetDabeiOptionen',
 ];
 
-// Code, der bei Pflicht-Nutzungsart gespeichert wird, solange sie noch nicht gewählt ist (Abschnitt 4)
+// Codes, die gelten, solange Nutzungsart bzw. Haltung nicht gewählt sind: „Sonstige“ (ENTSCHEIDUNGEN Nr. 26)
 export const NUTZUNGSART_UNBEKANNT = 'N9';
+export const HALTUNG_UNBEKANNT = 'H9';
 
 // Antworten auf „HX-Now-Gerät dabei?“ (ja · nein · nicht erkennbar); „nein“ ist gesperrt, wenn T3 kodiert wurde
 export const GERAET_DABEI = Object.freeze({ JA: 'J', NEIN: 'N', UNKLAR: 'U' });
@@ -53,9 +54,14 @@ export function pflichtangaben(schema) {
   };
 }
 
-/** Codes der Tätigkeiten, die als „gleichzeitig“ zusätzlich zur Tätigkeit erfasst werden (ENTSCHEIDUNGEN Nr. 19). */
+/** Codes der Tätigkeiten, die als Nebentätigkeit zusätzlich zur Tätigkeit erfasst werden (ENTSCHEIDUNGEN Nr. 19). */
 export function nebentaetigkeiten(schema) {
   return Array.isArray(schema.nebentaetigkeiten) ? schema.nebentaetigkeiten : [];
+}
+
+/** Anzeige- und Exportcode einer Nebentätigkeit: T3 → NT3 (ENTSCHEIDUNGEN Nr. 25). */
+export function ntCode(taetigkeit) {
+  return `N${taetigkeit}`;
 }
 
 /** Ist der Studien-Code der reservierte Code für Probeläufe (z. B. P000)? */
@@ -286,6 +292,10 @@ export function validiereSchema(s) {
         }
       }
     }
+  }
+
+  if (codes.haltung.size > 0 && !codes.haltung.has(HALTUNG_UNBEKANNT)) {
+    f(`„haltung“: Der Code „${HALTUNG_UNBEKANNT}“ (Sonstige) fehlt; er gilt, solange keine Haltung gewählt ist.`);
   }
 
   // --- Pausengründe, Abbruchgründe ---

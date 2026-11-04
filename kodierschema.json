@@ -61,20 +61,21 @@
     { "code": "O7", "label": "Außerhalb Bereich" },
     { "code": "O8", "label": "Sonstiges" }
   ],
-  "nebentaetigkeiten": ["T5", "T6", "T7", "T3", "T4"],
+  "nebentaetigkeiten": ["T3", "T4", "T5", "T6", "T7"],
   "nutzungsart": [
     { "code": "N1", "label": "Einsicht",        "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N2", "label": "Texteingabe",     "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N3", "label": "Sprache",         "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N4", "label": "Foto / Scan",     "giltFuer": ["T3"] },
     { "code": "N5", "label": "Warten",          "giltFuer": ["T1", "T2", "T3"] },
-    { "code": "N9", "label": "Nicht erkennbar", "giltFuer": ["T1", "T2", "T3"] }
+    { "code": "N9", "label": "Sonstige",        "giltFuer": ["T1", "T2", "T3"] }
   ],
   "haltung": [
     { "code": "H1", "label": "Gehend" },
     { "code": "H2", "label": "Stehend" },
     { "code": "H3", "label": "Sitzend" },
-    { "code": "H4", "label": "Wartend" }
+    { "code": "H4", "label": "Wartend" },
+    { "code": "H9", "label": "Sonstige" }
   ],
   "pausengruende": [
     { "code": "P1", "label": "Patient/in lehnt Anwesenheit ab" },

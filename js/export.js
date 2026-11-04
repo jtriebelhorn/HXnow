@@ -5,8 +5,8 @@
 // WICHTIG (Safari): versucheTeilen() muss synchron aus einem Klick-Handler aufgerufen werden,
 // ohne vorheriges `await`. Die Datei wird daher synchron aus dem Zustand im Speicher erzeugt.
 
-import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek, nebenMitNutzung } from './block.js';
-import { istTestPseudonym, nebentaetigkeiten } from './schema.js';
+import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek, nebenMitNutzung, nebenMitHaltung } from './block.js';
+import { istTestPseudonym, nebentaetigkeiten, ntCode, NUTZUNGSART_UNBEKANNT, HALTUNG_UNBEKANNT } from './schema.js';
 import { isoMitOffset, datumLokal, dateinameZeit } from './zeit.js';
 
 const BOM = '\uFEFF';
@@ -16,8 +16,8 @@ const ZEILENENDE = '\r\n';
 /**
  * Feste Spalten der Block-CSV (Spezifikation v2 Abschnitt 8). Zusätzlich laut docs/ENTSCHEIDUNGEN.md:
  * `block_dauer_soll_sek` (Nr. 7), `block_ende_art` (Nr. 6), `block_ende_grund` (Nr. 17),
- * `hx_geraet_markiert` (Zeitpunkt des Schalters). Nach `haltung` folgt je gleichzeitiger Tätigkeit des
- * Kodierschemas eine Spalte `neben_<Code>` (Nr. 19), siehe spaltenBeobachtung(). Bedeutung: docs/CODEBUCH_EXPORT.md.
+ * `hx_geraet_markiert` (Zeitpunkt des Schalters). Nach `haltung` folgen die Nebentätigkeiten (Nr. 19),
+ * siehe spaltenBeobachtung(). Bedeutung: docs/CODEBUCH_EXPORT.md.
  */
 export const SPALTEN_BEOBACHTUNG = Object.freeze([
   'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
@@ -30,19 +30,27 @@ export const SPALTEN_BEOBACHTUNG = Object.freeze([
 ]);
 
 /**
- * Alle Spalten der Block-CSV für ein Kodierschema: feste Spalten plus nach `haltung` je gleichzeitiger Tätigkeit
- * `neben_<Code>` (0/1) und je gleichzeitigem Gerät `neben_<Code>_nutzung` (Nutzungsart).
+ * Alle Spalten der Block-CSV für ein Kodierschema: feste Spalten plus nach `haltung` die Nebentätigkeiten:
+ * `nebentaetigkeiten` (lesbar, z. B. „NT3+NT6“), je Nebentätigkeit `NT<n>` (0/1) und bei HX Now
+ * `NT3_nutzung`, `NT3_haltung` (ENTSCHEIDUNGEN Nr. 25, 26).
  */
 export function spaltenBeobachtung(schema) {
   const i = SPALTEN_BEOBACHTUNG.indexOf('haltung') + 1;
   return [...SPALTEN_BEOBACHTUNG.slice(0, i), ...nebenSpalten(schema).map((s) => s.name), ...SPALTEN_BEOBACHTUNG.slice(i)];
 }
 
-/** Zusatzspalten für gleichzeitige Tätigkeiten mit ihrem Wert je Episode. */
+/** Zusatzspalten für Nebentätigkeiten mit ihrem Wert je Episode; nicht Angegebenes gilt als Sonstige. */
 function nebenSpalten(schema) {
+  const an = (e, c) => (e.neben ?? []).includes(c);
   return [
-    ...nebentaetigkeiten(schema).map((c) => ({ name: `neben_${c}`, wert: (e) => ((e.neben ?? []).includes(c) ? 1 : 0) })),
-    ...nebenMitNutzung(schema).map((c) => ({ name: `neben_${c}_nutzung`, wert: (e) => e.nebenNutzung?.[c] ?? '' })),
+    { name: 'nebentaetigkeiten', wert: (e) => (e.neben ?? []).map(ntCode).join('+') },
+    ...nebentaetigkeiten(schema).map((c) => ({ name: ntCode(c), wert: (e) => (an(e, c) ? 1 : 0) })),
+    ...nebenMitNutzung(schema).map((c) => ({
+      name: `${ntCode(c)}_nutzung`, wert: (e) => (an(e, c) ? e.nebenNutzung?.[c] ?? NUTZUNGSART_UNBEKANNT : ''),
+    })),
+    ...nebenMitHaltung(schema).map((c) => ({
+      name: `${ntCode(c)}_haltung`, wert: (e) => (an(e, c) ? e.nebenHaltung?.[c] ?? HALTUNG_UNBEKANNT : ''),
+    })),
   ];
 }
 

@@ -48,6 +48,9 @@ export class SollBlock {
   ort(code) { return this.schema.orte.find((x) => x.code === code); }
   /** Codes der „gleichzeitig“-Schalter in Schema-Reihenfolge */
   get nebenCodes() { return this.schema.nebentaetigkeiten ?? []; }
+  nt(c) { return `N${c}`; }
+  /** Nebentätigkeiten mit Haltung (HX Now) */
+  get nebenHaltungCodes() { return this.nebenCodes.filter((c) => this.t(c).haltung); }
   /** gleichzeitige Geräte mit Nutzungsart (HX Now) */
   get nebenGeraete() {
     return this.nebenCodes.filter((c) => this.t(c).geraet && this.schema.nutzungsart.some((n) => n.giltFuer.includes(c)));
@@ -62,7 +65,7 @@ export class SollBlock {
    * Gleichzeitige Tätigkeiten laufen weiter, außer der neuen Tätigkeit selbst.
    * Ort „unterwegs“ legt die Haltung fest (gehend); wer von dort weggeht, muss sie neu angeben.
    */
-  neueEpisode(ts, t, o, uebernehmen, neben = this.akt?.neben ?? [], nn = this.akt?.nn ?? {}) {
+  neueEpisode(ts, t, o, uebernehmen, neben = this.akt?.neben ?? [], nn = this.akt?.nn ?? {}, nh = this.akt?.nh ?? {}) {
     const { felder, pflicht } = this.zusatz(t);
     const vorher = this.akt;
     const ep = {
@@ -71,16 +74,22 @@ export class SollBlock {
       erfasstTs: ts, // Tipp, der die Episode angelegt hat
       t, o,
       n: uebernehmen ? vorher.n : (pflicht.includes('n') ? 'N9' : null),
-      h: uebernehmen ? vorher.h : null,
+      h: uebernehmen ? vorher.h : (pflicht.includes('h') ? 'H9' : null),
       offen: uebernehmen ? new Set(vorher.offen) : new Set(felder),
       neben: this.nebenCodes.filter((c) => c !== t && neben.includes(c)),
       kommentar: '',
     };
-    ep.nn = Object.fromEntries(Object.entries(nn).filter(([c]) => ep.neben.includes(c))); // Nutzungsart gleichzeitiger Geräte
+    ep.nn = Object.fromEntries(Object.entries(nn).filter(([c]) => ep.neben.includes(c))); // Nutzungsart von Nebentätigkeiten
+    ep.nh = Object.fromEntries(Object.entries(nh).filter(([c]) => ep.neben.includes(c))); // Haltung von Nebentätigkeiten
+    for (const c of this.nebenHaltungCodes.filter((x) => ep.neben.includes(x))) {
+      const fest = this.ort(o).haltung;
+      if (fest) ep.nh[c] = fest;
+      else if (vorher && vorher.o !== o && this.ort(vorher.o).haltung) delete ep.nh[c];
+    }
     if (felder.includes('h')) {
       const fest = this.ort(o).haltung;
       if (fest) { ep.h = fest; ep.offen.delete('h'); }
-      else if (vorher && vorher.o !== o && this.ort(vorher.o).haltung) { ep.h = null; ep.offen.add('h'); }
+      else if (vorher && vorher.o !== o && this.ort(vorher.o).haltung) { ep.h = 'H9'; ep.offen.add('h'); }
     }
     this.episoden.push(ep);
     this.geraetDurch(ts, t, ep.neben);
@@ -190,6 +199,17 @@ export class SollBlock {
     return true;
   }
 
+  /** Haltung bei einer Nebentätigkeit; am Ort mit fester Haltung nur diese */
+  tippeNebenHaltung(ts, c, code) {
+    this.log(ts, `Gleichzeitig ${c}: Haltung ${code} getippt`);
+    const a = this.akt;
+    const fest = this.ort(a.o).haltung;
+    if (!a.neben.includes(c) || a.nh[c] === code || (fest && fest !== code)) return false;
+    if (a.nh[c] === undefined) { a.nh[c] = code; return true; }
+    this.neueEpisode(ts, a.t, a.o, true, a.neben, a.nn, { ...a.nh, [c]: code });
+    return true;
+  }
+
   // ------------------------------------------------------------ Ende
   pausenMsBis(ts) {
     return this.pausen.reduce((s, p) => s + Math.max(0, Math.min(p.endTs ?? ts, ts) - p.startTs), 0);
@@ -288,16 +308,20 @@ export class SollBlock {
         const { pflicht } = this.zusatz(x.e.t);
         Object.assign(z, {
           taetigkeit: x.e.t, ort: x.e.o, nutzungsart: x.e.n ?? '', haltung: x.e.h ?? '',
-          ...Object.fromEntries(this.nebenCodes.map((c) => [`neben_${c}`, x.e.neben.includes(c) ? '1' : '0'])),
-          ...Object.fromEntries(this.nebenGeraete.map((c) => [`neben_${c}_nutzung`, x.e.nn[c] ?? ''])),
+          nebentaetigkeiten: x.e.neben.map((c) => this.nt(c)).join('+'),
+          ...Object.fromEntries(this.nebenCodes.map((c) => [this.nt(c), x.e.neben.includes(c) ? '1' : '0'])),
+          ...Object.fromEntries(this.nebenGeraete.map((c) => [`${this.nt(c)}_nutzung`, x.e.neben.includes(c) ? x.e.nn[c] ?? 'N9' : ''])),
+          ...Object.fromEntries(this.nebenHaltungCodes.map((c) => [`${this.nt(c)}_haltung`, x.e.neben.includes(c) ? x.e.nh[c] ?? 'H9' : ''])),
           unvollstaendig: [...x.e.offen].some((f) => pflicht.includes(f)) ? '1' : '0',
           pause_grund: '', pause_freitext: '', kommentar: x.e.kommentar,
         });
       } else {
         Object.assign(z, {
           taetigkeit: '', ort: '', nutzungsart: '', haltung: '',
-          ...Object.fromEntries(this.nebenCodes.map((c) => [`neben_${c}`, ''])),
-          ...Object.fromEntries(this.nebenGeraete.map((c) => [`neben_${c}_nutzung`, ''])),
+          nebentaetigkeiten: '',
+          ...Object.fromEntries(this.nebenCodes.map((c) => [this.nt(c), ''])),
+          ...Object.fromEntries(this.nebenGeraete.map((c) => [`${this.nt(c)}_nutzung`, ''])),
+          ...Object.fromEntries(this.nebenHaltungCodes.map((c) => [`${this.nt(c)}_haltung`, ''])),
           unvollstaendig: '',
           pause_grund: x.p.grund ?? '', pause_freitext: x.p.notiz, kommentar: '',
         });

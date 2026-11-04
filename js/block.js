@@ -13,7 +13,7 @@
 //
 // Kontext `ctx`: { schema, now: () => number, uuid: () => string }, für Tests injizierbar.
 
-import { NUTZUNGSART_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben, nebentaetigkeiten } from './schema.js';
+import { NUTZUNGSART_UNBEKANNT, HALTUNG_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben, nebentaetigkeiten, ntCode } from './schema.js';
 
 export const STATUS = Object.freeze({
   LAUFEND: 'laufend',
@@ -28,8 +28,6 @@ export const ENDE_ART = Object.freeze({
   MANUELL: 'manuell', // „Block beenden“ vor Ablauf
   ABBRUCH: 'abbruch', // Abbruch mit Grund A1–A4
 });
-
-export const ZUSATZ_FELDER = Object.freeze(['nutzungsart', 'haltung']);
 
 // ---------------------------------------------------------------------------
 // Block anlegen und wiederherstellen
@@ -373,7 +371,13 @@ export function zusammenfassung(zustand, schema, jetzt = null) {
     pausenMs: pausen.reduce((s, p) => s + p.dauerMs, 0),
     anzahlEpisoden: eps.length,
     anteile,
-    unvollstaendig: eps.filter((e) => e.unvollstaendig),
+    nebenAnteile: nebentaetigkeiten(schema)
+      .map((code) => ({ code, ms: eps.filter((e) => (e.neben ?? []).includes(code)).reduce((sum, e) => sum + e.dauerMs, 0) }))
+      .filter((n) => n.ms > 0)
+      .map(({ code, ms }) => ({
+        code: ntCode(code), label: finde(schema.taetigkeiten, code)?.label ?? code,
+        dauerMs: ms, prozent: beobachtet > 0 ? (100 * ms) / beobachtet : 0,
+      })),
   };
 }
 
@@ -467,43 +471,74 @@ export function tippeNeben(zustand, code, ctx) {
   }
   const ep = baueEpisode(zustand, ctx, schema, {
     taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt),
-    neben: an ? [...neben, code] : neben.filter((c) => c !== code), nebenNutzung: akt.nebenNutzung,
+    ...nebenWerte(akt), neben: an ? [...neben, code] : neben.filter((c) => c !== code),
   });
   return mitNeuerEpisode(zustand, ep, ctx);
 }
 
-/** Gleichzeitige Tätigkeiten, für die eine Nutzungsart erfasst wird (Geräte, z. B. HX Now). */
+/** Nebentätigkeiten, für die eine Nutzungsart erfasst wird (Geräte, z. B. HX Now). */
 export function nebenMitNutzung(schema) {
   return nebentaetigkeiten(schema).filter((c) => finde(schema.taetigkeiten, c)?.geraet && nutzungsartenFuer(schema, c).length > 0);
 }
 
-/**
- * Nutzungsart einer gleichzeitigen Gerätenutzung (z. B. was mit HX Now gemacht wird, während die Haupttätigkeit
- * T5 ist). Optional. Noch leer → wird in der laufenden Episode ergänzt; anderer Wert → neue Episode
- * (wie bei der Nutzungsart der Haupttätigkeit).
- */
+/** Nebentätigkeiten, für die eine Haltung erfasst wird (HX Now). */
+export function nebenMitHaltung(schema) {
+  return nebentaetigkeiten(schema).filter((c) => finde(schema.taetigkeiten, c)?.haltung);
+}
+
+/** Nutzungsart einer Nebentätigkeit (was z. B. mit HX Now gemacht wird, ENTSCHEIDUNGEN Nr. 23). */
 export function tippeNebenNutzung(zustand, nebenCode, code, ctx) {
+  return setzeNebenZusatz(zustand, nebenCode, 'nebenNutzung', code, ctx);
+}
+
+/** Haltung bei einer Nebentätigkeit (z. B. HX Now im Stehen, ENTSCHEIDUNGEN Nr. 25). */
+export function tippeNebenHaltung(zustand, nebenCode, code, ctx) {
+  return setzeNebenZusatz(zustand, nebenCode, 'nebenHaltung', code, ctx);
+}
+
+/**
+ * Optional. Noch leer → wird in der laufenden Episode ergänzt; anderer Wert → neue Episode
+ * (wie bei Nutzungsart und Haltung der Haupttätigkeit).
+ */
+function setzeNebenZusatz(zustand, nebenCode, feld, code, ctx) {
   const sperre = eingabeSperre(zustand, ctx);
   if (sperre) return sperre;
   const { schema } = ctx;
   const akt = aktuelleEpisode(zustand);
-  if (!akt || !(akt.neben ?? []).includes(nebenCode) || !nebenMitNutzung(schema).includes(nebenCode)) {
-    return abgelehnt(zustand, 'NICHT_GLEICHZEITIG', 'Bitte zuerst die gleichzeitige Tätigkeit einschalten.');
+  const nutzung = feld === 'nebenNutzung';
+  const moeglich = nutzung ? nebenMitNutzung(schema) : nebenMitHaltung(schema);
+  if (!akt || !(akt.neben ?? []).includes(nebenCode) || !moeglich.includes(nebenCode)) {
+    return abgelehnt(zustand, 'NICHT_GLEICHZEITIG', 'Bitte zuerst die Nebentätigkeit einschalten.');
   }
-  if (!finde(nutzungsartenFuer(schema, nebenCode), code)) {
-    return abgelehnt(zustand, 'NICHT_ZULAESSIG', `Nutzungsart ${code} gilt nicht für ${nebenCode}.`);
+  if (!finde(nutzung ? nutzungsartenFuer(schema, nebenCode) : schema.haltung, code)) {
+    return abgelehnt(zustand, 'NICHT_ZULAESSIG', `${code} gilt nicht für ${ntCode(nebenCode)}.`);
   }
-  const bisher = akt.nebenNutzung?.[nebenCode] ?? null;
+  const fest = nutzung ? null : finde(schema.orte, akt.ort)?.haltung;
+  if (fest && code !== fest) {
+    return abgelehnt(zustand, 'HALTUNG_FEST', `${finde(schema.orte, akt.ort).label}: Die Haltung ist immer „${finde(schema.haltung, fest)?.label ?? fest}“ (${fest}).`);
+  }
+  const bisher = akt[feld]?.[nebenCode] ?? null;
   if (bisher === code) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
-  const nebenNutzung = { ...(akt.nebenNutzung ?? {}), [nebenCode]: code };
+  const werte = { ...(akt[feld] ?? {}), [nebenCode]: code };
   if (bisher === null) {
-    const ep = { ...akt, nebenNutzung };
+    const ep = { ...akt, [feld]: werte };
     return erfolg(ersetze(zustand, ep), { episoden: [ep] }, { neueEpisode: false });
   }
   const ep = baueEpisode(zustand, ctx, schema, {
-    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), neben: akt.neben, nebenNutzung,
+    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), ...nebenWerte(akt), [feld]: werte,
   });
   return mitNeuerEpisode(zustand, ep, ctx);
+}
+
+/** Nebentätigkeiten einer Episode lesbar, z. B. „NT3 (N1, H2), NT6“; nicht Angegebenes gilt als Sonstige. */
+export function nebenText(schema, ep) {
+  return (ep.neben ?? []).map((c) => {
+    const zusatz = [
+      nebenMitNutzung(schema).includes(c) ? ep.nebenNutzung?.[c] ?? NUTZUNGSART_UNBEKANNT : null,
+      nebenMitHaltung(schema).includes(c) ? ep.nebenHaltung?.[c] ?? HALTUNG_UNBEKANNT : null,
+    ].filter(Boolean);
+    return zusatz.length ? `${ntCode(c)} (${zusatz.join(', ')})` : ntCode(c);
+  }).join(', ');
 }
 
 /** Tipp auf eine Nutzungsart-Taste (N…). */
@@ -542,8 +577,7 @@ function setzeZusatz(zustand, feld, code, ctx) {
   if (akt[feld] === code) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
 
   const ep = baueEpisode(zustand, ctx, schema, {
-    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), [feld]: code, neben: akt.neben,
-    nebenNutzung: akt.nebenNutzung,
+    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), [feld]: code, ...nebenWerte(akt),
   });
   return mitNeuerEpisode(zustand, ep, ctx);
 }
@@ -583,23 +617,6 @@ export function setzeEpisodenKommentar(zustand, text, ctx) {
 export function setzeBlockKommentar(zustand, text) {
   const block = { ...zustand.block, kommentar: String(text ?? '').trim() };
   return erfolg({ ...zustand, block }, { block });
-}
-
-/**
- * Ergänzt eine noch leere Nutzungsart/Haltung einer beliebigen Episode, auch nach dem Blockende
- * (Abschlussseite). Bereits gesetzte Angaben können hier nicht verändert werden.
- */
-export function ergaenzeEpisode(zustand, episodeId, feld, code, ctx) {
-  const { schema } = ctx;
-  const ep0 = zustand.episoden.find((e) => e.episodeId === episodeId && !e.geloescht);
-  if (!ep0) return abgelehnt(zustand, 'EPISODE_UNBEKANNT', 'Episode nicht gefunden.');
-  if (!ZUSATZ_FELDER.includes(feld) || !ep0.offeneZusaetze.includes(feld)) {
-    return abgelehnt(zustand, 'NICHT_OFFEN', `${feldName(feld)} ist bei dieser Episode nicht offen.`);
-  }
-  const fehler = pruefeZusatzCode(zustand, schema, ep0.taetigkeit, feld, code);
-  if (fehler) return fehler;
-  const ep = mitVollstaendigkeit(schema, { ...ep0, [feld]: code, offeneZusaetze: ep0.offeneZusaetze.filter((f) => f !== feld) });
-  return erfolg(ersetze(zustand, ep), { episoden: [ep] });
 }
 
 // ---------------------------------------------------------------------------
@@ -871,14 +888,18 @@ function zeitpunkt(zustand, ctx) {
   return ts;
 }
 
-/** Startwerte der Zusatzangaben: alle leer; Pflicht-Nutzungsart mit Platzhalter N9. */
+/** Startwerte der Zusatzangaben: Pflichtangaben gelten als „Sonstige“ (N9, H9), bis etwas gewählt wird; sonst leer. */
 function zusatzStart(schema, taetigkeit) {
   const { felder, pflicht } = zusatzFuer(schema, taetigkeit);
   return {
     nutzungsart: pflicht.includes('nutzungsart') ? NUTZUNGSART_UNBEKANNT : null,
-    haltung: null,
+    haltung: pflicht.includes('haltung') ? HALTUNG_UNBEKANNT : null,
     offeneZusaetze: [...felder],
   };
+}
+
+function nebenWerte(ep) {
+  return { neben: ep.neben ?? [], nebenNutzung: ep.nebenNutzung ?? {}, nebenHaltung: ep.nebenHaltung ?? {} };
 }
 
 function zusatzUebernehmen(ep) {
@@ -893,7 +914,7 @@ function werteFuer(schema, vorher, t, o) {
   const zusatz = vorher && vorher.taetigkeit === t ? zusatzUebernehmen(vorher) : zusatzStart(schema, t);
   return {
     taetigkeit: t, ort: o, ...haltungAmOrt(schema, t, vorher?.ort ?? null, o, zusatz),
-    neben: vorher?.neben ?? [], nebenNutzung: vorher?.nebenNutzung ?? {},
+    ...(vorher ? nebenWerte(vorher) : {}),
   };
 }
 
@@ -906,7 +927,7 @@ function haltungAmOrt(schema, t, oVorher, o, zusatz) {
   const fest = finde(schema.orte, o)?.haltung;
   if (fest) return { ...zusatz, haltung: fest, offeneZusaetze: zusatz.offeneZusaetze.filter((f) => f !== 'haltung') };
   if (oVorher !== o && finde(schema.orte, oVorher)?.haltung) {
-    return { ...zusatz, haltung: null, offeneZusaetze: [...new Set([...zusatz.offeneZusaetze, 'haltung'])] };
+    return { ...zusatz, haltung: HALTUNG_UNBEKANNT, offeneZusaetze: [...new Set([...zusatz.offeneZusaetze, 'haltung'])] };
   }
   return zusatz;
 }
@@ -924,7 +945,7 @@ function gehenCode(schema) {
   return schema.taetigkeiten.find((x) => x.nurGehen)?.code ?? null;
 }
 
-/** unvollständig = eine Pflicht-Zusatzangabe ist noch leer. */
+/** unvollständig = eine Pflichtangabe wurde nicht gewählt und gilt deshalb als „Sonstige“. */
 function mitVollstaendigkeit(schema, ep) {
   const { pflicht } = zusatzFuer(schema, ep.taetigkeit);
   return { ...ep, unvollstaendig: ep.offeneZusaetze.some((f) => pflicht.includes(f)) };
@@ -932,8 +953,17 @@ function mitVollstaendigkeit(schema, ep) {
 
 function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
   const ep = baueEpisodeRoh(zustand, ctx, schema, werte, startTs);
-  // Nutzungsart nur für gleichzeitige Geräte, die in dieser Episode noch an sind
-  ep.nebenNutzung = Object.fromEntries(Object.entries(werte.nebenNutzung ?? {}).filter(([c]) => ep.neben.includes(c)));
+  // Angaben nur für Nebentätigkeiten, die in dieser Episode noch an sind
+  const nochAn = (werteJeCode) => Object.fromEntries(Object.entries(werteJeCode ?? {}).filter(([c]) => ep.neben.includes(c)));
+  ep.nebenNutzung = nochAn(werte.nebenNutzung);
+  ep.nebenHaltung = nochAn(werte.nebenHaltung);
+  // Wie bei der Haupttätigkeit: Ort mit fester Haltung setzt sie, beim Verlassen ist sie wieder offen
+  const fest = finde(schema.orte, ep.ort)?.haltung;
+  const oVorher = aktuelleEpisode(zustand)?.ort;
+  for (const c of nebenMitHaltung(schema).filter((x) => ep.neben.includes(x))) {
+    if (fest) ep.nebenHaltung[c] = fest;
+    else if (oVorher !== ep.ort && finde(schema.orte, oVorher)?.haltung) delete ep.nebenHaltung[c];
+  }
   return ep;
 }
 
@@ -952,7 +982,8 @@ function baueEpisodeRoh(zustand, ctx, schema, werte, startTs) {
     haltung: werte.haltung ?? null,
     offeneZusaetze: werte.offeneZusaetze ?? [],
     neben: sortiereNeben(schema, werte.neben ?? [], werte.taetigkeit), // gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)
-    nebenNutzung: {}, // Nutzungsart gleichzeitiger Geräte, z. B. { T3: 'N1' } (ENTSCHEIDUNGEN Nr. 23)
+    nebenNutzung: {}, // Angaben zu Nebentätigkeiten, z. B. { T3: 'N1' } (ENTSCHEIDUNGEN Nr. 23, 25)
+    nebenHaltung: {},
     kommentar: '',
     geloescht: false,
   });

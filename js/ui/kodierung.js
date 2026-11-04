@@ -4,7 +4,7 @@
 import { el, ersetze, dialog, bestaetige, kommentarFeld, meldung, auswahlGruppe } from './dom.js';
 import * as B from '../block.js';
 import { formatiereCountdown } from '../zeit.js';
-import { pflichtangaben, istTestPseudonym, nebentaetigkeiten } from '../schema.js';
+import { pflichtangaben, istTestPseudonym, nebentaetigkeiten, ntCode } from '../schema.js';
 
 const TAKT_MS = 250;
 
@@ -13,7 +13,7 @@ export async function zeigeKodierung(app, { blockId }) {
   const sitzung = await app.sitzungFuer(blockId);
   let beendet = false;
   let zuLangAngezeigt = false;
-  let nebenOffen = false; // „Gleichzeitig“ ist zugeklappt, bis es geöffnet wird
+  let nebenOffen = false; // Nebentätigkeiten sind zugeklappt, bis sie geöffnet werden
 
   const finde = (liste, code) => schema[liste].find((e) => e.code === code);
   const label = (liste, code) => finde(liste, code)?.label ?? code;
@@ -73,7 +73,7 @@ export async function zeigeKodierung(app, { blockId }) {
     await ausfuehren(B.pausiere);
   }
 
-  /** Fortsetzen: ein Tipp – weiter mit Ort, Tätigkeit, Nutzungsart, Haltung und „gleichzeitig“ von vor der Pause. */
+  /** Fortsetzen: ein Tipp – weiter mit Ort, Tätigkeit, Nutzungsart, Haltung und Nebentätigkeiten von vor der Pause. */
   async function fortsetzen() {
     const r = await ausfuehren((zz, c) => B.setzeFort(zz, {}, c));
     if (r?.ok) meldung('Fortgesetzt.');
@@ -196,14 +196,22 @@ export async function zeigeKodierung(app, { blockId }) {
     b.hxGeraetAutomatisch ? el('span', { class: 'schalter-hinweis' }, ' (automatisch)') : null);
   }
 
-  /** „T5, T3 (N1)“: gleichzeitige Tätigkeiten mit Nutzungsart gleichzeitiger Geräte */
-  function nebenText(akt) {
-    return akt.neben.map((c) => (akt.nebenNutzung?.[c] ? `${c} (${akt.nebenNutzung[c]})` : c)).join(', ');
+  /** Tastenzeile für eine Angabe zur Nebentätigkeit c (Nutzungsart bzw. Haltung von HX Now). */
+  function nebenZusatzZeile({ c, titel, testZeile, testTaste, codes, wert, gesperrt = () => false, tippe }) {
+    return el('div', { class: `zusatz${wert ? '' : ' optional'}`, 'data-test': `${testZeile}-${c}` },
+      el('span', { class: 'zusatz-titel' }, `${finde('taetigkeiten', c)?.kurz ?? c}: ${titel}`),
+      el('div', { class: `zusatz-tasten anzahl-${codes.length}` }, codes.map((x) => el('button', {
+        type: 'button', class: 'taste n',
+        'aria-pressed': wert === x.code ? 'true' : 'false',
+        disabled: pausiert() || gesperrt(x.code),
+        'data-test': `${testTaste}-${c}-${x.code}`,
+        onclick: () => ausfuehren((z2, ctx) => tippe(z2, c, x.code, ctx)),
+      }, el('span', { class: 'kurz' }, x.label), el('span', { class: 'code' }, x.code)))));
   }
 
   /**
-   * „Gleichzeitig“ (ENTSCHEIDUNGEN Nr. 19, 23): zugeklappt nur eine Kopfzeile mit den eingeschalteten Tätigkeiten;
-   * geöffnet Schalter, die anbleiben, bis sie abgewählt werden, und bei Geräten (HX Now) die Nutzungsart.
+   * Nebentätigkeiten (ENTSCHEIDUNGEN Nr. 19, 23, 25): zugeklappt nur eine Kopfzeile mit den eingeschalteten;
+   * geöffnet Schalter, die anbleiben, bis sie abgewählt werden, und bei HX Now Nutzungsart und Haltung.
    */
   function nebenBereich(zz, akt, p) {
     const codes = nebentaetigkeiten(schema).filter((c) => B.taetigkeitErlaubt(zz, schema, c));
@@ -213,10 +221,10 @@ export async function zeigeKodierung(app, { blockId }) {
       type: 'button', class: 'neben-kopf', 'aria-expanded': nebenOffen ? 'true' : 'false', 'data-test': 'neben-oeffnen',
       onclick: () => { nebenOffen = !nebenOffen; zeichne(); },
     },
-    el('span', { class: 'bereich-titel' }, 'Gleichzeitig'),
+    el('span', { class: 'bereich-titel' }, 'Nebentätigkeit'),
     el('span', { class: 'neben-zusammenfassung' }, aktiv.length
       ? aktiv.map((c) => el('span', { class: 'chip chip-neben' }, finde('taetigkeiten', c)?.kurz ?? c))
-      : el('span', { class: 'leise' }, 'nichts')),
+      : el('span', { class: 'leise' }, 'keine')),
     el('span', { class: 'pfeil', 'aria-hidden': 'true' }, nebenOffen ? '▾' : '▸'));
     if (!nebenOffen) return el('section', { class: `bereich bereich-neben zu${p ? ' gedimmt' : ''}`, 'data-test': 'zeile-neben' }, kopf);
 
@@ -228,23 +236,21 @@ export async function zeigeKodierung(app, { blockId }) {
         disabled: p || !akt || (!an && c === akt.taetigkeit),
         'data-test': `neben-${c}`,
         onclick: () => ausfuehren((z2, ctx) => B.tippeNeben(z2, c, ctx)),
-      }, el('span', { class: 'kurz' }, finde('taetigkeiten', c)?.kurz ?? c), el('span', { class: 'code' }, c));
+      }, el('span', { class: 'kurz' }, finde('taetigkeiten', c)?.kurz ?? c), el('span', { class: 'code' }, ntCode(c)));
     });
-    const nutzung = B.nebenMitNutzung(schema).filter((c) => aktiv.includes(c)).map((c) => {
-      const n = B.nutzungsartenFuer(schema, c);
-      const wert = akt.nebenNutzung?.[c] ?? null;
-      return el('div', { class: `zusatz${wert ? '' : ' optional'}`, 'data-test': `zeile-neben-nutzung-${c}` },
-        el('span', { class: 'zusatz-titel' }, `${finde('taetigkeiten', c)?.kurz ?? c}: Nutzung`),
-        el('div', { class: `zusatz-tasten anzahl-${n.length}` }, n.map((x) => el('button', {
-          type: 'button', class: 'taste n',
-          'aria-pressed': !p && wert === x.code ? 'true' : 'false',
-          disabled: p,
-          'data-test': `nn-${c}-${x.code}`,
-          onclick: () => ausfuehren((z2, ctx) => B.tippeNebenNutzung(z2, c, x.code, ctx)),
-        }, el('span', { class: 'kurz' }, x.label), el('span', { class: 'code' }, x.code)))));
-    });
+    const haltungFest = akt ? finde('orte', akt.ort)?.haltung : null;
+    const zeilen = aktiv.flatMap((c) => [
+      B.nebenMitNutzung(schema).includes(c) ? nebenZusatzZeile({
+        c, titel: 'Nutzung', testZeile: 'zeile-neben-nutzung', testTaste: 'nn', codes: B.nutzungsartenFuer(schema, c),
+        wert: akt.nebenNutzung?.[c] ?? null, tippe: B.tippeNebenNutzung,
+      }) : null,
+      B.nebenMitHaltung(schema).includes(c) ? nebenZusatzZeile({
+        c, titel: 'Haltung', testZeile: 'zeile-neben-haltung', testTaste: 'nh', codes: schema.haltung,
+        wert: akt.nebenHaltung?.[c] ?? null, gesperrt: (code) => haltungFest && code !== haltungFest, tippe: B.tippeNebenHaltung,
+      }) : null,
+    ]);
     return el('section', { class: `bereich bereich-neben${p ? ' gedimmt' : ''}`, 'data-test': 'zeile-neben' },
-      kopf, el('div', { class: `zusatz-tasten neben-tasten anzahl-${codes.length}` }, tasten), nutzung);
+      kopf, el('div', { class: `zusatz-tasten neben-tasten anzahl-${codes.length}` }, tasten), zeilen);
   }
 
   function zeichne() {
@@ -277,7 +283,7 @@ export async function zeigeKodierung(app, { blockId }) {
       const teile = [
         el('span', { class: 'chip chip-o' }, `${akt.ort} ${label('orte', akt.ort)}`),
         el('span', { class: 'chip chip-t' }, [`${akt.taetigkeit} ${label('taetigkeiten', akt.taetigkeit)}`, ...zusatzText].join(' · ')),
-        akt.neben?.length ? el('span', { class: 'chip chip-neben' }, `gleichzeitig ${nebenText(akt)}`) : null,
+        akt.neben?.length ? el('span', { class: 'chip chip-neben' }, `Neben: ${B.nebenText(schema, akt)}`) : null,
       ].filter(Boolean);
       status = el('div', { class: `aktuell${akt.unvollstaendig ? ' unvollstaendig' : ''}`, 'data-test': 'aktuelle-episode' },
         el('span', { class: 'aktuell-nr' }, `#${akt.nr}`),

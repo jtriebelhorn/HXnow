@@ -57,12 +57,12 @@ export function schreibeBericht(lauf, schema) {
       z.push(`Studien-Code ${g.pseudonym} · Phase ${label('phasen', g.phase)} · Bereich ${label('bereiche', g.bereich) || '–'} · Dienst ${label('dienste', g.dienst) || '–'} · Kontext ${g.arbeitskontext ? `${g.arbeitskontext} ${label('arbeitskontext', g.arbeitskontext)}` : '–'}`);
       z.push(`Start ${g.block_start} · Ende ${g.block_ende} · beobachtet ${g.block_beobachtet_sek} s von ${g.block_dauer_soll_sek} s · Pausen ${g.block_pausen_anzahl} (${g.block_pausen_sek} s) · Status ${g.block_status}/${g.block_ende_art}${g.abbruch_code ? ` ${g.abbruch_code}` : ''} · Gerät dabei ${g.hx_geraet_dabei || '–'}${g.hx_geraet_automatisch === '1' ? ' (automatisch)' : ''}`, '');
       if (g.block_kommentar) z.push(`Blockkommentar: ${zelle(g.block_kommentar)}`, '');
-      z.push('| Nr | Start | Ende | s | Art / Tätigkeit | Ort | Nutzung | Haltung | unvollst. | Grund / Notiz / Kommentar |', '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+      z.push('| Nr | Start | Ende | s | Art / Tätigkeit | Ort | Nutzung | Haltung | Neben | unvollst. | Grund / Notiz / Kommentar |', '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
       for (const r of s.gelesen) {
         const was = r.datensatz === 'pause' ? '⏸ Pause' : `${r.taetigkeit} ${label('taetigkeiten', r.taetigkeit)}`;
         const ort = r.ort ? `${r.ort} ${label('orte', r.ort)}` : '';
         const text = r.datensatz === 'pause' ? [r.pause_grund && `${r.pause_grund} ${label('pausengruende', r.pause_grund)}`, r.pause_freitext].filter(Boolean).join(': ') : r.kommentar;
-        z.push(`| ${r.nr} | ${zeit(r.start)} | ${zeit(r.ende)} | ${r.dauer_sek} | ${zelle(was)} | ${zelle(ort)} | ${r.nutzungsart} | ${r.haltung} | ${r.unvollstaendig === '1' ? 'ja' : ''} | ${zelle(text)} |`);
+        z.push(`| ${r.nr} | ${zeit(r.start)} | ${zeit(r.ende)} | ${r.dauer_sek} | ${zelle(was)} | ${zelle(ort)} | ${r.nutzungsart} | ${r.haltung} | ${r.nebentaetigkeiten} | ${r.unvollstaendig === '1' ? 'ja' : ''} | ${zelle(text)} |`);
       }
       z.push('');
     }

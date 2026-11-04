@@ -300,18 +300,42 @@ test('Block beenden: Daten behalten bzw. verwerfen', async ({ page }) => {
   await expect(page.locator('[data-test=eintrag-block]')).toHaveCount(1); // verworfener Block nicht in der Exportliste
 });
 
-test('unvollständige T3-Episode auf der Abschlussseite ergänzen', async ({ page }) => {
+test('Abschlussseite: keine Nachfrage zu HX Now; fehlende Angaben sind Sonstige', async ({ page }) => {
   await oeffne(page);
   await starteBlock(page);
   await tippe(page, 'o-O1');
   await tippe(page, 't-T3');
   await tippe(page, 'n-N1');
   await page.clock.fastForward('15:00');
-  await expect(page.locator('[data-test=unvollstaendig]')).toContainText('1 unvollständige Episode');
-  await page.click('[data-test=ergaenzen-1-H2]');
+  await expect(page.locator('[data-test=abschluss-status]')).toBeVisible();
   await expect(page.locator('[data-test=unvollstaendig]')).toHaveCount(0);
-  const db = await leseDb(page);
-  expect(db.episoden[0]).toMatchObject({ haltung: 'H2', unvollstaendig: false });
+  await expect(page.locator('[data-test=episoden]')).toContainText('H9');
+  expect((await leseDb(page)).episoden[0]).toMatchObject({ nutzungsart: 'N1', haltung: 'H9', unvollstaendig: true });
+});
+
+test('Wechsel der Nebentätigkeit steht im Ablauf und in den Anteilen der Abschlussseite', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page);
+  await tippe(page, 'o-O1');
+  await tippe(page, 't-T5');
+  await page.click('[data-test=neben-oeffnen]');
+  await page.clock.fastForward('01:00');
+  await tippe(page, 'neben-T6');
+  await page.clock.fastForward('01:00');
+  await page.click('[data-test=neben-T6]');
+  await expect(page.locator('[data-test=neben-T6]')).toHaveAttribute('aria-pressed', 'false');
+  await tippe(page, 'neben-T7');
+  await page.clock.fastForward('00:30');
+  await tippe(page, 'neben-T3');
+  await tippe(page, 'nn-T3-N2');
+  await tippe(page, 'nh-T3-H2');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT3 (N2, H2), NT7');
+  await page.clock.fastForward('15:00');
+  await expect(page.locator('[data-test=abschluss-status]')).toBeVisible();
+  await expect(page.locator('[data-test=episoden]')).toBeVisible(); // Ablauf ist aufgeklappt
+  await expect(page.locator('[data-test=episode-neben]')).toHaveText(['', 'NT6', '', 'NT7', 'NT3 (N2, H2), NT7']);
+  await expect(page.locator('[data-test=anteile-neben]')).toContainText('NT6 Gespräch Kollegen/Pflege');
+  await expect(page.locator('[data-test=anteile-neben]')).toContainText('NT7 Telefonat');
 });
 
 test('Person nicht angetroffen und Tageskennzahlen; rotes Banner nach 24 h', async ({ page }) => {
@@ -414,19 +438,19 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await tippe(page, 'n-N2');
   await page.clock.fastForward('00:05');
   await tippe(page, 'neben-T5'); // Dokumentation, während mit der Patientin gesprochen wird
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T5');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT5');
   await expect(page.locator('[data-test=neben-T3]')).toBeDisabled(); // ist bereits die Tätigkeit
   await page.clock.fastForward('00:30');
   await page.click('[data-test=neben-T5]');
   await expect(page.locator('[data-test=neben-T5]')).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('[data-test=aktuelle-episode]')).not.toContainText('gleichzeitig');
+  await expect(page.locator('[data-test=aktuelle-episode]')).not.toContainText('Neben:');
   // Gespräch mit der Patientin, dabei kurz HX Now: was wird mit HX Now gemacht?
   await page.clock.fastForward('00:10');
   await tippe(page, 't-T5');
   await tippe(page, 'neben-T3');
   await expect(page.locator('[data-test=zeile-neben-nutzung-T3]')).toBeVisible();
   await tippe(page, 'nn-T3-N4');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T3 (N4)');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT3 (N4, H9)');
   // Zuklappen: eingeschaltete Tätigkeiten bleiben in der Kopfzeile sichtbar
   await page.click('[data-test=neben-oeffnen]');
   await expect(page.locator('[data-test=nn-T3-N4]')).toHaveCount(0);
@@ -447,7 +471,7 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
     ['O2', 'T3', 'N2', 'H2', ''],
     ['O2', 'T5', null, null, ''],
     ['O2', 'T5', null, null, 'T3'],
-    ['O2', 'T3', 'N9', null, ''],
+    ['O2', 'T3', 'N9', 'H9', ''],
   ]);
   expect(aktiv[8].nebenNutzung).toEqual({ T3: 'N4' });
   expect(daten.bloecke[0].hxGeraetAutomatisch).toBe(true);
@@ -464,7 +488,7 @@ test('Prä-Phase: HX Now ist weder Tätigkeit noch gleichzeitig wählbar', async
   await expect(page.locator('[data-test=neben-T3]')).toHaveCount(0);
   await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
   await tippe(page, 'neben-T6');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T6');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT6');
 });
 
 test('Unterwegs und Gehen: Telefon und HX Now als gleichzeitig kodierbar', async ({ page }) => {
@@ -479,6 +503,6 @@ test('Unterwegs und Gehen: Telefon und HX Now als gleichzeitig kodierbar', async
   await tippe(page, 'neben-T3');
   await tippe(page, 'nn-T3-N1');
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O6 Unterwegs · T9 Gehen');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T7, T3 (N1)');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT3 (N1, H1), NT7');
   await expect(page.locator('[data-test=geraet-dabei]')).toHaveAttribute('aria-pressed', 'true');
 });

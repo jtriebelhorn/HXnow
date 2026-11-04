@@ -27,7 +27,7 @@ function referenzBlock() {
   ctx.bei(194); z = ok(B.setzeFort(z, { grund: 'P5', freitext: 'Alarm; Flur', taetigkeit: 'T5', ort: 'O2' }, ctx));
   ctx.bei(250.2); z = ok(B.tippeTaetigkeit(z, 'T3', ctx));
   z = ok(B.tippeNutzungsart(z, 'N2', ctx)); // Haltung bleibt offen → unvollständig
-  ctx.bei(262.8); z = ok(B.tippeNeben(z, 'T5', ctx)); // Patient/in gleichzeitig → neue Zeile, neben_T5 = 1
+  ctx.bei(262.8); z = ok(B.tippeNeben(z, 'T5', ctx)); // Patient/in gleichzeitig → neue Zeile, NT5 = 1
   z = ok(B.setzeBlockKommentar(z, 'Station voll\nviel los'));
   z = B.pruefeAblauf(z, ctx.bei(2000)).zustand; // Ende bei 900 s beobachteter Zeit = 973,5 s Wandzeit
   return ok(B.beantworteGeraetDabei(z, 'J', ctx));
@@ -199,24 +199,31 @@ test('versucheTeilen: ohne canShare → null; Abbruch → „abgebrochen“; Erf
   await assert.rejects(X.versucheTeilen(datei, { canShare: () => true, share: () => Promise.reject(new Error('NotAllowed')) }), /NotAllowed/);
 });
 
-test('Spalten: neben_<Code> je gleichzeitiger Tätigkeit direkt nach „haltung“', () => {
+test('Spalten: nebentaetigkeiten, NT<n> und Angaben zu HX Now direkt nach „haltung“', () => {
   const k = X.spaltenBeobachtung(SCHEMA);
   const i = k.indexOf('haltung');
-  assert.deepEqual(k.slice(i + 1, i + 7), ['neben_T5', 'neben_T6', 'neben_T7', 'neben_T3', 'neben_T4', 'neben_T3_nutzung']);
-  assert.equal(k[i + 7], 'unvollstaendig');
-  assert.deepEqual(X.spaltenBeobachtung({ ...SCHEMA, nebentaetigkeiten: [] }), [...X.SPALTEN_BEOBACHTUNG]);
+  assert.deepEqual(k.slice(i + 1, i + 9), ['nebentaetigkeiten', 'NT3', 'NT4', 'NT5', 'NT6', 'NT7', 'NT3_nutzung', 'NT3_haltung']);
+  assert.equal(k[i + 9], 'unvollstaendig');
 });
 
-test('HX Now gleichzeitig: neben_T3 = 1 und Nutzungsart in neben_T3_nutzung', () => {
+test('Wechsel der Nebentätigkeit ist je Zeile nachvollziehbar; HX Now ohne Angabe = Sonstige', () => {
   const ctx = testKontext().bei(0);
   let z = ok(B.erzeugeBlock(ANGABEN_POST, ctx));
   z = ok(B.tippeOrt(z, 'O2', ctx));
   z = ok(B.tippeTaetigkeit(z, 'T5', ctx));
-  z = ok(B.tippeNeben(z, 'T3', ctx.bei(30)));
-  z = ok(B.tippeNebenNutzung(z, 'T3', 'N3', ctx.bei(31)));
+  z = ok(B.tippeNeben(z, 'T6', ctx.bei(20)));
+  z = ok(B.tippeNeben(z, 'T6', ctx.bei(40)));
+  z = ok(B.tippeNeben(z, 'T7', ctx.bei(40)));
+  z = ok(B.tippeNeben(z, 'T3', ctx.bei(60)));
+  z = ok(B.tippeNebenNutzung(z, 'T3', 'N3', ctx.bei(61)));
   z = B.pruefeAblauf(z, ctx.bei(900)).zustand;
   const [kopf, ...zeilen] = X.blockDatei(z, SCHEMA).inhalt.slice(1).split('\r\n').filter(Boolean).map((l) => l.split(';'));
   const sp = (n) => kopf.indexOf(n);
-  assert.deepEqual(zeilen.map((w) => [w[sp('taetigkeit')], w[sp('neben_T3')], w[sp('neben_T3_nutzung')], w[sp('dauer_sek')]]),
-    [['T5', '0', '', '30'], ['T5', '1', 'N3', '870']]);
+  assert.deepEqual(zeilen.map((w) => [w[sp('nebentaetigkeiten')], w[sp('NT6')], w[sp('NT7')], w[sp('NT3_nutzung')], w[sp('NT3_haltung')], w[sp('dauer_sek')]]), [
+    ['', '0', '0', '', '', '20'],
+    ['NT6', '1', '0', '', '', '20'],
+    ['', '0', '0', '', '', '0'],
+    ['NT7', '0', '1', '', '', '20'],
+    ['NT3+NT7', '0', '1', 'N3', 'H9', '840'],
+  ]);
 });

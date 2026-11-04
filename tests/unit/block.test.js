@@ -173,9 +173,9 @@ describe('Nutzungsart und Haltung', () => {
     return ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(20))).zustand;
   }
 
-  test('T3: N und H Pflicht – startet unvollständig mit N9 / null', () => {
+  test('T3: N und H Pflicht – startet unvollständig mit N9 / H9', () => {
     const e = aktuell(mitT3(testKontext()));
-    assert.deepEqual([e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['N9', null, true, ['nutzungsart', 'haltung']]);
+    assert.deepEqual([e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['N9', 'H9', true, ['nutzungsart', 'haltung']]);
   });
 
   test('erstes Setzen ergänzt die Episode, späterer Wechsel erzeugt neue Episode', () => {
@@ -242,7 +242,7 @@ describe('Nutzungsart und Haltung', () => {
     let z = mitT3(ctx);
     z = ok(B.tippeNutzungsart(z, 'N4', ctx)).zustand;
     const e = aktuell(ok(B.tippeOrt(z, 'O2', ctx.bei(35))).zustand);
-    assert.deepEqual([e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['T3', 'O2', 'N4', null, true, ['haltung']]);
+    assert.deepEqual([e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.unvollstaendig, e.offeneZusaetze], ['T3', 'O2', 'N4', 'H9', true, ['haltung']]);
   });
 
   test('Haltung ohne T3 und Nutzungsart bei T4–T10 abgelehnt', () => {
@@ -290,7 +290,7 @@ describe('Pause', () => {
     const r = ok(B.setzeFort(z, {}, ctx.bei(70)));
     const e = aktuell(r.zustand);
     assert.deepEqual([e.nr, e.taetigkeit, e.ort, e.nutzungsart, e.haltung, e.offeneZusaetze, e.startTs - START],
-      [3, 'T3', 'O4', 'N2', null, ['haltung'], 70_000]);
+      [3, 'T3', 'O4', 'N2', 'H9', ['haltung'], 70_000]);
     assert.deepEqual([r.schreiben.pausen[0].grund, r.schreiben.pausen[0].freitext], [null, '']);
     abgelehnt(B.setzeFort(neuerBlock(ctx), {}, ctx), 'NICHT_PAUSIERT');
   });
@@ -645,18 +645,25 @@ describe('Episodenenden, Dauern, Zeitleiste', () => {
     assert.deepEqual(s.anteile.map((a) => [a.code, Math.round(a.prozent * 100) / 100]), [['T1', 33.33], ['T5', 66.67]]);
   });
 
-  test('unvollständige T3-Episode nach dem Ende ergänzen; optionale N bei T1 ebenfalls', () => {
+  test('Nicht angegebene Nutzung und Haltung bei HX Now gelten als Sonstige, ohne Nachfrage am Ende', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx);
-    ctx.bei(10); z = ok(B.tippeTaetigkeit(z, 'T3', ctx)).zustand;
-    z = ok(B.tippeNutzungsart(z, 'N1', ctx)).zustand;
+    z = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(10))).zustand;
     z = ok(B.pruefeAblauf(z, ctx.bei(900))).zustand;
-    const [e1, e2] = aktive(z);
-    abgelehnt(B.ergaenzeEpisode(z, e2.episodeId, 'nutzungsart', 'N2', ctx), 'NICHT_OFFEN');
-    const r = ok(B.ergaenzeEpisode(z, e2.episodeId, 'haltung', 'H2', ctx));
-    assert.equal(r.schreiben.episoden[0].unvollstaendig, false);
-    abgelehnt(B.ergaenzeEpisode(z, e1.episodeId, 'nutzungsart', 'N4', ctx), 'NICHT_ZULAESSIG');
-    ok(B.ergaenzeEpisode(z, e1.episodeId, 'nutzungsart', 'N2', ctx));
+    const e = aktuell(z);
+    assert.deepEqual([e.nutzungsart, e.haltung, e.unvollstaendig], ['N9', 'H9', true]);
+    assert.equal(B.ergaenzeEpisode, undefined);
+  });
+
+  test('Zusammenfassung: Anteile je Nebentätigkeit mit NT-Code', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx, ANGABEN_POST, ['T3', 'O1']);
+    z = ok(B.tippeNeben(z, 'T6', ctx.bei(300))).zustand;
+    z = ok(B.tippeNeben(z, 'T6', ctx.bei(450))).zustand;
+    z = ok(B.tippeNeben(z, 'T7', ctx.bei(450))).zustand;
+    z = ok(B.pruefeAblauf(z, ctx.bei(900))).zustand;
+    assert.deepEqual(B.zusammenfassung(z, SCHEMA).nebenAnteile.map((a) => [a.code, a.dauerMs, a.prozent]),
+      [['NT6', 150_000, 150_000 / 9000], ['NT7', 450_000, 50]]);
   });
 });
 
@@ -725,14 +732,14 @@ describe('Unterwegs (Ort O6, ENTSCHEIDUNGEN Nr. 20)', () => {
   test('HX Now unterwegs: Haltung automatisch H1 (gehend); andere Haltung abgelehnt; am neuen Ort wieder offen', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T3', 'O1']);
-    assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze], [null, ['nutzungsart', 'haltung']]);
+    assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze], ['H9', ['nutzungsart', 'haltung']]);
     z = ok(B.tippeHaltung(z, 'H3', ctx.bei(5))).zustand;
     z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
     assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze], ['H1', ['nutzungsart']]);
     abgelehnt(B.tippeHaltung(z, 'H2', ctx.bei(32)), 'HALTUNG_FEST');
     assert.equal(ok(B.tippeHaltung(z, 'H1', ctx.bei(32))).unveraendert, true);
     z = ok(B.tippeOrt(z, 'O2', ctx.bei(50))).zustand;
-    assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze, aktuell(z).unvollstaendig], [null, ['nutzungsart', 'haltung'], true]);
+    assert.deepEqual([aktuell(z).haltung, aktuell(z).offeneZusaetze, aktuell(z).unvollstaendig], ['H9', ['nutzungsart', 'haltung'], true]);
     // Wechsel zu HX Now, während man unterwegs ist
     z = ok(B.tippeTaetigkeit(ok(B.tippeOrt(z, 'O6', ctx.bei(70))).zustand, 'T3', ctx.bei(71))).zustand;
     assert.equal(aktuell(z).haltung, 'H1');
@@ -777,7 +784,7 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
     z = ok(B.tippeNeben(z, 'T3', ctx.bei(50))).zustand;
     z = ok(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(51))).zustand;
     assert.deepEqual([aktuell(z).ort, aktuell(z).taetigkeit, aktuell(z).neben, aktuell(z).nebenNutzung, z.block.hxGeraetAutomatisch],
-      ['O6', 'T9', ['T6', 'T7', 'T3'], { T3: 'N1' }, true]);
+      ['O6', 'T9', ['T3', 'T6', 'T7'], { T3: 'N1' }, true]);
   });
 
   test('HX Now gleichzeitig setzt „Gerät dabei“ (Post); in Prä nicht wählbar; Rückgängig nimmt es zurück', () => {
@@ -833,5 +840,36 @@ describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGE
     z = ok(B.tippeNebenNutzung(z, 'T3', 'N2', ctx.bei(11))).zustand;
     z = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(20))).zustand;
     assert.deepEqual([aktuell(z).neben, aktuell(z).nebenNutzung, aktuell(z).nutzungsart], [[], {}, 'N9']);
+  });
+});
+
+describe('Haltung bei HX Now als Nebentätigkeit (ENTSCHEIDUNGEN Nr. 25)', () => {
+  test('erst setzen ohne neue Episode, Wechsel → neue Episode; unterwegs fest H1, danach wieder offen', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
+    assert.deepEqual(B.nebenMitHaltung(SCHEMA), ['T3']);
+    abgelehnt(B.tippeNebenHaltung(z, 'T3', 'H2', ctx.bei(5)), 'NICHT_GLEICHZEITIG');
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
+    abgelehnt(B.tippeNebenHaltung(z, 'T6', 'H2', ctx.bei(11)), 'NICHT_GLEICHZEITIG');
+    abgelehnt(B.tippeNebenHaltung(z, 'T3', 'H7', ctx.bei(11)), 'NICHT_ZULAESSIG');
+    z = ok(B.tippeNebenHaltung(z, 'T3', 'H2', ctx.bei(11))).zustand;
+    assert.equal(aktive(z).length, 2, 'erstes Setzen ohne neue Episode');
+    z = ok(B.tippeNebenHaltung(z, 'T3', 'H3', ctx.bei(20))).zustand;
+    assert.deepEqual([aktive(z).length, aktuell(z).nebenHaltung], [3, { T3: 'H3' }]);
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
+    assert.deepEqual(aktuell(z).nebenHaltung, { T3: 'H1' });
+    abgelehnt(B.tippeNebenHaltung(z, 'T3', 'H2', ctx.bei(31)), 'HALTUNG_FEST');
+    z = ok(B.tippeOrt(z, 'O1', ctx.bei(40))).zustand;
+    assert.deepEqual(aktuell(z).nebenHaltung, {});
+  });
+
+  test('Text für Anzeige und Abschluss: nicht Angegebenes gilt als Sonstige', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
+    z = ok(B.tippeNeben(z, 'T6', ctx.bei(20))).zustand;
+    assert.equal(B.nebenText(SCHEMA, aktuell(z)), 'NT3 (N9, H9), NT6');
+    z = ok(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(21))).zustand;
+    assert.equal(B.nebenText(SCHEMA, aktuell(z)), 'NT3 (N1, H9), NT6');
   });
 });

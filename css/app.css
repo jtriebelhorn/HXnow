@@ -286,8 +286,8 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 
 .raster-o { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .raster-o .taste { min-height: 52px; }
-.raster-o .taste { padding: 2px 4px; }
-.raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; overflow-wrap: break-word; max-width: 100%; }
+.raster-o .taste { padding: 2px 1px; }
+.raster-o .taste .kurz { font-size: 0.68rem; font-weight: 600; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }
 /* Bereiche der Kodieransicht: Ort (türkis), Tätigkeit (blau), Gleichzeitig (violett) */
 .bereich {
@@ -338,7 +338,6 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .zusatz.optional { outline: 1px dashed var(--rand); }
 .zusatz .taste { padding: 2px; }
 .zusatz .taste .kurz { font-size: 0.7rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
-.ergaenzen .zusatz { grid-template-columns: 1fr; }
 
 .fuss-kodierung {
   position: fixed; left: 0; right: 0; bottom: 0;
@@ -390,8 +389,6 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .tabelle .zahl { text-align: right; font-variant-numeric: tabular-nums; }
 .episodenliste { margin-top: 16px; }
 .episodenliste summary { min-height: 48px; display: flex; align-items: center; font-weight: 600; cursor: pointer; }
-.ergaenzen { border-top: 1px solid var(--rand); padding-top: 8px; margin-top: 8px; }
-.ergaenzen p { margin: 0 0 6px; font-weight: 600; }
 
 /* Optionale Angaben und Pausenanzeige */
 .optional { font-weight: 400; color: var(--text-leise); font-size: 0.9em; }
