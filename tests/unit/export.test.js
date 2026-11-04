@@ -202,7 +202,21 @@ test('versucheTeilen: ohne canShare → null; Abbruch → „abgebrochen“; Erf
 test('Spalten: neben_<Code> je gleichzeitiger Tätigkeit direkt nach „haltung“', () => {
   const k = X.spaltenBeobachtung(SCHEMA);
   const i = k.indexOf('haltung');
-  assert.deepEqual(k.slice(i + 1, i + 6), ['neben_T5', 'neben_T6', 'neben_T7', 'neben_T3', 'neben_T4']);
-  assert.equal(k[i + 6], 'unvollstaendig');
+  assert.deepEqual(k.slice(i + 1, i + 7), ['neben_T5', 'neben_T6', 'neben_T7', 'neben_T3', 'neben_T4', 'neben_T3_nutzung']);
+  assert.equal(k[i + 7], 'unvollstaendig');
   assert.deepEqual(X.spaltenBeobachtung({ ...SCHEMA, nebentaetigkeiten: [] }), [...X.SPALTEN_BEOBACHTUNG]);
+});
+
+test('HX Now gleichzeitig: neben_T3 = 1 und Nutzungsart in neben_T3_nutzung', () => {
+  const ctx = testKontext().bei(0);
+  let z = ok(B.erzeugeBlock(ANGABEN_POST, ctx));
+  z = ok(B.tippeOrt(z, 'O3', ctx));
+  z = ok(B.tippeTaetigkeit(z, 'T5', ctx));
+  z = ok(B.tippeNeben(z, 'T3', ctx.bei(30)));
+  z = ok(B.tippeNebenNutzung(z, 'T3', 'N3', ctx.bei(31)));
+  z = B.pruefeAblauf(z, ctx.bei(900)).zustand;
+  const [kopf, ...zeilen] = X.blockDatei(z, SCHEMA).inhalt.slice(1).split('\r\n').filter(Boolean).map((l) => l.split(';'));
+  const sp = (n) => kopf.indexOf(n);
+  assert.deepEqual(zeilen.map((w) => [w[sp('taetigkeit')], w[sp('neben_T3')], w[sp('neben_T3_nutzung')], w[sp('dauer_sek')]]),
+    [['T5', '0', '', '30'], ['T5', '1', 'N3', '870']]);
 });

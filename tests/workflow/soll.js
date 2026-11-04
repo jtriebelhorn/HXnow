@@ -48,6 +48,10 @@ export class SollBlock {
   ort(code) { return this.schema.orte.find((x) => x.code === code); }
   /** Codes der „gleichzeitig“-Schalter in Schema-Reihenfolge */
   get nebenCodes() { return this.schema.nebentaetigkeiten ?? []; }
+  /** gleichzeitige Geräte mit Nutzungsart (HX Now) */
+  get nebenGeraete() {
+    return this.nebenCodes.filter((c) => this.t(c).geraet && this.schema.nutzungsart.some((n) => n.giltFuer.includes(c)));
+  }
   /** PC/Visitenwagen (ortsfest) an einem Ort „unterwegs“ – gibt es nicht */
   unmoeglich(t, o) { return Boolean(this.t(t).ortsfest && this.ort(o).unterwegs); }
   get gehen() { return this.schema.taetigkeiten.find((x) => x.nurGehen).code; }
@@ -58,7 +62,7 @@ export class SollBlock {
    * Gleichzeitige Tätigkeiten laufen weiter, außer der neuen Tätigkeit selbst; bei „Gehen“ entfallen alle.
    * Ort „unterwegs“ legt die Haltung fest (gehend); wer von dort weggeht, muss sie neu angeben.
    */
-  neueEpisode(ts, t, o, uebernehmen, neben = this.akt?.neben ?? []) {
+  neueEpisode(ts, t, o, uebernehmen, neben = this.akt?.neben ?? [], nn = this.akt?.nn ?? {}) {
     const { felder, pflicht } = this.zusatz(t);
     const vorher = this.akt;
     const ep = {
@@ -72,6 +76,7 @@ export class SollBlock {
       neben: this.t(t).nurGehen ? [] : this.nebenCodes.filter((c) => c !== t && neben.includes(c)),
       kommentar: '',
     };
+    ep.nn = Object.fromEntries(Object.entries(nn).filter(([c]) => ep.neben.includes(c))); // Nutzungsart gleichzeitiger Geräte
     if (felder.includes('h')) {
       const fest = this.ort(o).haltung;
       if (fest) { ep.h = fest; ep.offen.delete('h'); }
@@ -175,6 +180,16 @@ export class SollBlock {
     this.neueEpisode(ts, a.t, a.o, true);
   }
 
+  /** Nutzungsart eines gleichzeitigen Geräts: erstes Setzen ergänzt die Episode, ein Wechsel beginnt eine neue */
+  tippeNebenNutzung(ts, c, code) {
+    this.log(ts, `Gleichzeitig ${c}: Nutzungsart ${code} getippt`);
+    const a = this.akt;
+    if (!a.neben.includes(c) || a.nn[c] === code) return false;
+    if (a.nn[c] === undefined) { a.nn[c] = code; return true; }
+    this.neueEpisode(ts, a.t, a.o, true, a.neben, { ...a.nn, [c]: code });
+    return true;
+  }
+
   // ------------------------------------------------------------ Ende
   pausenMsBis(ts) {
     return this.pausen.reduce((s, p) => s + Math.max(0, Math.min(p.endTs ?? ts, ts) - p.startTs), 0);
@@ -274,6 +289,7 @@ export class SollBlock {
         Object.assign(z, {
           taetigkeit: x.e.t, ort: x.e.o, nutzungsart: x.e.n ?? '', haltung: x.e.h ?? '',
           ...Object.fromEntries(this.nebenCodes.map((c) => [`neben_${c}`, x.e.neben.includes(c) ? '1' : '0'])),
+          ...Object.fromEntries(this.nebenGeraete.map((c) => [`neben_${c}_nutzung`, x.e.nn[c] ?? ''])),
           unvollstaendig: [...x.e.offen].some((f) => pflicht.includes(f)) ? '1' : '0',
           pause_grund: '', pause_freitext: '', kommentar: x.e.kommentar,
         });
@@ -281,6 +297,7 @@ export class SollBlock {
         Object.assign(z, {
           taetigkeit: '', ort: '', nutzungsart: '', haltung: '',
           ...Object.fromEntries(this.nebenCodes.map((c) => [`neben_${c}`, ''])),
+          ...Object.fromEntries(this.nebenGeraete.map((c) => [`neben_${c}_nutzung`, ''])),
           unvollstaendig: '',
           pause_grund: x.p.grund ?? '', pause_freitext: x.p.notiz, kommentar: '',
         });

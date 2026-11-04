@@ -470,7 +470,41 @@ export function tippeNeben(zustand, code, ctx) {
   }
   const ep = baueEpisode(zustand, ctx, schema, {
     taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt),
-    neben: an ? [...neben, code] : neben.filter((c) => c !== code),
+    neben: an ? [...neben, code] : neben.filter((c) => c !== code), nebenNutzung: akt.nebenNutzung,
+  });
+  return mitNeuerEpisode(zustand, ep, ctx);
+}
+
+/** Gleichzeitige Tätigkeiten, für die eine Nutzungsart erfasst wird (Geräte, z. B. HX Now). */
+export function nebenMitNutzung(schema) {
+  return nebentaetigkeiten(schema).filter((c) => finde(schema.taetigkeiten, c)?.geraet && nutzungsartenFuer(schema, c).length > 0);
+}
+
+/**
+ * Nutzungsart einer gleichzeitigen Gerätenutzung (z. B. was mit HX Now gemacht wird, während die Haupttätigkeit
+ * T5 ist). Optional. Noch leer → wird in der laufenden Episode ergänzt; anderer Wert → neue Episode
+ * (wie bei der Nutzungsart der Haupttätigkeit).
+ */
+export function tippeNebenNutzung(zustand, nebenCode, code, ctx) {
+  const sperre = eingabeSperre(zustand, ctx);
+  if (sperre) return sperre;
+  const { schema } = ctx;
+  const akt = aktuelleEpisode(zustand);
+  if (!akt || !(akt.neben ?? []).includes(nebenCode) || !nebenMitNutzung(schema).includes(nebenCode)) {
+    return abgelehnt(zustand, 'NICHT_GLEICHZEITIG', 'Bitte zuerst die gleichzeitige Tätigkeit einschalten.');
+  }
+  if (!finde(nutzungsartenFuer(schema, nebenCode), code)) {
+    return abgelehnt(zustand, 'NICHT_ZULAESSIG', `Nutzungsart ${code} gilt nicht für ${nebenCode}.`);
+  }
+  const bisher = akt.nebenNutzung?.[nebenCode] ?? null;
+  if (bisher === code) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
+  const nebenNutzung = { ...(akt.nebenNutzung ?? {}), [nebenCode]: code };
+  if (bisher === null) {
+    const ep = { ...akt, nebenNutzung };
+    return erfolg(ersetze(zustand, ep), { episoden: [ep] }, { neueEpisode: false });
+  }
+  const ep = baueEpisode(zustand, ctx, schema, {
+    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), neben: akt.neben, nebenNutzung,
   });
   return mitNeuerEpisode(zustand, ep, ctx);
 }
@@ -512,6 +546,7 @@ function setzeZusatz(zustand, feld, code, ctx) {
 
   const ep = baueEpisode(zustand, ctx, schema, {
     taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), [feld]: code, neben: akt.neben,
+    nebenNutzung: akt.nebenNutzung,
   });
   return mitNeuerEpisode(zustand, ep, ctx);
 }
@@ -859,7 +894,10 @@ function zusatzUebernehmen(ep) {
  */
 function werteFuer(schema, vorher, t, o) {
   const zusatz = vorher && vorher.taetigkeit === t ? zusatzUebernehmen(vorher) : zusatzStart(schema, t);
-  return { taetigkeit: t, ort: o, ...haltungAmOrt(schema, t, vorher?.ort ?? null, o, zusatz), neben: vorher?.neben ?? [] };
+  return {
+    taetigkeit: t, ort: o, ...haltungAmOrt(schema, t, vorher?.ort ?? null, o, zusatz),
+    neben: vorher?.neben ?? [], nebenNutzung: vorher?.nebenNutzung ?? {},
+  };
 }
 
 /**
@@ -900,6 +938,13 @@ function mitVollstaendigkeit(schema, ep) {
 }
 
 function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
+  const ep = baueEpisodeRoh(zustand, ctx, schema, werte, startTs);
+  // Nutzungsart nur für gleichzeitige Geräte, die in dieser Episode noch an sind
+  ep.nebenNutzung = Object.fromEntries(Object.entries(werte.nebenNutzung ?? {}).filter(([c]) => ep.neben.includes(c)));
+  return ep;
+}
+
+function baueEpisodeRoh(zustand, ctx, schema, werte, startTs) {
   const aktiv = aktiveEpisoden(zustand);
   return mitVollstaendigkeit(schema, {
     episodeId: ctx.uuid(),
@@ -914,6 +959,7 @@ function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
     haltung: werte.haltung ?? null,
     offeneZusaetze: werte.offeneZusaetze ?? [],
     neben: sortiereNeben(schema, werte.neben ?? [], werte.taetigkeit), // gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)
+    nebenNutzung: {}, // Nutzungsart gleichzeitiger Geräte, z. B. { T3: 'N1' } (ENTSCHEIDUNGEN Nr. 23)
     kommentar: '',
     geloescht: false,
   });

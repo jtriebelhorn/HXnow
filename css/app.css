@@ -18,6 +18,14 @@
   --ok-flaeche: #e3f4e6;
   --phase-pre: #5b4a00;
   --phase-post: #0b5a2b;
+  --ort: #0f766e;
+  --ort-text: #ffffff;
+  --ort-flaeche: #e3f3f1;
+  --taetigkeit: #0b3d6b;
+  --taetigkeit-flaeche: #e7eef7;
+  --neben: #6d28d9;
+  --neben-text: #ffffff;
+  --neben-flaeche: #efe8fc;
   --taste-min: 48px;
   --abstand: 16px;
   --radius: 10px;
@@ -42,6 +50,14 @@
     --ok-flaeche: #16301d;
     --phase-pre: #f0d060;
     --phase-post: #6fdc95;
+    --ort: #2dd4bf;
+    --ort-text: #062723;
+    --ort-flaeche: #11302c;
+    --taetigkeit: #5aa9f0;
+    --taetigkeit-flaeche: #15243a;
+    --neben: #b794f6;
+    --neben-text: #1a1033;
+    --neben-flaeche: #251c3d;
   }
 }
 
@@ -268,11 +284,45 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .raster-t { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .raster-t .taste { min-height: 52px; }
 
-.raster-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.raster-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .raster-o .taste { padding: 2px 4px; }
 .raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }
-.bereich-t.gedimmt, .bereich-o.gedimmt { opacity: 0.55; }
+/* Bereiche der Kodieransicht: Ort (türkis), Tätigkeit (blau), Gleichzeitig (violett) */
+.bereich {
+  --farbe: var(--taetigkeit); --farbe-text: var(--aktiv-text); --farbe-flaeche: var(--taetigkeit-flaeche);
+  margin-bottom: 10px; padding: 6px 8px 8px; border-radius: 14px;
+  background: var(--farbe-flaeche); border-left: 5px solid var(--farbe);
+}
+.bereich-o { --farbe: var(--ort); --farbe-text: var(--ort-text); --farbe-flaeche: var(--ort-flaeche); }
+.bereich-neben { --farbe: var(--neben); --farbe-text: var(--neben-text); --farbe-flaeche: var(--neben-flaeche); }
+.bereich-titel {
+  display: block; margin: 0 0 5px 2px; color: var(--farbe);
+  font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+}
+.bereich .taste { background: var(--hintergrund); border-color: color-mix(in srgb, var(--farbe) 35%, var(--rand)); }
+.bereich .taste[aria-pressed="true"] { background: var(--farbe); border-color: var(--farbe); color: var(--farbe-text); }
+.bereich .zusatz { background: transparent; padding: 0; }
+.bereich .zusatz.offen { padding: 4px; }
+.bereich.gedimmt { opacity: 0.55; }
+.neben-kopf {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 48px; padding: 4px 4px 4px 2px;
+  background: transparent; border: 0; color: var(--text); text-align: left;
+}
+.neben-kopf .bereich-titel { margin: 0; }
+.neben-zusammenfassung { flex: 1; display: flex; flex-wrap: wrap; gap: 4px; }
+.neben-kopf .pfeil { color: var(--farbe); font-size: 1.1rem; }
+.bereich-neben.zu { padding-top: 2px; padding-bottom: 2px; }
+.neben-tasten { margin-bottom: 6px; }
+.leise { color: var(--text-leise); font-weight: 400; font-size: 0.85rem; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; font-size: 0.85rem; color: var(--text); }
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--chip-farbe); flex: none; }
+.chip-o { --chip-farbe: var(--ort); background: var(--ort-flaeche); }
+.chip-t { --chip-farbe: var(--taetigkeit); background: var(--taetigkeit-flaeche); }
+.chip-neben { --chip-farbe: var(--neben); background: var(--neben-flaeche); }
+.aktuell-text { display: flex; flex-wrap: wrap; gap: 4px; }
+.aktuell-text .trenner { display: none; } /* nur für Vorlesen und Textvergleich */
+.neben-tasten .taste .kurz { font-size: 0.78rem; }
 
 .zusatz {
   margin-top: 6px; padding: 4px; border-radius: var(--radius); background: var(--flaeche);

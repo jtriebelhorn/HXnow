@@ -795,3 +795,33 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
     assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).neben], ['T1', ['T6']]);
   });
 });
+
+describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGEN Nr. 23)', () => {
+  test('erst setzen ohne neue Episode, Wechsel → neue Episode; entfällt mit dem Schalter', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
+    assert.deepEqual(B.nebenMitNutzung(SCHEMA), ['T3']);
+    abgelehnt(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(5)), 'NICHT_GLEICHZEITIG');
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
+    assert.deepEqual(aktuell(z).nebenNutzung, {});
+    z = ok(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(11))).zustand;
+    assert.equal(aktive(z).length, 2, 'erstes Setzen ohne neue Episode');
+    assert.equal(ok(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(12))).unveraendert, true);
+    abgelehnt(B.tippeNebenNutzung(z, 'T3', 'N7', ctx.bei(12)), 'NICHT_ZULAESSIG');
+    z = ok(B.tippeNebenNutzung(z, 'T3', 'N4', ctx.bei(20))).zustand;
+    assert.deepEqual([aktive(z).length, aktuell(z).nebenNutzung], [3, { T3: 'N4' }]);
+    z = ok(B.tippeOrt(z, 'O10', ctx.bei(30))).zustand; // läuft über Ortswechsel weiter
+    assert.deepEqual(aktuell(z).nebenNutzung, { T3: 'N4' });
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(40))).zustand; // aus
+    assert.deepEqual([aktuell(z).neben, aktuell(z).nebenNutzung], [[], {}]);
+  });
+
+  test('HX Now wird Haupttätigkeit → gleichzeitige Nutzungsart entfällt', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O3']);
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
+    z = ok(B.tippeNebenNutzung(z, 'T3', 'N2', ctx.bei(11))).zustand;
+    z = ok(B.tippeTaetigkeit(z, 'T3', ctx.bei(20))).zustand;
+    assert.deepEqual([aktuell(z).neben, aktuell(z).nebenNutzung, aktuell(z).nutzungsart], [[], {}, 'N9']);
+  });
+});

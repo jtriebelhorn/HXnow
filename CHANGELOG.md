@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.1 – 04.11.2026
+- Kodieransicht übersichtlicher: farbige Bereiche mit Überschrift – Ort (türkis), Tätigkeit mit Nutzung und Haltung
+  (blau), Gleichzeitig (violett); Anzeige der laufenden Episode als farbige Marken.
+- „Gleichzeitig“ steht unter Nutzung/Haltung und ist zugeklappt; aufklappen bei Bedarf, eingeschaltete
+  Tätigkeiten bleiben in der Kopfzeile sichtbar.
+- HX Now gleichzeitig: Nutzungsart wählbar (was mit HX Now gemacht wird), neue CSV-Spalte `neben_T3_nutzung`
+  (ENTSCHEIDUNGEN Nr. 23).
+
 ## 0.5.0 – 04.11.2026
 Kodierschema 0.3 / Kodierhandbuch-Entwurf 0.3 (ENTSCHEIDUNGEN Nr. 16 verworfen, Nr. 19–22):
 - Erst Ort, dann Tätigkeit: Ortstasten stehen über den Tätigkeitstasten, Anzeige „O… · T…“.

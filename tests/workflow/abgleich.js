@@ -11,10 +11,13 @@ const FESTE_SPALTEN = [
   'nr', 'start', 'ende', 'dauer_sek', 'taetigkeit', 'ort', 'nutzungsart', 'haltung', 'unvollstaendig',
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
 ];
-/** Nach `haltung` je gleichzeitiger Tätigkeit des Kodierschemas eine Spalte neben_<Code>. */
+/** Nach `haltung` je gleichzeitiger Tätigkeit eine Spalte neben_<Code>, je gleichzeitigem Gerät neben_<Code>_nutzung. */
 export function erwarteteSpalten(schema) {
   const i = FESTE_SPALTEN.indexOf('haltung') + 1;
-  return [...FESTE_SPALTEN.slice(0, i), ...(schema.nebentaetigkeiten ?? []).map((c) => `neben_${c}`), ...FESTE_SPALTEN.slice(i)];
+  const neben = schema.nebentaetigkeiten ?? [];
+  const geraete = neben.filter((c) => schema.taetigkeiten.find((t) => t.code === c)?.geraet
+    && schema.nutzungsart.some((n) => n.giltFuer.includes(c)));
+  return [...FESTE_SPALTEN.slice(0, i), ...neben.map((c) => `neben_${c}`), ...geraete.map((c) => `neben_${c}_nutzung`), ...FESTE_SPALTEN.slice(i)];
 }
 const ISO_SPALTEN = ['block_start', 'block_ende', 'start', 'ende'];
 const PLATZHALTER = /\b(undefined|null|NaN)\b|\[object /;
@@ -119,6 +122,7 @@ export function pruefeRohdaten(soll, db) {
     gleich(`Episode ${s.nr} Kommentar`, e.kommentar, s.kommentar);
     gleich(`Episode ${s.nr} erfasst (Tipp)`, e.erfasstTs, s.erfasstTs);
     gleich(`Episode ${s.nr} gleichzeitig`, (e.neben ?? []).join('+'), s.neben.join('+'));
+    gleich(`Episode ${s.nr} Nutzungsart gleichzeitig`, JSON.stringify(e.nebenNutzung ?? {}), JSON.stringify(s.nn));
   });
   const pausen = [...db.pausen].sort((x, y) => x.startTs - y.startTs);
   gleich('Anzahl Pausen', pausen.length, soll.pausen.length);

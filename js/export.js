@@ -5,7 +5,7 @@
 // WICHTIG (Safari): versucheTeilen() muss synchron aus einem Klick-Handler aufgerufen werden,
 // ohne vorheriges `await`. Die Datei wird daher synchron aus dem Zustand im Speicher erzeugt.
 
-import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek } from './block.js';
+import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek, nebenMitNutzung } from './block.js';
 import { istTestPseudonym, nebentaetigkeiten } from './schema.js';
 import { isoMitOffset, datumLokal, dateinameZeit } from './zeit.js';
 
@@ -29,10 +29,21 @@ export const SPALTEN_BEOBACHTUNG = Object.freeze([
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
 ]);
 
-/** Alle Spalten der Block-CSV für ein Kodierschema: feste Spalten plus `neben_<Code>` nach `haltung`. */
+/**
+ * Alle Spalten der Block-CSV für ein Kodierschema: feste Spalten plus nach `haltung` je gleichzeitiger Tätigkeit
+ * `neben_<Code>` (0/1) und je gleichzeitigem Gerät `neben_<Code>_nutzung` (Nutzungsart).
+ */
 export function spaltenBeobachtung(schema) {
   const i = SPALTEN_BEOBACHTUNG.indexOf('haltung') + 1;
-  return [...SPALTEN_BEOBACHTUNG.slice(0, i), ...nebentaetigkeiten(schema).map((c) => `neben_${c}`), ...SPALTEN_BEOBACHTUNG.slice(i)];
+  return [...SPALTEN_BEOBACHTUNG.slice(0, i), ...nebenSpalten(schema).map((s) => s.name), ...SPALTEN_BEOBACHTUNG.slice(i)];
+}
+
+/** Zusatzspalten für gleichzeitige Tätigkeiten mit ihrem Wert je Episode. */
+function nebenSpalten(schema) {
+  return [
+    ...nebentaetigkeiten(schema).map((c) => ({ name: `neben_${c}`, wert: (e) => ((e.neben ?? []).includes(c) ? 1 : 0) })),
+    ...nebenMitNutzung(schema).map((c) => ({ name: `neben_${c}_nutzung`, wert: (e) => e.nebenNutzung?.[c] ?? '' })),
+  ];
 }
 
 export const SPALTEN_VERSUCH = Object.freeze([
@@ -111,7 +122,7 @@ export function blockDatei(zustand, schema) {
     post && b.hxGeraetMarkiertTs !== null && b.hxGeraetMarkiertTs !== undefined ? isoMitOffset(b.hxGeraetMarkiertTs) : '',
   ];
   const spalten = spaltenBeobachtung(schema);
-  const neben = nebentaetigkeiten(schema);
+  const neben = nebenSpalten(schema);
   const leerZeile = Array(spalten.length - blockFelder.length - 2).fill('');
   const zeilen = zl.length === 0
     ? [['block', ...blockFelder, ...leerZeile, 0]]
@@ -119,7 +130,7 @@ export function blockDatei(zustand, schema) {
       x.art, ...blockFelder,
       i + 1, zeit(x.startSek), zeit(x.endeSek), x.dauerSek,
       ...(x.art === 'episode'
-        ? [x.taetigkeit, x.ort, x.nutzungsart ?? '', x.haltung ?? '', ...neben.map((c) => ((x.neben ?? []).includes(c) ? 1 : 0)),
+        ? [x.taetigkeit, x.ort, x.nutzungsart ?? '', x.haltung ?? '', ...neben.map((sp) => sp.wert(x)),
           x.unvollstaendig ? 1 : 0, '', '', x.kommentar ?? '']
         : ['', '', '', '', ...neben.map(() => ''), '', x.grund ?? '', x.freitext ?? '', '']),
       zl.length,

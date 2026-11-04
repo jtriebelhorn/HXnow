@@ -52,7 +52,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     await expect(box).toContainText(`#${a.nr}`);
     await expect(box).toContainText(`${a.o} `);
     await expect(box).toContainText(` ${a.t} `);
-    if (a.neben.length) await expect(box).toContainText(`gleichzeitig ${a.neben.join(', ')}`);
+    if (a.neben.length) await expect(box).toContainText(`gleichzeitig ${a.neben.map((c) => (a.nn[c] ? `${c} (${a.nn[c]})` : c)).join(', ')}`);
     else await expect(box).not.toContainText('gleichzeitig');
     if (a.n && !a.offen.has('n')) await expect(box).toContainText(a.n);
     if (a.h && !a.offen.has('h')) await expect(box).toContainText(a.h);
@@ -204,12 +204,20 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
         const ts = await jetzt(); await tippe(`o-${o}`); soll.tippeO(ts, o); await synchron(soll);
         return;
       }
-      if (x < 0.52) { // gleichzeitige Tätigkeit ein- oder ausschalten
+      if (x < 0.52) { // gleichzeitige Tätigkeit ein- oder ausschalten („Gleichzeitig“ dazu bei Bedarf aufklappen)
         const code = nebenWahl(r, a.t, m.phase, a.neben);
         if (code) {
+          const kopf = page.locator('[data-test=neben-oeffnen]');
+          if ((await kopf.getAttribute('aria-expanded')) !== 'true') await kopf.tap();
           const ts = await jetzt(); await tippe(`neben-${code}`); soll.tippeNeben(ts, code); await synchron(soll);
           await expect(page.locator(`[data-test=neben-${code}]`)).toHaveAttribute('aria-pressed', String(soll.akt.neben.includes(code)));
           zaehler.neben++;
+          if (soll.nebenGeraete.includes(code) && soll.akt.neben.includes(code) && r.ja(0.75)) { // was mit HX Now gemacht wird
+            const n = nutzungsart(r, code, a.o);
+            await vor(r.dauerMs(0.4, 2));
+            const ts2 = await jetzt(); await tippe(`nn-${code}-${n}`); soll.tippeNebenNutzung(ts2, code, n); await synchron(soll);
+          }
+          if (r.ja(0.4)) await kopf.tap(); // wieder zuklappen
           return;
         }
       }

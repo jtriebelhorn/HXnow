@@ -1,6 +1,6 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.0 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+Gilt ab App-Version 0.5.1 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
 (Version in der Spalte `schema_version`).
 
@@ -64,6 +64,7 @@ Eine Zeile je Episode und je Pause, chronologisch (Long-Format). Die Blockangabe
 | `nutzungsart` | Nutzungsart | `N1`–`N5` (`N5` = Warten), `N9`; nur bei T1–T3, leer = nicht kodiert |
 | `haltung` | Körperhaltung | `H1`–`H4`; nur bei T3; am Ort O10 immer `H1` |
 | `neben_T5`, `neben_T6`, `neben_T7`, `neben_T3`, `neben_T4` | gleichzeitige Tätigkeit (Patient/in, Kollegen/Pflege, Telefon, HX Now, Mobilgerät) neben der Haupttätigkeit | `1` = gleichzeitig, `0` = nicht; leer bei Pause. Welche Spalten es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
+| `neben_T3_nutzung` | was bei gleichzeitiger HX-Now-Nutzung gemacht wird | `N1`–`N5`, `N9`; leer = nicht angegeben bzw. HX Now nicht gleichzeitig (optional) |
 | `unvollstaendig` | Pflichtangabe (Nutzungsart/Haltung bei T3) fehlt | `1`, `0`; leer bei Pause |
 | `pause_grund` | Pausengrund | `P1`–`P5`, leer = nicht angegeben; nur bei Pause |
 | `pause_freitext` | Notiz zur Pause | Freitext; nur bei Pause |

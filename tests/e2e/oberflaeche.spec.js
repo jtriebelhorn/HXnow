@@ -385,6 +385,11 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await expect(page.locator('[data-test=aufforderung]')).toHaveText('Ort und Tätigkeit wählen');
   const oben = async (id) => (await page.locator(`[data-test=${id}]`).boundingBox()).y;
   expect(await oben('o-O1')).toBeLessThan(await oben('t-T1')); // Ortstasten über den Tätigkeitstasten
+  // „Gleichzeitig“ ist zugeklappt und steht unter der Tätigkeit
+  await expect(page.locator('[data-test=neben-oeffnen]')).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('[data-test=neben-T5]')).toHaveCount(0);
+  expect(await oben('neben-oeffnen')).toBeGreaterThan(await oben('t-T10'));
+  await page.click('[data-test=neben-oeffnen]');
   await expect(page.locator('[data-test=neben-T5]')).toBeDisabled(); // vor der ersten Episode
 
   await tippe(page, 'o-O1');
@@ -415,6 +420,20 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await page.click('[data-test=neben-T5]');
   await expect(page.locator('[data-test=neben-T5]')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.locator('[data-test=aktuelle-episode]')).not.toContainText('gleichzeitig');
+  // Gespräch mit der Patientin, dabei kurz HX Now: was wird mit HX Now gemacht?
+  await page.clock.fastForward('00:10');
+  await tippe(page, 't-T5');
+  await tippe(page, 'neben-T3');
+  await expect(page.locator('[data-test=zeile-neben-nutzung-T3]')).toBeVisible();
+  await tippe(page, 'nn-T3-N4');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T3 (N4)');
+  // Zuklappen: eingeschaltete Tätigkeiten bleiben in der Kopfzeile sichtbar
+  await page.click('[data-test=neben-oeffnen]');
+  await expect(page.locator('[data-test=nn-T3-N4]')).toHaveCount(0);
+  await expect(page.locator('[data-test=neben-oeffnen]')).toContainText('HX');
+  // Nutzung der Haupttätigkeit steht über „Gleichzeitig“
+  await tippe(page, 't-T3');
+  expect(await oben('zeile-nutzungsart')).toBeLessThan(await oben('neben-oeffnen'));
 
   const daten = await leseDb(page);
   const aktiv = daten.episoden.filter((e) => !e.geloescht).sort((a, b) => a.nr - b.nr);
@@ -426,7 +445,11 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
     ['O3', 'T3', 'N2', 'H2', ''],
     ['O3', 'T3', 'N2', 'H2', 'T5'],
     ['O3', 'T3', 'N2', 'H2', ''],
+    ['O3', 'T5', null, null, ''],
+    ['O3', 'T5', null, null, 'T3'],
+    ['O3', 'T3', 'N9', null, ''],
   ]);
+  expect(aktiv[8].nebenNutzung).toEqual({ T3: 'N4' });
   expect(daten.bloecke[0].hxGeraetAutomatisch).toBe(true);
 });
 
@@ -436,6 +459,8 @@ test('Prä-Phase: HX Now ist weder Tätigkeit noch gleichzeitig wählbar', async
   await tippe(page, 'o-O3');
   await tippe(page, 't-T5');
   await expect(page.locator('[data-test=t-T3]')).toBeDisabled();
+  await page.click('[data-test=neben-oeffnen]');
+  await expect(page.locator('[data-test=neben-T6]')).toBeVisible();
   await expect(page.locator('[data-test=neben-T3]')).toHaveCount(0);
   await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
   await tippe(page, 'neben-T6');

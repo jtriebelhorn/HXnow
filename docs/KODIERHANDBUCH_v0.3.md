@@ -146,7 +146,8 @@ Läuft neben der Haupttätigkeit sichtbar eine weitere Tätigkeit, wird sie mit 
 - Der Schalter bleibt an, auch wenn Ort oder Haupttätigkeit wechseln, und wird abgewählt, sobald die gleichzeitige Tätigkeit endet.
 - Wird die gleichzeitige Tätigkeit zur Haupttätigkeit, entfällt der Schalter automatisch.
 - Bei T9 „Gehen ohne weitere Tätigkeit“ gibt es keine gleichzeitige Tätigkeit.
-- HX Now als gleichzeitige Tätigkeit setzt „Gerät dabei“ (4.6) ebenso wie T3.
+- HX Now als gleichzeitige Tätigkeit setzt „Gerät dabei“ (4.6) ebenso wie T3. Zusätzlich kann (optional) die Nutzungsart erfasst werden, also was mit HX Now gemacht wird (4.3).
+- In der App ist „Gleichzeitig“ zugeklappt und wird bei Bedarf geöffnet; eingeschaltete Tätigkeiten bleiben in der Kopfzeile sichtbar.
 
 Da Haupttätigkeit und gleichzeitige Tätigkeiten vollständig gespeichert werden, kann die Auswertung die Prioritätsregel nachprüfen und z. B. „Dokumentation mit beteiligter Patientin“ (T1–T3 mit gleichzeitig T5) getrennt ausweisen.
 
@@ -166,6 +167,7 @@ Da Haupttätigkeit und gleichzeitige Tätigkeiten vollständig gespeichert werde
 | Am PC, KIS lädt bzw. Anmeldung läuft | O1, T1, N5 | Warten am Gerät |
 | Wartet, bis ein PC frei wird | O1, T1, N5 | Warten auf das Gerät |
 | Dokumentation in HX Now am Bett, Gespräch mit der Patientin läuft weiter | O3, T3, N2, gleichzeitig T5 | Gerät vor Patientenkontakt; Kontakt bleibt sichtbar |
+| Gespräch mit der Patientin, HX Now nur kurz zum Fotografieren der Wunde | O3, T5, gleichzeitig T3 mit N4 | Nur wenn das Gespräch die Haupttätigkeit bleibt; sonst T3 mit N4 |
 | Warten auf den Aufzug mit HX Now | O8, T3, H4 | Wartesituation |
 | Diktat in HX Now am Patientenbett | O3, T3, N3 | Sprachdokumentation, nicht Telefonat |
 | Privates Smartphone kurz angesehen (unter 5 s) | laufende Episode | Mindestdauer nicht erreicht (gilt nicht für HX Now) |
