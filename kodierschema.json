@@ -1,11 +1,10 @@
 {
-  "schemaVersion": "0.2",
+  "schemaVersion": "0.3",
   "studie": "HX Now im Klinikalltag",
   "blockDauerSek": 900,
   "blockDauerOptionenSek": [600, 900],
   "warnungVorEndeSek": 60,
   "pauseMaxSek": 300,
-  "korrekturfensterSek": 3,
   "nutzungsartBeiT1T2": true,
   "pflichtangaben": {
     "block": ["pseudonym", "phase", "bereich", "beobachter"],
@@ -41,18 +40,19 @@
     { "code": "K7", "gruppe": "Notaufnahme", "label": "Notaufnahmestation" }
   ],
   "taetigkeiten": [
-    { "code": "T1",  "label": "PC stationär",          "kurz": "PC",      "geraet": true },
-    { "code": "T2",  "label": "Visitenwagen / Laptop", "kurz": "Wagen",   "geraet": true },
+    { "code": "T1",  "label": "PC stationär",          "kurz": "PC",      "geraet": true, "ortsfest": true },
+    { "code": "T2",  "label": "Visitenwagen / Laptop", "kurz": "Wagen",   "geraet": true, "ortsfest": true },
     { "code": "T3",  "label": "HX Now",                "kurz": "HX",      "geraet": true, "nurPhase": "POST", "haltung": true, "nutzungsartPflicht": true, "setztGeraetDabei": true },
     { "code": "T4",  "label": "Sonstiges Mobilgerät",  "kurz": "Mobil" },
     { "code": "T5",  "label": "Patientenkontakt",      "kurz": "Patient" },
     { "code": "T6",  "label": "Gespräch Kollegen/Pflege", "kurz": "Gespräch" },
     { "code": "T7",  "label": "Telefonat",             "kurz": "Telefon" },
     { "code": "T8",  "label": "Papierdokumente",       "kurz": "Papier" },
-    { "code": "T9",  "label": "Wegzeit",               "kurz": "Weg" },
+    { "code": "T9",  "label": "Gehen ohne weitere Tätigkeit", "kurz": "Gehen", "nurGehen": true },
     { "code": "T10", "label": "Sonstiges",             "kurz": "Sonst." }
   ],
   "orte": [
+    { "code": "O10", "label": "Unterwegs", "unterwegs": true, "haltung": "H1" },
     { "code": "O1", "label": "Arztzimmer / Stützpunkt" },
     { "code": "O2", "label": "Flur / Gang" },
     { "code": "O3", "label": "Patientenzimmer" },
@@ -62,11 +62,13 @@
     { "code": "O7", "label": "Außerhalb Bereich" },
     { "code": "O8", "label": "Sonstiges" }
   ],
+  "nebentaetigkeiten": ["T5", "T6", "T7", "T3", "T4"],
   "nutzungsart": [
     { "code": "N1", "label": "Einsicht",        "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N2", "label": "Texteingabe",     "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N3", "label": "Sprache",         "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N4", "label": "Foto / Scan",     "giltFuer": ["T3"] },
+    { "code": "N5", "label": "Warten",          "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N9", "label": "Nicht erkennbar", "giltFuer": ["T1", "T2", "T3"] }
   ],
   "haltung": [

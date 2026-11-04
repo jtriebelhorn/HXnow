@@ -13,7 +13,7 @@
 //
 // Kontext `ctx`: { schema, now: () => number, uuid: () => string }, für Tests injizierbar.
 
-import { NUTZUNGSART_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben, korrekturfensterMs } from './schema.js';
+import { NUTZUNGSART_UNBEKANNT, GERAET_DABEI, blockDauerOptionen, pflichtangaben, nebentaetigkeiten } from './schema.js';
 
 export const STATUS = Object.freeze({
   LAUFEND: 'laufend',
@@ -408,7 +408,9 @@ export function tippeOrt(zustand, code, ctx) {
  * Wechselt Tätigkeit und/oder Ort. Der jeweils nicht angegebene Wert wird übernommen.
  * Neue Episode, sobald sich T oder O ändert; gleiche Werte bewirken nichts (`unveraendert: true`).
  * Bei reinem Ortswechsel werden Nutzungsart und Haltung übernommen; ein Tätigkeitswechsel
- * (auch zwischen Geräten) setzt sie zurück.
+ * (auch zwischen Geräten) setzt sie zurück. Gleichzeitige Tätigkeiten laufen weiter.
+ * Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ortswechsel nach „unterwegs“ während einer ortsfesten Tätigkeit (PC, Visitenwagen)
+ * → „Gehen ohne weitere Tätigkeit“; eine ortsfeste Tätigkeit unterwegs wird abgelehnt (erst den Ort wählen).
  */
 export function wechsle(zustand, ziel, ctx) {
   const sperre = eingabeSperre(zustand, ctx);
@@ -416,7 +418,7 @@ export function wechsle(zustand, ziel, ctx) {
   const { schema } = ctx;
   const akt = aktuelleEpisode(zustand);
   const basis = akt ?? zustand.auswahl;
-  const t = ziel.taetigkeit ?? basis.taetigkeit;
+  let t = ziel.taetigkeit ?? basis.taetigkeit;
   const o = ziel.ort ?? basis.ort;
 
   const fehlerT = ziel.taetigkeit !== undefined ? pruefeTaetigkeit(zustand, schema, ziel.taetigkeit) : null;
@@ -424,57 +426,53 @@ export function wechsle(zustand, ziel, ctx) {
   if (ziel.ort !== undefined && !finde(schema.orte, ziel.ort)) {
     return abgelehnt(zustand, 'CODE_UNBEKANNT', `Unbekannter Ort „${ziel.ort}“.`);
   }
+  if (ziel.taetigkeit === undefined && istOrtsfestUnterwegs(schema, t, o)) t = gehenCode(schema);
+  if (istOrtsfestUnterwegs(schema, t, o)) {
+    return abgelehnt(zustand, 'ORTSFEST',
+      `${finde(schema.taetigkeiten, t).label} ist unterwegs nicht möglich – bitte zuerst den Ort wählen.`);
+  }
 
   // Vor der ersten Episode: Auswahl sammeln; die erste Episode entsteht, sobald T und O feststehen.
   if (!akt) {
     const auswahl = { taetigkeit: t, ort: o };
     if (t === null || o === null) return erfolg({ ...zustand, auswahl }, {}, { neueEpisode: false });
-    const ep = baueEpisode(zustand, ctx, schema, { taetigkeit: t, ort: o, ...zusatzStart(schema, t) }, zustand.block.startTs);
+    const ep = baueEpisode(zustand, ctx, schema, werteFuer(schema, null, t, o), zustand.block.startTs);
     return mitNeuerEpisode({ ...zustand, auswahl }, ep, ctx);
   }
 
   if (t === akt.taetigkeit && o === akt.ort) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
-
-  const korrektur = korrigiere(zustand, akt, t, o, ctx);
-  if (korrektur) return korrektur;
-
-  const zusatz = t === akt.taetigkeit ? zusatzUebernehmen(akt) : zusatzStart(schema, t);
-  return mitNeuerEpisode(zustand, baueEpisode(zustand, ctx, schema, { taetigkeit: t, ort: o, ...zusatz }), ctx);
+  return mitNeuerEpisode(zustand, baueEpisode(zustand, ctx, schema, werteFuer(schema, akt, t, o)), ctx);
 }
 
 /**
- * Korrekturfenster (ENTSCHEIDUNGEN Nr. 16): Ein T/O-Tipp kurz nach dem Anlegen einer Episode (`korrekturfensterSek`)
- * ändert diese Episode, statt eine neue anzulegen – z. B. erst Ort, dann sofort Tätigkeit. Führt die Korrektur
- * zur Kodierung der Vorgänger-Episode zurück, war die Episode ein Vertipper und wird wie bei „Rückgängig“ gelöscht.
- * Die überschriebenen Werte bleiben in `korrekturen` der Episode gespeichert (Rohdaten).
- * Nicht bei Tätigkeiten mit Mindestdauer-Ausnahme (HX Now): Deren kurze Nutzung bleibt eine eigene Episode.
- * @returns Ergebnis oder null, wenn kein Korrekturfall vorliegt
+ * Schalter „gleichzeitig“ (ENTSCHEIDUNGEN Nr. 19): schaltet eine gleichzeitige Tätigkeit (z. B. Patient/in beteiligt
+ * während der Dokumentation) ein bzw. wieder aus. Jede Änderung beginnt eine neue Episode mit gleicher Tätigkeit,
+ * gleichem Ort, gleicher Nutzungsart und Haltung. Der Schalter bleibt über Tätigkeits- und Ortswechsel an.
  */
-function korrigiere(zustand, akt, t, o, ctx) {
+export function tippeNeben(zustand, code, ctx) {
+  const sperre = eingabeSperre(zustand, ctx);
+  if (sperre) return sperre;
   const { schema } = ctx;
-  const fenster = korrekturfensterMs(schema);
-  const ts = zeitpunkt(zustand, ctx);
-  if (fenster <= 0 || ts - (akt.erfasstTs ?? akt.startTs) >= fenster) return null;
-  const ausnahmen = schema.regelnAuswertung?.mindestdauerAusnahmen ?? [];
-  if (t !== akt.taetigkeit && ausnahmen.includes(akt.taetigkeit)) return null;
-
-  const korrekturen = [...(akt.korrekturen ?? []),
-    { ts, taetigkeit: akt.taetigkeit, ort: akt.ort, nutzungsart: akt.nutzungsart, haltung: akt.haltung }];
-  const aktiv = aktiveEpisoden(zustand);
-  const vorher = aktiv.length >= 2 ? aktiv[aktiv.length - 2] : null;
-  const pauseDazwischen = vorher && zustand.pausen.some((p) => p.startTs >= vorher.startTs && p.startTs <= akt.startTs);
-  if (vorher && !pauseDazwischen && vorher.taetigkeit === t && vorher.ort === o) {
-    const ep = { ...akt, geloescht: true, korrekturen };
-    const { zustand: z, block } = ohneGeraetDabeiWennLeer(ersetze(zustand, ep), ctx);
-    return erfolg(z, { episoden: [ep], block }, { korrigiert: true, neueEpisode: false, wiederAktiv: vorher });
+  const akt = aktuelleEpisode(zustand);
+  if (!akt) return abgelehnt(zustand, 'KEINE_EPISODE', 'Bitte zuerst Ort und Tätigkeit wählen.');
+  if (!nebentaetigkeiten(schema).includes(code)) {
+    return abgelehnt(zustand, 'CODE_UNBEKANNT', `„${code}“ kann nicht gleichzeitig erfasst werden.`);
   }
-  const zusatz = t === akt.taetigkeit ? zusatzUebernehmen(akt) : zusatzStart(schema, t);
-  const ep = mitVollstaendigkeit(schema, { ...akt, taetigkeit: t, ort: o, ...zusatz, korrekturen });
-  let z = ersetze(zustand, ep);
-  const block = geraetDabeiDurch(z, ep, ctx);
-  if (block) z = { ...z, block };
-  const { zustand: z2, block: block2 } = ohneGeraetDabeiWennLeer(z, ctx);
-  return erfolg(z2, { episoden: [ep], block: block2 ?? block }, { korrigiert: true, neueEpisode: false, episode: ep });
+  const fehlerT = pruefeTaetigkeit(zustand, schema, code);
+  if (fehlerT) return fehlerT;
+  const neben = akt.neben ?? [];
+  const an = !neben.includes(code);
+  if (an && code === akt.taetigkeit) {
+    return abgelehnt(zustand, 'GLEICHE_TAETIGKEIT', `${finde(schema.taetigkeiten, code).label} ist bereits die Tätigkeit.`);
+  }
+  if (an && finde(schema.taetigkeiten, akt.taetigkeit)?.nurGehen) {
+    return abgelehnt(zustand, 'NUR_GEHEN', 'Bei „Gehen ohne weitere Tätigkeit“ gibt es nichts Gleichzeitiges – bitte die Tätigkeit wählen.');
+  }
+  const ep = baueEpisode(zustand, ctx, schema, {
+    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt),
+    neben: an ? [...neben, code] : neben.filter((c) => c !== code),
+  });
+  return mitNeuerEpisode(zustand, ep, ctx);
 }
 
 /** Tipp auf eine Nutzungsart-Taste (N…). */
@@ -497,9 +495,14 @@ function setzeZusatz(zustand, feld, code, ctx) {
   if (sperre) return sperre;
   const { schema } = ctx;
   const akt = aktuelleEpisode(zustand);
-  if (!akt) return abgelehnt(zustand, 'KEINE_EPISODE', 'Bitte zuerst Tätigkeit und Ort wählen.');
+  if (!akt) return abgelehnt(zustand, 'KEINE_EPISODE', 'Bitte zuerst Ort und Tätigkeit wählen.');
   const fehler = pruefeZusatzCode(zustand, schema, akt.taetigkeit, feld, code);
   if (fehler) return fehler;
+  const fest = feld === 'haltung' ? finde(schema.orte, akt.ort)?.haltung : null;
+  if (fest && code !== fest) {
+    const h = finde(schema.haltung, fest);
+    return abgelehnt(zustand, 'HALTUNG_FEST', `${finde(schema.orte, akt.ort).label}: Die Haltung ist immer „${h?.label ?? fest}“ (${fest}).`);
+  }
 
   if (akt.offeneZusaetze.includes(feld)) {
     const ep = mitVollstaendigkeit(schema, { ...akt, [feld]: code, offeneZusaetze: akt.offeneZusaetze.filter((f) => f !== feld) });
@@ -508,7 +511,7 @@ function setzeZusatz(zustand, feld, code, ctx) {
   if (akt[feld] === code) return erfolg(zustand, {}, { unveraendert: true, neueEpisode: false });
 
   const ep = baueEpisode(zustand, ctx, schema, {
-    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), [feld]: code,
+    taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt), [feld]: code, neben: akt.neben,
   });
   return mitNeuerEpisode(zustand, ep, ctx);
 }
@@ -575,7 +578,7 @@ export function ergaenzeEpisode(zustand, episodeId, feld, code, ctx) {
 export function pausiere(zustand, ctx) {
   const sperre = eingabeSperre(zustand, ctx);
   if (sperre) return sperre;
-  if (!aktuelleEpisode(zustand)) return abgelehnt(zustand, 'KEINE_EPISODE', 'Bitte zuerst Tätigkeit und Ort wählen.');
+  if (!aktuelleEpisode(zustand)) return abgelehnt(zustand, 'KEINE_EPISODE', 'Bitte zuerst Ort und Tätigkeit wählen.');
   const pause = {
     pauseId: ctx.uuid(),
     blockId: zustand.block.blockId,
@@ -608,7 +611,7 @@ export function setzePauseAngaben(zustand, angaben, ctx) {
 
 /**
  * „Fortsetzen“: beendet die Pause und setzt die Kodierung so fort, wie sie vor der Pause war
- * (gleiche Tätigkeit, Ort, Nutzungsart und Haltung in einer neuen Episode).
+ * (gleiche Tätigkeit, Ort, Nutzungsart, Haltung und gleichzeitige Tätigkeiten in einer neuen Episode).
  * Grund und Notiz sind optional (Pflicht nur, wenn `pflichtangaben.pauseGrund` bzw. `freitextPflicht` gesetzt ist).
  * Optional können Tätigkeit/Ort abweichend angegeben werden.
  * @param {{ grund?, freitext?, taetigkeit?, ort? }} angaben
@@ -631,6 +634,9 @@ export function setzeFort(zustand, angaben = {}, ctx) {
   const fehlerT = pruefeTaetigkeit(zustand, schema, taetigkeit);
   if (fehlerT) return fehlerT;
   if (!finde(schema.orte, ort)) return abgelehnt(zustand, 'CODE_UNBEKANNT', `Unbekannter Ort „${ort}“.`);
+  if (istOrtsfestUnterwegs(schema, taetigkeit, ort)) {
+    return abgelehnt(zustand, 'ORTSFEST', `${finde(schema.taetigkeiten, taetigkeit).label} ist unterwegs nicht möglich.`);
+  }
 
   const ts = zeitpunkt(zustand, ctx);
   const pause = { ...pause0, endTs: ts, grund: grund?.code ?? null, freitext };
@@ -639,8 +645,7 @@ export function setzeFort(zustand, angaben = {}, ctx) {
     block: { ...zustand.block, status: STATUS.LAUFEND },
     pausen: zustand.pausen.map((p) => (p.pauseId === pause.pauseId ? pause : p)),
   };
-  const zusatz = vorher.taetigkeit === taetigkeit ? zusatzUebernehmen(vorher) : zusatzStart(schema, taetigkeit);
-  const ep = baueEpisode(z, ctx, schema, { taetigkeit, ort, ...zusatz }, ts);
+  const ep = baueEpisode(z, ctx, schema, werteFuer(schema, vorher, taetigkeit, ort), ts);
   z = mitNeuerEpisode(z, ep, ctx).zustand;
   return erfolg(z, { block: z.block, episoden: [ep], pausen: [pause] }, { neueEpisode: true, episode: ep });
 }
@@ -848,6 +853,46 @@ function zusatzUebernehmen(ep) {
   return { nutzungsart: ep.nutzungsart, haltung: ep.haltung, offeneZusaetze: [...ep.offeneZusaetze] };
 }
 
+/**
+ * Werte einer neuen Episode mit Tätigkeit t an Ort o nach `vorher` (laufende Episode oder null):
+ * gleiche Tätigkeit → Nutzungsart/Haltung übernehmen, sonst neu; gleichzeitige Tätigkeiten laufen weiter.
+ */
+function werteFuer(schema, vorher, t, o) {
+  const zusatz = vorher && vorher.taetigkeit === t ? zusatzUebernehmen(vorher) : zusatzStart(schema, t);
+  return { taetigkeit: t, ort: o, ...haltungAmOrt(schema, t, vorher?.ort ?? null, o, zusatz), neben: vorher?.neben ?? [] };
+}
+
+/**
+ * Ort mit fester Haltung (unterwegs → H1 gehend) setzt die Haltung; beim Wechsel von dort an einen anderen Ort
+ * ist sie wieder offen (Pflicht).
+ */
+function haltungAmOrt(schema, t, oVorher, o, zusatz) {
+  if (!zusatzFelder(schema, t).includes('haltung')) return zusatz;
+  const fest = finde(schema.orte, o)?.haltung;
+  if (fest) return { ...zusatz, haltung: fest, offeneZusaetze: zusatz.offeneZusaetze.filter((f) => f !== 'haltung') };
+  if (oVorher !== o && finde(schema.orte, oVorher)?.haltung) {
+    return { ...zusatz, haltung: null, offeneZusaetze: [...new Set([...zusatz.offeneZusaetze, 'haltung'])] };
+  }
+  return zusatz;
+}
+
+/**
+ * Gleichzeitige Tätigkeiten in Schema-Reihenfolge, ohne die Tätigkeit der Episode selbst;
+ * bei „Gehen ohne weitere Tätigkeit“ keine.
+ */
+function sortiereNeben(schema, neben, t) {
+  if (finde(schema.taetigkeiten, t)?.nurGehen) return [];
+  return nebentaetigkeiten(schema).filter((c) => c !== t && neben.includes(c));
+}
+
+function istOrtsfestUnterwegs(schema, t, o) {
+  return Boolean(t && o && finde(schema.taetigkeiten, t)?.ortsfest && finde(schema.orte, o)?.unterwegs);
+}
+
+function gehenCode(schema) {
+  return schema.taetigkeiten.find((x) => x.nurGehen)?.code ?? null;
+}
+
 /** unvollständig = eine Pflicht-Zusatzangabe ist noch leer. */
 function mitVollstaendigkeit(schema, ep) {
   const { pflicht } = zusatzFuer(schema, ep.taetigkeit);
@@ -862,12 +907,13 @@ function baueEpisode(zustand, ctx, schema, werte, startTs = null) {
     // Rückgängig löscht immer nur die letzte Episode → nicht gelöschte Episoden sind lückenlos 1..n
     nr: aktiv.length + 1,
     startTs: startTs ?? zeitpunkt(zustand, ctx),
-    erfasstTs: zeitpunkt(zustand, ctx), // Zeitpunkt des Tipps, der die Episode angelegt hat (Korrekturfenster)
+    erfasstTs: zeitpunkt(zustand, ctx), // Zeitpunkt des Tipps, der die Episode angelegt hat (erste Episode: startTs = Blockstart)
     taetigkeit: werte.taetigkeit,
     ort: werte.ort,
     nutzungsart: werte.nutzungsart ?? null,
     haltung: werte.haltung ?? null,
     offeneZusaetze: werte.offeneZusaetze ?? [],
+    neben: sortiereNeben(schema, werte.neben ?? [], werte.taetigkeit), // gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)
     kommentar: '',
     geloescht: false,
   });
@@ -880,17 +926,21 @@ function mitNeuerEpisode(zustand, ep, ctx) {
   return erfolg(z, { episoden: [ep], block }, { neueEpisode: true, episode: ep });
 }
 
+/** Wird in der Episode HX Now genutzt – als Tätigkeit oder gleichzeitig? */
+function mitHxNow(schema, ep) {
+  return [ep.taetigkeit, ...(ep.neben ?? [])].some((c) => finde(schema.taetigkeiten, c)?.setztGeraetDabei);
+}
+
 /** Geänderter Block, wenn die Episode „Gerät dabei“ automatisch setzt (HX Now in der Post-Phase), sonst null. */
 function geraetDabeiDurch(zustand, ep, ctx) {
-  const td = finde(ctx.schema.taetigkeiten, ep.taetigkeit);
-  if (!td?.setztGeraetDabei || !mitGeraetDabei(zustand, ctx.schema) || zustand.block.hxGeraetAutomatisch) return null;
+  if (!mitHxNow(ctx.schema, ep) || !mitGeraetDabei(zustand, ctx.schema) || zustand.block.hxGeraetAutomatisch) return null;
   return { ...zustand.block, hxGeraetAutomatisch: true, hxGeraetMarkiertTs: zustand.block.hxGeraetMarkiertTs ?? ctx.now() };
 }
 
 /** Automatisch gesetztes „Gerät dabei“ zurücknehmen, wenn keine HX-Now-Episode mehr übrig ist. */
 function ohneGeraetDabeiWennLeer(zustand, ctx) {
   if (!zustand.block.hxGeraetAutomatisch
-    || aktiveEpisoden(zustand).some((e) => finde(ctx.schema.taetigkeiten, e.taetigkeit)?.setztGeraetDabei)) {
+    || aktiveEpisoden(zustand).some((e) => mitHxNow(ctx.schema, e))) {
     return { zustand, block: null };
   }
   const block = { ...zustand.block, hxGeraetAutomatisch: false };

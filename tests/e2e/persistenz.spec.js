@@ -93,5 +93,5 @@ test('pausierter Block: Neuladen → Pause läuft weiter, Countdown steht still,
   await page.click('[data-test=pause]'); // Fortsetzen: ein Tipp
   await expect(page.locator('[data-test=countdown]')).toHaveText('12:30'); // 150 s beobachtet
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#3');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('T6 Gespräch Kollegen/Pflege · O1');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O1 Arztzimmer / Stützpunkt · T6 Gespräch Kollegen/Pflege');
 });

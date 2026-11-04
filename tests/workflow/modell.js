@@ -1,5 +1,5 @@
 // Verhaltensmodell der Beobachtung: realitätsnahe Abfolgen und Dauern je Arbeitskontext.
-// Grundlage: Kategorien und Grenzfälle aus dem Kodierhandbuch v0.2. Zufall mit Seed → jeder Lauf reproduzierbar.
+// Grundlage: Kategorien und Grenzfälle aus dem Kodierhandbuch v0.3. Zufall mit Seed → jeder Lauf reproduzierbar.
 
 /** Deterministischer Zufallsgenerator (mulberry32). */
 export function zufall(seed) {
@@ -43,12 +43,12 @@ const T_GEWICHTE = {
   K6: { T5: 4, T9: 3, T7: 2, T6: 2, T1: 2, T3: 2, T2: 1, T4: 0.5, T10: 0.5 }, // Notaufnahme
 };
 
-// Plausible Orte je Kontext und Tätigkeit
+// Plausible Orte je Kontext und Tätigkeit (O10 = unterwegs; T9 „Gehen ohne weitere Tätigkeit“ nur unterwegs)
 const ORTE = {
-  K1: { T1: ['O1'], T2: ['O3', 'O2'], T3: ['O3', 'O2', 'O1'], T4: ['O2', 'O1'], T5: ['O3'], T6: ['O2', 'O1', 'O3'], T7: ['O2', 'O1'], T8: ['O1', 'O3'], T9: ['O2', 'O8'], T10: ['O1', 'O8'] },
-  K3: { T1: ['O1'], T2: ['O2', 'O3'], T3: ['O1', 'O2'], T4: ['O1', 'O8'], T5: ['O3'], T6: ['O1', 'O2'], T7: ['O1', 'O2'], T8: ['O1'], T9: ['O2', 'O7', 'O8'], T10: ['O1', 'O8'] },
-  K4: { T1: ['O5', 'O1'], T2: ['O5'], T3: ['O5', 'O3', 'O2'], T4: ['O5'], T5: ['O5', 'O3'], T6: ['O5', 'O2'], T7: ['O5', 'O2'], T8: ['O5'], T9: ['O2'], T10: ['O5'] },
-  K6: { T1: ['O1', 'O4'], T2: ['O4'], T3: ['O4', 'O2', 'O8'], T4: ['O2'], T5: ['O4'], T6: ['O4', 'O2', 'O1'], T7: ['O2', 'O1', 'O4'], T8: ['O1', 'O4'], T9: ['O2', 'O7', 'O8'], T10: ['O8', 'O1'] },
+  K1: { T1: ['O1'], T2: ['O3', 'O2'], T3: ['O3', 'O10', 'O1'], T4: ['O10', 'O1'], T5: ['O3'], T6: ['O2', 'O1', 'O10'], T7: ['O10', 'O1'], T8: ['O1', 'O3'], T9: ['O10'], T10: ['O1', 'O8'] },
+  K3: { T1: ['O1'], T2: ['O2', 'O3'], T3: ['O1', 'O10'], T4: ['O1', 'O8'], T5: ['O3'], T6: ['O1', 'O2'], T7: ['O1', 'O10'], T8: ['O1'], T9: ['O10'], T10: ['O1', 'O8'] },
+  K4: { T1: ['O5', 'O1'], T2: ['O5'], T3: ['O5', 'O3', 'O10'], T4: ['O5'], T5: ['O5', 'O3'], T6: ['O5', 'O2'], T7: ['O5', 'O10'], T8: ['O5'], T9: ['O10'], T10: ['O5'] },
+  K6: { T1: ['O1', 'O4'], T2: ['O4'], T3: ['O4', 'O10', 'O8'], T4: ['O2'], T5: ['O4', 'O10'], T6: ['O4', 'O2', 'O1'], T7: ['O10', 'O1', 'O4'], T8: ['O1', 'O4'], T9: ['O10'], T10: ['O8', 'O1'] },
 };
 
 /** Nächste Tätigkeit (≠ aktuelle) für Kontext und Phase. */
@@ -68,15 +68,16 @@ export function ortFuer(r, kontext, t, aktuellerOrt) {
 
 /** Nutzungsart: bei T3 meist Einsicht oder Sprache, bei PC/Wagen meist Texteingabe. null = nicht kodiert. */
 export function nutzungsart(r, t, ort) {
-  if (t === 'T3') return r.gewichtet({ N1: 5, N2: 2, N3: 2, N4: ort === 'O3' || ort === 'O4' ? 1.5 : 0.3, N9: 0.5 });
-  if (t === 'T1' || t === 'T2') return r.ja(0.3) ? null : r.gewichtet({ N2: 4, N1: 3, N3: 0.5, N9: 0.5 });
+  if (t === 'T3') return r.gewichtet({ N1: 5, N2: 2, N3: 2, N4: ort === 'O3' || ort === 'O4' ? 1.5 : 0.3, N5: 0.4, N9: 0.5 });
+  if (t === 'T1' || t === 'T2') return r.ja(0.3) ? null : r.gewichtet({ N2: 4, N1: 3, N3: 0.5, N5: 1, N9: 0.5 });
   return null;
 }
 
-/** Haltung bei T3 passend zum Ort. */
+/** Haltung bei T3 passend zum Ort (unterwegs immer gehend). */
 export function haltung(r, ort) {
-  if (ort === 'O2') return r.gewichtet({ H1: 4, H2: 2, H4: 1 });
-  if (ort === 'O8') return r.gewichtet({ H4: 3, H2: 1, H1: 1 });
+  if (ort === 'O10') return 'H1';
+  if (ort === 'O2') return r.gewichtet({ H2: 3, H4: 2, H1: 0.5 });
+  if (ort === 'O8') return r.gewichtet({ H4: 3, H2: 1, H1: 0.5 });
   if (ort === 'O1') return r.gewichtet({ H3: 3, H2: 2 });
   return r.gewichtet({ H2: 3, H3: 1, H4: 1 });
 }
@@ -89,3 +90,15 @@ export const KOMMENTARE = [
   'Unklar, ob T6 oder T5 – T5 gewählt',
   'Lärm; Station sehr voll',
 ];
+
+/**
+ * Gleichzeitige Tätigkeit ein- oder ausschalten: läuft schon etwas, wird es meist beendet; sonst passend zur
+ * Tätigkeit (Dokumentation mit Patient/in, Telefonat im Gehen …). null = gerade nichts Passendes.
+ */
+export function nebenWahl(r, t, phase, neben) {
+  if (neben.length && r.ja(0.65)) return r.wahl(neben);
+  if (t === 'T9') return null;
+  const g = { T5: ['T1', 'T2', 'T3', 'T8'].includes(t) ? 4 : 1, T6: 2, T7: 1.5, T3: phase === 'POST' ? 2 : 0, T4: 0.5 };
+  for (const c of [t, ...neben]) delete g[c];
+  return Object.keys(g).length ? r.gewichtet(g) : null;
+}

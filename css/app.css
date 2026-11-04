@@ -268,11 +268,11 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .raster-t { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
 .raster-t .taste { min-height: 52px; }
 
-.raster-o { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+.raster-o { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
 .raster-o .taste { padding: 2px 4px; }
 .raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }
-.bereich-t.gedimmt { opacity: 0.55; }
+.bereich-t.gedimmt, .bereich-o.gedimmt { opacity: 0.55; }
 
 .zusatz {
   margin-top: 6px; padding: 4px; border-radius: var(--radius); background: var(--flaeche);
@@ -283,6 +283,7 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .zusatz-tasten { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
 .zusatz-tasten.anzahl-4 { grid-template-columns: repeat(4, 1fr); }
 .zusatz-tasten.anzahl-3 { grid-template-columns: repeat(3, 1fr); }
+.zusatz-tasten.anzahl-6 { grid-template-columns: repeat(3, 1fr); }
 .zusatz.optional { outline: 1px dashed var(--rand); }
 .zusatz .taste { padding: 2px; }
 .zusatz .taste .kurz { font-size: 0.7rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }

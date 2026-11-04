@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { validiereSchema, pruefeSchemaText, ladeSchema, pflichtangaben, korrekturfensterMs, istTestPseudonym } from '../../js/schema.js';
+import { validiereSchema, pruefeSchemaText, ladeSchema, pflichtangaben, nebentaetigkeiten, istTestPseudonym } from '../../js/schema.js';
 
 const ORIGINAL_TEXT = readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8');
 const original = () => JSON.parse(ORIGINAL_TEXT);
@@ -89,9 +89,9 @@ test('doppeltes Beobachter-Kürzel', () => {
 
 test('Eintrag ohne label / Tätigkeit ohne kurz', () => {
   const s = original();
-  delete s.orte[2].label;
+  delete s.orte[3].label;
   delete s.taetigkeiten[0].kurz;
-  erwarteFehler(s, '„orte“, Eintrag 3 (O3): „label“ fehlt');
+  erwarteFehler(s, '„orte“, Eintrag 4 (O3): „label“ fehlt');
   erwarteFehler(s, 'Tätigkeit T1: „kurz“');
 });
 
@@ -172,21 +172,34 @@ test('ladeSchema: HTTP-Fehler und Netzwerkfehler', async () => {
 test('ladeSchema: gültige Datei', async () => {
   const r = await ladeSchema(async () => ({ ok: true, status: 200, text: async () => ORIGINAL_TEXT }));
   assert.deepEqual(r.fehler, []);
-  assert.equal(r.schema.schemaVersion, '0.2');
+  assert.equal(r.schema.schemaVersion, '0.3');
 });
 
-test('Korrekturfenster, Test-Code und beendenGrund werden geprüft', () => {
+test('Test-Code und beendenGrund werden geprüft', () => {
   const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s); };
   assert.deepEqual(mit(() => {}), []);
-  assert.match(mit((s) => { s.korrekturfensterSek = 2.5; }).join(' '), /korrekturfensterSek/);
-  assert.match(mit((s) => { s.korrekturfensterSek = 11; }).join(' '), /korrekturfensterSek/);
-  assert.deepEqual(mit((s) => { delete s.korrekturfensterSek; }), []);
   assert.match(mit((s) => { s.pseudonym.testCode = 'TEST'; }).join(' '), /Test-Code „TEST“ passt nicht/);
   assert.match(mit((s) => { s.pseudonym.testCode = 'P017'; }).join(' '), /testCode/);
   assert.match(mit((s) => { s.pflichtangaben.beendenGrund = 'ja'; }).join(' '), /beendenGrund/);
-  assert.equal(korrekturfensterMs(original()), 3000);
-  assert.equal(korrekturfensterMs({ ...original(), korrekturfensterSek: undefined }), 0);
   assert.equal(istTestPseudonym(original(), ' p000 '), true);
   assert.equal(istTestPseudonym(original(), 'P017'), false);
   assert.equal(pflichtangaben({ ...original(), pflichtangaben: undefined }).beendenGrund, true);
+});
+
+test('Gleichzeitige Tätigkeiten und Unterwegs werden geprüft (ENTSCHEIDUNGEN Nr. 19, 20)', () => {
+  const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s).join(' '); };
+  const t = (s, code) => s.taetigkeiten.find((x) => x.code === code);
+  assert.deepEqual(nebentaetigkeiten(original()), ['T5', 'T6', 'T7', 'T3', 'T4']);
+  assert.deepEqual(nebentaetigkeiten({ ...original(), nebentaetigkeiten: undefined }), []);
+  assert.equal(mit((s) => { delete s.nebentaetigkeiten; }), '');
+  assert.match(mit((s) => { s.nebentaetigkeiten = 'T5'; }), /nebentaetigkeiten/);
+  assert.match(mit((s) => { s.nebentaetigkeiten.push('T99'); }), /unbekannte Tätigkeit „T99“/);
+  assert.match(mit((s) => { s.nebentaetigkeiten.push('T1'); }), /T1 kann nicht gleichzeitig/);
+  assert.match(mit((s) => { s.nebentaetigkeiten.push('T9'); }), /T9 kann nicht gleichzeitig/);
+  assert.match(mit((s) => { s.nebentaetigkeiten.push('T5'); }), /T5 kommt mehrfach vor/);
+  assert.match(mit((s) => { s.orte.find((o) => o.unterwegs).haltung = 'H7'; }), /unbekannte Haltung „H7“/);
+  assert.match(mit((s) => { s.orte[1].unterwegs = true; }), /Nur ein Ort/);
+  assert.match(mit((s) => { delete t(s, 'T9').nurGehen; }), /genau eine Tätigkeit mit „nurGehen“/);
+  assert.match(mit((s) => { t(s, 'T1').ortsfest = 'ja'; }), /„ortsfest“ muss true oder false/);
+  assert.match(mit((s) => { t(s, 'T9').geraet = true; }), /nurGehen/);
 });

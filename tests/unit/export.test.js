@@ -27,6 +27,7 @@ function referenzBlock() {
   ctx.bei(194); z = ok(B.setzeFort(z, { grund: 'P5', freitext: 'Alarm; Flur', taetigkeit: 'T5', ort: 'O3' }, ctx));
   ctx.bei(250.2); z = ok(B.tippeTaetigkeit(z, 'T3', ctx));
   z = ok(B.tippeNutzungsart(z, 'N2', ctx)); // Haltung bleibt offen → unvollständig
+  ctx.bei(262.8); z = ok(B.tippeNeben(z, 'T5', ctx)); // Patient/in gleichzeitig → neue Zeile, neben_T5 = 1
   z = ok(B.setzeBlockKommentar(z, 'Station voll\nviel los'));
   z = B.pruefeAblauf(z, ctx.bei(2000)).zustand; // Ende bei 900 s beobachteter Zeit = 973,5 s Wandzeit
   return ok(B.beantworteGeraetDabei(z, 'J', ctx));
@@ -92,12 +93,12 @@ test('Zeilenzahl = n_zeilen_block; Episoden = beobachtete Zeit, Pausen = Pausenz
   const kopf = zeilen[0].split(';');
   const werte = zeilen.slice(1).map((z) => z.replace(/"(?:[^"]|"")*"/g, 'X').split(';'));
   const sp = (n) => kopf.indexOf(n);
-  assert.equal(werte.length, 6);
-  assert.ok(werte.every((w) => w[sp('n_zeilen_block')] === '6' && w.length === kopf.length));
+  assert.equal(werte.length, 7);
+  assert.ok(werte.every((w) => w[sp('n_zeilen_block')] === '7' && w.length === kopf.length));
   const summe = (art) => werte.filter((w) => w[0] === art).reduce((s, w) => s + Number(w[sp('dauer_sek')]), 0);
   assert.equal(summe('episode'), Number(werte[0][sp('block_beobachtet_sek')]));
   assert.equal(summe('pause'), Number(werte[0][sp('block_pausen_sek')]));
-  assert.deepEqual(werte.map((w) => w[sp('nr')]), ['1', '2', '3', '4', '5', '6']);
+  assert.deepEqual(werte.map((w) => w[sp('nr')]), ['1', '2', '3', '4', '5', '6', '7']);
 });
 
 test('Prä-Block: Gerät-Spalten leer bzw. 0', () => {
@@ -120,9 +121,9 @@ test('abgebrochener Block ohne Episoden → eine Zeile „block“ mit n_zeilen_
   assert.equal(zeilen.length, 2);
   const w = zeilen[1].split(';');
   assert.equal(w[0], 'block');
-  assert.equal(w.length, X.SPALTEN_BEOBACHTUNG.length);
+  assert.equal(w.length, X.spaltenBeobachtung(SCHEMA).length);
   assert.equal(w.at(-1), '0');
-  assert.equal(w[X.SPALTEN_BEOBACHTUNG.indexOf('abbruch_code')], 'A1');
+  assert.equal(w[X.spaltenBeobachtung(SCHEMA).indexOf('abbruch_code')], 'A1');
 });
 
 test('Abbruch während einer Pause: Pause ohne Grund im Export', () => {
@@ -196,4 +197,12 @@ test('versucheTeilen: ohne canShare → null; Abbruch → „abgebrochen“; Erf
   const abbruch = Object.assign(new Error('x'), { name: 'AbortError' });
   assert.equal(await X.versucheTeilen(datei, { canShare: () => true, share: () => Promise.reject(abbruch) }), 'abgebrochen');
   await assert.rejects(X.versucheTeilen(datei, { canShare: () => true, share: () => Promise.reject(new Error('NotAllowed')) }), /NotAllowed/);
+});
+
+test('Spalten: neben_<Code> je gleichzeitiger Tätigkeit direkt nach „haltung“', () => {
+  const k = X.spaltenBeobachtung(SCHEMA);
+  const i = k.indexOf('haltung');
+  assert.deepEqual(k.slice(i + 1, i + 6), ['neben_T5', 'neben_T6', 'neben_T7', 'neben_T3', 'neben_T4']);
+  assert.equal(k[i + 6], 'unvollstaendig');
+  assert.deepEqual(X.spaltenBeobachtung({ ...SCHEMA, nebentaetigkeiten: [] }), [...X.SPALTEN_BEOBACHTUNG]);
 });

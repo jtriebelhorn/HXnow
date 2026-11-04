@@ -53,9 +53,9 @@ export function pflichtangaben(schema) {
   };
 }
 
-/** Korrekturfenster in ms: so lange nach dem Anlegen einer Episode ändert ein T/O-Tipp diese Episode (0 = aus). */
-export function korrekturfensterMs(schema) {
-  return Number.isInteger(schema.korrekturfensterSek) ? schema.korrekturfensterSek * 1000 : 0;
+/** Codes der Tätigkeiten, die als „gleichzeitig“ zusätzlich zur Tätigkeit erfasst werden (ENTSCHEIDUNGEN Nr. 19). */
+export function nebentaetigkeiten(schema) {
+  return Array.isArray(schema.nebentaetigkeiten) ? schema.nebentaetigkeiten : [];
 }
 
 /** Ist der Studien-Code der reservierte Code für Probeläufe (z. B. P000)? */
@@ -115,9 +115,6 @@ export function validiereSchema(s) {
   }
   if (!istGanzzahl(s.pauseMaxSek) || s.pauseMaxSek <= 0) {
     f('Feld „pauseMaxSek“ muss eine positive ganze Zahl sein (z. B. 300).');
-  }
-  if (s.korrekturfensterSek !== undefined && (!istGanzzahl(s.korrekturfensterSek) || s.korrekturfensterSek < 0 || s.korrekturfensterSek > 10)) {
-    f('Feld „korrekturfensterSek“ muss eine ganze Zahl von 0 bis 10 sein (z. B. 3; 0 = aus).');
   }
   if (!istBool(s.nutzungsartBeiT1T2)) {
     f('Feld „nutzungsartBeiT1T2“ muss true oder false sein.');
@@ -225,13 +222,44 @@ export function validiereSchema(s) {
   for (const t of eintraege(s.taetigkeiten)) {
     const wo = `Tätigkeit ${t.code ?? '?'}`;
     if (!istText(t.kurz)) f(`${wo}: „kurz“ (Tastenbeschriftung) fehlt oder ist leer.`);
-    for (const feld of ['geraet', 'haltung', 'nutzungsartPflicht', 'setztGeraetDabei']) {
+    for (const feld of ['geraet', 'haltung', 'nutzungsartPflicht', 'setztGeraetDabei', 'ortsfest', 'nurGehen']) {
       if (t[feld] !== undefined && !istBool(t[feld])) f(`${wo}: „${feld}“ muss true oder false sein.`);
     }
     if (t.geraet === true) geraete.add(t.code);
     if (t.nutzungsartPflicht === true && t.geraet !== true) f(`${wo}: „nutzungsartPflicht“ ist nur bei Geräten („geraet“: true) möglich.`);
     if (t.nurPhase !== undefined && !codes.phasen.has(t.nurPhase)) {
       f(`${wo}: „nurPhase“ verweist auf unbekannte Phase „${t.nurPhase}“.`);
+    }
+  }
+
+  // --- Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ort „unterwegs“, ortsfeste Tätigkeiten, „Gehen ohne weitere Tätigkeit“ ---
+  for (const o of eintraege(s.orte)) {
+    const wo = `Ort ${o.code ?? '?'}`;
+    if (o.unterwegs !== undefined && !istBool(o.unterwegs)) f(`${wo}: „unterwegs“ muss true oder false sein.`);
+    if (o.haltung !== undefined && !codes.haltung.has(o.haltung)) f(`${wo}: „haltung“ verweist auf unbekannte Haltung „${o.haltung}“.`);
+  }
+  const unterwegsOrte = eintraege(s.orte).filter((o) => o.unterwegs === true);
+  const gehen = eintraege(s.taetigkeiten).filter((t) => t.nurGehen === true);
+  if (unterwegsOrte.length > 1) f('„orte“: Nur ein Ort darf „unterwegs“ sein.');
+  if (gehen.length > 1) f('„taetigkeiten“: Nur eine Tätigkeit darf „nurGehen“ sein.');
+  if (eintraege(s.taetigkeiten).some((t) => t.ortsfest === true) && (unterwegsOrte.length !== 1 || gehen.length !== 1)) {
+    f('Ortsfeste Tätigkeiten („ortsfest“) brauchen genau einen Ort mit „unterwegs“ und genau eine Tätigkeit mit „nurGehen“.');
+  }
+  for (const t of gehen) {
+    if (t.ortsfest === true || t.geraet === true) f(`Tätigkeit ${t.code}: „nurGehen“ ist nicht mit „ortsfest“ oder „geraet“ kombinierbar.`);
+  }
+
+  // --- Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19) ---
+  if (s.nebentaetigkeiten !== undefined) {
+    if (!Array.isArray(s.nebentaetigkeiten)) {
+      f('„nebentaetigkeiten“ muss eine Liste von Tätigkeitscodes sein (darf leer sein).');
+    } else {
+      for (const tc of s.nebentaetigkeiten) {
+        const t = eintraege(s.taetigkeiten).find((x) => x.code === tc);
+        if (!t) f(`„nebentaetigkeiten“ verweist auf unbekannte Tätigkeit „${tc}“.`);
+        else if (t.nurGehen || t.ortsfest) f(`„nebentaetigkeiten“: ${tc} kann nicht gleichzeitig erfasst werden (ortsfest bzw. nur Gehen).`);
+      }
+      for (const d of duplikate(s.nebentaetigkeiten)) f(`„nebentaetigkeiten“: ${d} kommt mehrfach vor.`);
     }
   }
 

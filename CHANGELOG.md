@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.5.0 – 04.11.2026
+Kodierschema 0.3 / Kodierhandbuch-Entwurf 0.3 (ENTSCHEIDUNGEN Nr. 16 verworfen, Nr. 19–22):
+- Erst Ort, dann Tätigkeit: Ortstasten stehen über den Tätigkeitstasten, Anzeige „O… · T…“.
+- Neuer Ort O10 „Unterwegs“: Gehzeit unabhängig von der Tätigkeit (Telefonat, HX Now … laufen weiter);
+  T9 heißt „Gehen ohne weitere Tätigkeit“. PC/Visitenwagen werden unterwegs automatisch zu T9, HX Now unterwegs
+  bekommt automatisch die Haltung „gehend“.
+- Schalter „Gleichzeitig“ (Patient/in, Kollegen/Pflege, Telefon, HX Now, Mobilgerät) neben der Haupttätigkeit;
+  bleibt an, bis er abgewählt wird. Neue CSV-Spalten `neben_T5` … `neben_T4` (0/1).
+- Neue Nutzungsart N5 „Warten“ (Anmeldung, Laden, Gerät belegt) für PC, Visitenwagen und HX Now.
+- Korrekturfenster entfernt: Jeder Tipp bleibt eine eigene Episode; kurze Episoden werden in der Auswertung
+  bereinigt. Rückgängig bleibt.
+- Codebuch mit Auswertungshinweisen (Gehzeit, Dokumentation mit Patient/in, Wartezeit am Gerät).
+- Prüf-Workflow: Soll-Protokoll mit den neuen Regeln, Simulation tippt erst Ort, dann Tätigkeit, nutzt
+  „Unterwegs“ und „Gleichzeitig“; Rohdatenprüfung der gleichzeitigen Tätigkeiten.
+
 ## 0.4.0 – 03.11.2026
 Nach Auswertung der ersten Pilotdateien (P017, P018):
 - Export: Zeitstempel aus derselben gerundeten Uhr wie die Dauern – in jeder Zeile gilt `ende − start = dauer_sek`

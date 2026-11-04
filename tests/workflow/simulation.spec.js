@@ -9,7 +9,7 @@ import { test, expect } from '@playwright/test';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { SollBlock } from './soll.js';
-import { zufall, DAUER, KOMMENTARE, naechsteTaetigkeit, ortFuer, nutzungsart, haltung } from './modell.js';
+import { zufall, DAUER, KOMMENTARE, naechsteTaetigkeit, ortFuer, nutzungsart, haltung, nebenWahl } from './modell.js';
 import { pruefeBlock, pruefeRohdaten, pruefeEinzelCsv } from './abgleich.js';
 import { isoBerlin } from './lesen.js';
 import { schreibeBericht } from './bericht.js';
@@ -50,8 +50,10 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     if (!a) return;
     const box = page.locator('[data-test=aktuelle-episode]');
     await expect(box).toContainText(`#${a.nr}`);
-    await expect(box).toContainText(`${a.t} `);
-    await expect(box).toContainText(` ${a.o} `);
+    await expect(box).toContainText(`${a.o} `);
+    await expect(box).toContainText(` ${a.t} `);
+    if (a.neben.length) await expect(box).toContainText(`gleichzeitig ${a.neben.join(', ')}`);
+    else await expect(box).not.toContainText('gleichzeitig');
     if (a.n && !a.offen.has('n')) await expect(box).toContainText(a.n);
     if (a.h && !a.offen.has('h')) await expect(box).toContainText(a.h);
   }
@@ -124,7 +126,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     const soll = new SollBlock(SCHEMA, { ...m, beobachter: SCHEMA.beobachter[0] }, startTs);
     soll.log(startTs, `Block gestartet (${m.pseudonym}, ${m.phase}, ${m.dauerSek / 60} min)`);
     const kontext = m.arbeitskontext ?? m.modellKontext;
-    const zaehler = { rueckgaengig: 0, kommentare: 0, doppeltipps: 0, kurzepisoden: 0 };
+    const zaehler = { rueckgaengig: 0, kommentare: 0, doppeltipps: 0, kurzepisoden: 0, neben: 0 };
 
     // Zusatzkodierung nach einem Tätigkeitswechsel (wie eine Beobachterin: kurz danach)
     async function zusatzNach() {
@@ -140,18 +142,20 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
       }
     }
 
+    // Wechsel wie im Kodierhandbuch v0.3: erst der Ort (falls er sich ändert), dann die Tätigkeit
     async function wechsleT(t) {
       const a = soll.akt;
       const o = ortFuer(r, kontext, t, a?.o);
-      let ts = await jetzt();
-      await tippe(`t-${t}`);
-      soll.tippeT(ts, t);
       if (!a || o !== a.o) {
-        await vor(r.dauerMs(0.4, 1.5));
-        ts = await jetzt();
+        const ts = await jetzt();
         await tippe(`o-${o}`);
         soll.tippeO(ts, o);
+        if (soll.akt) await synchron(soll);
+        await vor(r.dauerMs(0.4, 1.5));
       }
+      const ts = await jetzt();
+      await tippe(`t-${t}`);
+      soll.tippeT(ts, t);
       await synchron(soll);
       await zusatzNach();
     }
@@ -165,6 +169,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
       const x = r.zahl();
       if (x < 0.03) { // vertippt und sofort korrigiert
         const falsch = naechsteTaetigkeit(r, kontext, m.phase, a.t);
+        if (soll.unmoeglich(falsch, a.o)) return; // PC unterwegs gibt es nicht – kein Vertipper möglich
         const ts = await jetzt(); await tippe(`t-${falsch}`); soll.tippeT(ts, falsch); await synchron(soll);
         await vor(r.dauerMs(1, 3));
         const ts2 = await jetzt(); await tippe('rueckgaengig'); soll.rueckgaengig(ts2); await synchron(soll);
@@ -198,6 +203,15 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
         const o = ortFuer(r, kontext, a.t, null);
         const ts = await jetzt(); await tippe(`o-${o}`); soll.tippeO(ts, o); await synchron(soll);
         return;
+      }
+      if (x < 0.52) { // gleichzeitige Tätigkeit ein- oder ausschalten
+        const code = nebenWahl(r, a.t, m.phase, a.neben);
+        if (code) {
+          const ts = await jetzt(); await tippe(`neben-${code}`); soll.tippeNeben(ts, code); await synchron(soll);
+          await expect(page.locator(`[data-test=neben-${code}]`)).toHaveAttribute('aria-pressed', String(soll.akt.neben.includes(code)));
+          zaehler.neben++;
+          return;
+        }
       }
       await wechsleT(naechsteTaetigkeit(r, kontext, m.phase, a.t));
     }
@@ -360,7 +374,8 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
       kennzahlen: {
         Episoden: soll.episoden.length, Pausen: soll.pausen.length, 'Rückgängig': zaehler.rueckgaengig,
         Kommentare: zaehler.kommentare, Doppeltipps: zaehler.doppeltipps, 'Episoden < 5 s': zaehler.kurzepisoden,
-        Korrekturen: soll.korrekturen,
+        'Gleichzeitig-Schalter': zaehler.neben,
+        'Episoden unterwegs': soll.episoden.filter((e) => soll.ort(e.o).unterwegs).length,
         'Beobachtet (s)': Math.round(soll.beobachtetMs(soll.endTs) / 1000),
       },
       pruefungen: ergebnis.pruefungen,

@@ -4,7 +4,7 @@ Progressive Web App für die Time-Motion-Studie „HX Now im Klinikalltag“. Re
 kein Backend, keine externen Abhängigkeiten zur Laufzeit. Verbindliche Spezifikation:
 [docs/ENTWICKLUNGSPLAN.md](docs/ENTWICKLUNGSPLAN.md).
 
-Stand: Phasen 0–5 nach Spezifikation v2 / Kodierhandbuch v0.2 (Grundgerüst, Fachlogik mit Pausen, Speicherung, Oberfläche, Export, Offline/PWA). Es folgen Zusammenführungstool (6), Dokumentation (7). Abgestimmte Abweichungen: [docs/ENTSCHEIDUNGEN.md](docs/ENTSCHEIDUNGEN.md). Hosting, Versionierung und Update-Ablauf werden in Phase 7 beschrieben.
+Stand: Phasen 0–5 nach Spezifikation v2 / Kodierhandbuch v0.3 (Entwurf) (Grundgerüst, Fachlogik mit Pausen, Speicherung, Oberfläche, Export, Offline/PWA). Es folgen Zusammenführungstool (6), Dokumentation (7). Abgestimmte Abweichungen: [docs/ENTSCHEIDUNGEN.md](docs/ENTSCHEIDUNGEN.md). Hosting, Versionierung und Update-Ablauf werden in Phase 7 beschrieben.
 
 ## Lokal ausprobieren
 

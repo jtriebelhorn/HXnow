@@ -6,7 +6,7 @@
 // ohne vorheriges `await`. Die Datei wird daher synchron aus dem Zustand im Speicher erzeugt.
 
 import { zeitleiste, geplanteDauerSek, mitGeraetDabei, blockEndeSek } from './block.js';
-import { istTestPseudonym } from './schema.js';
+import { istTestPseudonym, nebentaetigkeiten } from './schema.js';
 import { isoMitOffset, datumLokal, dateinameZeit } from './zeit.js';
 
 const BOM = '\uFEFF';
@@ -14,9 +14,10 @@ const TRENNER = ';';
 const ZEILENENDE = '\r\n';
 
 /**
- * Spalten der Block-CSV (Spezifikation v2 Abschnitt 8). Zusätzlich laut docs/ENTSCHEIDUNGEN.md:
+ * Feste Spalten der Block-CSV (Spezifikation v2 Abschnitt 8). Zusätzlich laut docs/ENTSCHEIDUNGEN.md:
  * `block_dauer_soll_sek` (Nr. 7), `block_ende_art` (Nr. 6), `block_ende_grund` (Nr. 17),
- * `hx_geraet_markiert` (Zeitpunkt des Schalters). Bedeutung aller Spalten: docs/CODEBUCH_EXPORT.md.
+ * `hx_geraet_markiert` (Zeitpunkt des Schalters). Nach `haltung` folgt je gleichzeitiger Tätigkeit des
+ * Kodierschemas eine Spalte `neben_<Code>` (Nr. 19), siehe spaltenBeobachtung(). Bedeutung: docs/CODEBUCH_EXPORT.md.
  */
 export const SPALTEN_BEOBACHTUNG = Object.freeze([
   'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
@@ -27,6 +28,12 @@ export const SPALTEN_BEOBACHTUNG = Object.freeze([
   'nr', 'start', 'ende', 'dauer_sek', 'taetigkeit', 'ort', 'nutzungsart', 'haltung', 'unvollstaendig',
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
 ]);
+
+/** Alle Spalten der Block-CSV für ein Kodierschema: feste Spalten plus `neben_<Code>` nach `haltung`. */
+export function spaltenBeobachtung(schema) {
+  const i = SPALTEN_BEOBACHTUNG.indexOf('haltung') + 1;
+  return [...SPALTEN_BEOBACHTUNG.slice(0, i), ...nebentaetigkeiten(schema).map((c) => `neben_${c}`), ...SPALTEN_BEOBACHTUNG.slice(i)];
+}
 
 export const SPALTEN_VERSUCH = Object.freeze([
   'datensatz', 'versuch_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
@@ -103,18 +110,21 @@ export function blockDatei(zustand, schema) {
     b.hxGeraetAutomatisch ? 1 : 0,
     post && b.hxGeraetMarkiertTs !== null && b.hxGeraetMarkiertTs !== undefined ? isoMitOffset(b.hxGeraetMarkiertTs) : '',
   ];
-  const leerZeile = Array(SPALTEN_BEOBACHTUNG.length - blockFelder.length - 2).fill('');
+  const spalten = spaltenBeobachtung(schema);
+  const neben = nebentaetigkeiten(schema);
+  const leerZeile = Array(spalten.length - blockFelder.length - 2).fill('');
   const zeilen = zl.length === 0
     ? [['block', ...blockFelder, ...leerZeile, 0]]
     : zl.map((x, i) => [
       x.art, ...blockFelder,
       i + 1, zeit(x.startSek), zeit(x.endeSek), x.dauerSek,
       ...(x.art === 'episode'
-        ? [x.taetigkeit, x.ort, x.nutzungsart ?? '', x.haltung ?? '', x.unvollstaendig ? 1 : 0, '', '', x.kommentar ?? '']
-        : ['', '', '', '', '', x.grund ?? '', x.freitext ?? '', '']),
+        ? [x.taetigkeit, x.ort, x.nutzungsart ?? '', x.haltung ?? '', ...neben.map((c) => ((x.neben ?? []).includes(c) ? 1 : 0)),
+          x.unvollstaendig ? 1 : 0, '', '', x.kommentar ?? '']
+        : ['', '', '', '', ...neben.map(() => ''), '', x.grund ?? '', x.freitext ?? '', '']),
       zl.length,
     ]);
-  return { dateiname: dateinameBlock(b, schema), inhalt: csvText(SPALTEN_BEOBACHTUNG, zeilen), typ: 'text/csv' };
+  return { dateiname: dateinameBlock(b, schema), inhalt: csvText(spalten, zeilen), typ: 'text/csv' };
 }
 
 // ---------------------------------------------------------------------------

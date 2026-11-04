@@ -1,7 +1,7 @@
 # Entwicklungsplan: Beobachtungs-App „HX Now im Klinikalltag“
 
 Stand: 02.11.2026 (Version 2) · Auftraggeber: Dr. med. Julian Triebelhorn, Klinik und Poliklinik für Innere Medizin II, TUM Klinikum
-Grundlage: Kodierhandbuch Fremdbeobachtung, Version 0.2 (Entwurf vom 02.11.2026, siehe [KODIERHANDBUCH_v0.2.md](KODIERHANDBUCH_v0.2.md))
+Grundlage: Kodierhandbuch Fremdbeobachtung, Version 0.2 (Entwurf vom 02.11.2026); inzwischen fortgeschrieben als Entwurf 0.3, siehe [KODIERHANDBUCH_v0.3.md](KODIERHANDBUCH_v0.3.md) und ENTSCHEIDUNGEN Nr. 19–22
 
 > **Hinweis für Claude Code:** Diese Datei ist die verbindliche Spezifikation. Arbeite die Phasen in Abschnitt 11 nacheinander ab. Halte nach jeder Phase an, fasse zusammen, was gebaut wurde und wie es getestet wurde, und warte auf Freigabe. Wenn etwas unklar oder widersprüchlich ist, frage nach, statt zu raten. Halte die Vorgaben in Abschnitt 3 („Harte Vorgaben“) immer ein. Abgestimmte Abweichungen und Klärungen stehen in [ENTSCHEIDUNGEN.md](ENTSCHEIDUNGEN.md) und gehen dieser Datei vor.
 
@@ -182,7 +182,7 @@ Verhalten:
 | `kommentar` | Text | Episodenkommentar |
 | `n_zeilen_block` | `24` | Anzahl Zeilen dieses Blocks, zur Vollständigkeitsprüfung |
 
-Zusätzliche Spalten laut ENTSCHEIDUNGEN: `block_dauer_soll_sek`, `block_ende_art`, `block_ende_grund`, `hx_geraet_markiert`. Bedeutung aller Spalten: [CODEBUCH_EXPORT.md](CODEBUCH_EXPORT.md). Die tatsächliche Spaltenreihenfolge steht in `js/export.js` (`SPALTEN_BEOBACHTUNG`) und in der Referenzdatei `tests/unit/referenz/`.
+Zusätzliche Spalten laut ENTSCHEIDUNGEN: `block_dauer_soll_sek`, `block_ende_art`, `block_ende_grund`, `hx_geraet_markiert`, `neben_<Code>` (Nr. 19). Bedeutung aller Spalten: [CODEBUCH_EXPORT.md](CODEBUCH_EXPORT.md). Die tatsächliche Spaltenreihenfolge steht in `js/export.js` (`spaltenBeobachtung`) und in der Referenzdatei `tests/unit/referenz/`.
 
 Versuche und Tageskennzahlen werden als eigene kleine CSV-Dateien exportiert (`HXNOW_VERSUCH_…`, `HXNOW_TAG_…`), Spalten analog zu den Stores.
 

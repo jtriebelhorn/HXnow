@@ -1,8 +1,8 @@
 // Abgleich Soll (simulierte Eingaben) gegen Ist (Export-CSV und Rohdaten in IndexedDB).
 import { leseCsv, isoBerlin, isoZuMs, ISO_MUSTER } from './lesen.js';
 
-// Erwarteter Spaltenkopf laut Spezifikation v2 Abschnitt 8 und docs/ENTSCHEIDUNGEN.md (Nr. 6, 7, 17, hx_geraet_markiert)
-export const ERWARTETE_SPALTEN = [
+// Erwarteter Spaltenkopf laut Spezifikation v2 Abschnitt 8 und docs/ENTSCHEIDUNGEN.md (Nr. 6, 7, 17, 19, hx_geraet_markiert)
+const FESTE_SPALTEN = [
   'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
   'bereich', 'dienst', 'phase', 'arbeitskontext', 'datum', 'block_start', 'block_ende',
   'block_dauer_soll_sek', 'block_beobachtet_sek', 'block_pausen_anzahl', 'block_pausen_sek',
@@ -11,6 +11,11 @@ export const ERWARTETE_SPALTEN = [
   'nr', 'start', 'ende', 'dauer_sek', 'taetigkeit', 'ort', 'nutzungsart', 'haltung', 'unvollstaendig',
   'pause_grund', 'pause_freitext', 'kommentar', 'n_zeilen_block',
 ];
+/** Nach `haltung` je gleichzeitiger Tätigkeit des Kodierschemas eine Spalte neben_<Code>. */
+export function erwarteteSpalten(schema) {
+  const i = FESTE_SPALTEN.indexOf('haltung') + 1;
+  return [...FESTE_SPALTEN.slice(0, i), ...(schema.nebentaetigkeiten ?? []).map((c) => `neben_${c}`), ...FESTE_SPALTEN.slice(i)];
+}
 const ISO_SPALTEN = ['block_start', 'block_ende', 'start', 'ende'];
 const PLATZHALTER = /\b(undefined|null|NaN)\b|\[object /;
 
@@ -31,7 +36,7 @@ export function pruefeBlock(soll, csvText, db) {
   const p = new Pruefliste();
   const { kopf, zeilen, fehler } = leseCsv(csvText);
   p.pruefe('CSV-Format (BOM, Semikolon, \\r\\n, Quoting)', fehler.length === 0, fehler.join('; '));
-  p.pruefe('Spaltenkopf wie spezifiziert', JSON.stringify(kopf) === JSON.stringify(ERWARTETE_SPALTEN),
+  p.pruefe('Spaltenkopf wie spezifiziert', JSON.stringify(kopf) === JSON.stringify(erwarteteSpalten(soll.schema)),
     `erhalten: ${kopf.join(';')}`);
 
   const erwartet = soll.csvZeilen(isoBerlin);
@@ -113,7 +118,7 @@ export function pruefeRohdaten(soll, db) {
     gleich(`Episode ${s.nr} Haltung`, e.haltung, s.h);
     gleich(`Episode ${s.nr} Kommentar`, e.kommentar, s.kommentar);
     gleich(`Episode ${s.nr} erfasst (Tipp)`, e.erfasstTs, s.erfasstTs);
-    gleich(`Episode ${s.nr} Anzahl Korrekturen`, (e.korrekturen ?? []).length, s.korr);
+    gleich(`Episode ${s.nr} gleichzeitig`, (e.neben ?? []).join('+'), s.neben.join('+'));
   });
   const pausen = [...db.pausen].sort((x, y) => x.startTs - y.startTs);
   gleich('Anzahl Pausen', pausen.length, soll.pausen.length);

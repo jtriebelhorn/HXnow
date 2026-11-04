@@ -28,7 +28,7 @@ test('kompletter Block: 20 Episoden, 2 Pausen, T3 mit N/H, T1 mit N, Gerät dabe
   await page.click('[data-test=zurueck]');
   await starteBlock(page, { kontext: 'K3' });
   await expect(page.locator('[data-test=kopf-kontext]')).toHaveText('K3 Stationsarbeit');
-  await expect(page.locator('[data-test=aufforderung]')).toHaveText('Tätigkeit und Ort wählen');
+  await expect(page.locator('[data-test=aufforderung]')).toHaveText('Ort und Tätigkeit wählen');
   await expect(page.locator('[data-test=pause]')).toBeDisabled();
   await pruefeSchalter(page);
 
@@ -40,7 +40,7 @@ test('kompletter Block: 20 Episoden, 2 Pausen, T3 mit N/H, T1 mit N, Gerät dabe
     await page.clock.fastForward('00:20');
     if (s === 'PAUSE1') {
       await pauseUndWeiter(page); // ohne Grund: Fortsetzen mit einem Tipp
-      await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('T3 HX Now · O3 Patientenzimmer · N3 · H2');
+      await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O3 Patientenzimmer · T3 HX Now · N3 · H2');
       continue;
     }
     if (s === 'PAUSE2') {
@@ -351,7 +351,7 @@ test('Info und Datensicherung ohne Platzhaltertexte', async ({ page }) => {
   await page.click('[data-test=zurueck]');
   await page.click('[data-test=menue-info]');
   await pruefeTastengroessen(page, 'Info');
-  await expect(page.locator('[data-test=info-schema-version]')).toHaveText('0.2');
+  await expect(page.locator('[data-test=info-schema-version]')).toHaveText('0.3');
   await expect(page.locator('[data-test=info-geraete-id]')).toHaveText(/^[0-9a-f-]{36}$/);
 });
 
@@ -379,18 +379,65 @@ test('Probelauf mit Test-Code: Knopf setzt P000, Hinweis in Kodierung und Liste,
   expect((await geteilt(page))[0].name).toMatch(/^HXNOW_TEST_BEOB_P000_/);
 });
 
-test('Korrekturfenster: Ort und gleich danach Tätigkeit ergeben eine Episode', async ({ page }) => {
+test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im Gehen, Dokumentation mit Patient/in', async ({ page }) => {
   await oeffne(page);
-  await starteBlock(page);
+  await starteBlock(page); // Post
+  await expect(page.locator('[data-test=aufforderung]')).toHaveText('Ort und Tätigkeit wählen');
+  const oben = async (id) => (await page.locator(`[data-test=${id}]`).boundingBox()).y;
+  expect(await oben('o-O1')).toBeLessThan(await oben('t-T1')); // Ortstasten über den Tätigkeitstasten
+  await expect(page.locator('[data-test=neben-T5]')).toBeDisabled(); // vor der ersten Episode
+
   await tippe(page, 'o-O1');
   await tippe(page, 't-T1');
-  await page.clock.fastForward('00:40');
+  await tippe(page, 'n-N5'); // Warten am PC
+  await page.clock.fastForward('00:20');
+  await tippe(page, 'o-O10'); // aufstehen und losgehen
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O10 Unterwegs · T9 Gehen ohne weitere Tätigkeit');
+  await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
+  await page.click('[data-test=t-T1]');
+  await expect(page.locator('#meldung')).toContainText('unterwegs nicht möglich');
+  await page.clock.fastForward('00:10');
+  await tippe(page, 't-T7'); // Telefonat im Gehen
+  await page.clock.fastForward('00:10');
+  await tippe(page, 't-T3'); // HX Now im Gehen: Haltung automatisch gehend
+  await expect(page.locator('[data-test=h-H1]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-test=h-H3]')).toBeDisabled();
+  await page.clock.fastForward('00:10');
   await tippe(page, 'o-O3');
-  await page.clock.fastForward('00:01');
-  await tippe(page, 't-T5');
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#2');
+  await expect(page.locator('[data-test=zeile-haltung]')).toHaveClass(/offen/); // am Bett: Haltung neu angeben
+  await tippe(page, 'h-H2');
+  await tippe(page, 'n-N2');
+  await page.clock.fastForward('00:05');
+  await tippe(page, 'neben-T5'); // Dokumentation, während mit der Patientin gesprochen wird
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T5');
+  await expect(page.locator('[data-test=neben-T3]')).toBeDisabled(); // ist bereits die Tätigkeit
+  await page.clock.fastForward('00:30');
+  await page.click('[data-test=neben-T5]');
+  await expect(page.locator('[data-test=neben-T5]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-test=aktuelle-episode]')).not.toContainText('gleichzeitig');
+
   const daten = await leseDb(page);
   const aktiv = daten.episoden.filter((e) => !e.geloescht).sort((a, b) => a.nr - b.nr);
-  expect(aktiv.map((e) => `${e.taetigkeit}/${e.ort}`)).toEqual(['T1/O1', 'T5/O3']);
-  expect(aktiv[1].korrekturen).toHaveLength(1);
+  expect(aktiv.map((e) => [e.ort, e.taetigkeit, e.nutzungsart, e.haltung, e.neben.join('+')])).toEqual([
+    ['O1', 'T1', 'N5', null, ''],
+    ['O10', 'T9', null, null, ''],
+    ['O10', 'T7', null, null, ''],
+    ['O10', 'T3', 'N9', 'H1', ''],
+    ['O3', 'T3', 'N2', 'H2', ''],
+    ['O3', 'T3', 'N2', 'H2', 'T5'],
+    ['O3', 'T3', 'N2', 'H2', ''],
+  ]);
+  expect(daten.bloecke[0].hxGeraetAutomatisch).toBe(true);
+});
+
+test('Prä-Phase: HX Now ist weder Tätigkeit noch gleichzeitig wählbar', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page, { phase: 'PRE' });
+  await tippe(page, 'o-O3');
+  await tippe(page, 't-T5');
+  await expect(page.locator('[data-test=t-T3]')).toBeDisabled();
+  await expect(page.locator('[data-test=neben-T3]')).toHaveCount(0);
+  await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
+  await tippe(page, 'neben-T6');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T6');
 });
