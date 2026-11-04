@@ -209,7 +209,6 @@ export async function zeigeKodierung(app, { blockId }) {
     const codes = nebentaetigkeiten(schema).filter((c) => B.taetigkeitErlaubt(zz, schema, c));
     if (codes.length === 0) return null;
     const aktiv = akt?.neben ?? [];
-    const nurGehen = akt && finde('taetigkeiten', akt.taetigkeit)?.nurGehen;
     const kopf = el('button', {
       type: 'button', class: 'neben-kopf', 'aria-expanded': nebenOffen ? 'true' : 'false', 'data-test': 'neben-oeffnen',
       onclick: () => { nebenOffen = !nebenOffen; zeichne(); },
@@ -226,7 +225,7 @@ export async function zeigeKodierung(app, { blockId }) {
       return el('button', {
         type: 'button', class: 'taste n',
         'aria-pressed': !p && an ? 'true' : 'false',
-        disabled: p || !akt || (!an && (c === akt.taetigkeit || nurGehen)),
+        disabled: p || !akt || (!an && c === akt.taetigkeit),
         'data-test': `neben-${c}`,
         onclick: () => ausfuehren((z2, ctx) => B.tippeNeben(z2, c, ctx)),
       }, el('span', { class: 'kurz' }, finde('taetigkeiten', c)?.kurz ?? c), el('span', { class: 'code' }, c));

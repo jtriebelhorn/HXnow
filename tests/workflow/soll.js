@@ -59,7 +59,7 @@ export class SollBlock {
 
   /**
    * Neue Episode. `uebernehmen` = Nutzungsart/Haltung der Vorgänger-Episode weiterführen (gleiche Tätigkeit).
-   * Gleichzeitige Tätigkeiten laufen weiter, außer der neuen Tätigkeit selbst; bei „Gehen“ entfallen alle.
+   * Gleichzeitige Tätigkeiten laufen weiter, außer der neuen Tätigkeit selbst.
    * Ort „unterwegs“ legt die Haltung fest (gehend); wer von dort weggeht, muss sie neu angeben.
    */
   neueEpisode(ts, t, o, uebernehmen, neben = this.akt?.neben ?? [], nn = this.akt?.nn ?? {}) {
@@ -73,7 +73,7 @@ export class SollBlock {
       n: uebernehmen ? vorher.n : (pflicht.includes('n') ? 'N9' : null),
       h: uebernehmen ? vorher.h : null,
       offen: uebernehmen ? new Set(vorher.offen) : new Set(felder),
-      neben: this.t(t).nurGehen ? [] : this.nebenCodes.filter((c) => c !== t && neben.includes(c)),
+      neben: this.nebenCodes.filter((c) => c !== t && neben.includes(c)),
       kommentar: '',
     };
     ep.nn = Object.fromEntries(Object.entries(nn).filter(([c]) => ep.neben.includes(c))); // Nutzungsart gleichzeitiger Geräte
@@ -134,7 +134,7 @@ export class SollBlock {
     this.log(ts, `Gleichzeitig ${code} getippt`);
     const a = this.akt;
     const an = !a.neben.includes(code);
-    if (an && (code === a.t || this.t(a.t).nurGehen)) { this.log(ts, '→ abgelehnt'); return false; }
+    if (an && code === a.t) { this.log(ts, '→ abgelehnt'); return false; }
     this.neueEpisode(ts, a.t, a.o, true, an ? [...a.neben, code] : a.neben.filter((c) => c !== code));
     return true;
   }

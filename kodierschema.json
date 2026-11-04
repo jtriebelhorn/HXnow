@@ -48,7 +48,7 @@
     { "code": "T6",  "label": "Gespräch Kollegen/Pflege", "kurz": "Gespräch" },
     { "code": "T7",  "label": "Telefonat",             "kurz": "Telefon" },
     { "code": "T8",  "label": "Papierdokumente",       "kurz": "Papier" },
-    { "code": "T9",  "label": "Gehen ohne weitere Tätigkeit", "kurz": "Gehen", "nurGehen": true },
+    { "code": "T9",  "label": "Gehen", "kurz": "Gehen", "nurGehen": true },
     { "code": "T10", "label": "Sonstiges",             "kurz": "Sonst." }
   ],
   "orte": [

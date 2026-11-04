@@ -44,7 +44,7 @@ const T_GEWICHTE = {
 };
 
 // Plausible Orte je Kontext und Tätigkeit: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege,
-// O4 Flur, O5 Pausenraum, O6 unterwegs; T9 „Gehen ohne weitere Tätigkeit“ nur unterwegs)
+// O4 Flur, O5 Pausenraum, O6 unterwegs; T9 „Gehen“ nur unterwegs)
 const ORTE = {
   K1: { T1: ['O1', 'O3'], T2: ['O2', 'O4'], T3: ['O2', 'O6', 'O1'], T4: ['O6', 'O1'], T5: ['O2'], T6: ['O3', 'O4', 'O6'], T7: ['O6', 'O1'], T8: ['O1', 'O2'], T9: ['O6'], T10: ['O5', 'O8'] },
   K3: { T1: ['O1', 'O3'], T2: ['O4', 'O2'], T3: ['O1', 'O6', 'O3'], T4: ['O1', 'O5'], T5: ['O2'], T6: ['O3', 'O1', 'O4'], T7: ['O1', 'O6'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O8'] },
@@ -98,8 +98,7 @@ export const KOMMENTARE = [
  */
 export function nebenWahl(r, t, phase, neben) {
   if (neben.length && r.ja(0.65)) return r.wahl(neben);
-  if (t === 'T9') return null;
-  const g = { T5: ['T1', 'T2', 'T3', 'T8'].includes(t) ? 4 : 1, T6: 2, T7: 1.5, T3: phase === 'POST' ? 2 : 0, T4: 0.5 };
+  const g = { T5: ['T1', 'T2', 'T3', 'T8'].includes(t) ? 4 : 1, T6: 2, T7: t === 'T9' ? 4 : 1.5, T3: phase === 'POST' ? (t === 'T9' ? 4 : 2) : 0, T4: 0.5 };
   for (const c of [t, ...neben]) delete g[c];
   return Object.keys(g).length ? r.gewichtet(g) : null;
 }

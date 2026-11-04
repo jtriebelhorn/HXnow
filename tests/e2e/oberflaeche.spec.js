@@ -397,8 +397,8 @@ test('Ort zuerst, unterwegs, gleichzeitig: PC → unterwegs = Gehen, Telefon im 
   await tippe(page, 'n-N5'); // Warten am PC
   await page.clock.fastForward('00:20');
   await tippe(page, 'o-O6'); // aufstehen und losgehen
-  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O6 Unterwegs · T9 Gehen ohne weitere Tätigkeit');
-  await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O6 Unterwegs · T9 Gehen');
+  await expect(page.locator('[data-test=neben-T5]')).toBeEnabled();
   await page.click('[data-test=t-T1]');
   await expect(page.locator('#meldung')).toContainText('unterwegs nicht möglich');
   await page.clock.fastForward('00:10');
@@ -465,4 +465,20 @@ test('Prä-Phase: HX Now ist weder Tätigkeit noch gleichzeitig wählbar', async
   await expect(page.locator('[data-test=neben-T5]')).toBeDisabled();
   await tippe(page, 'neben-T6');
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T6');
+});
+
+test('Unterwegs und Gehen: Telefon und HX Now als gleichzeitig kodierbar', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page);
+  await tippe(page, 'o-O6');
+  await tippe(page, 't-T9');
+  await page.click('[data-test=neben-oeffnen]');
+  await page.clock.fastForward('00:10');
+  await tippe(page, 'neben-T7');
+  await page.clock.fastForward('00:10');
+  await tippe(page, 'neben-T3');
+  await tippe(page, 'nn-T3-N1');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('O6 Unterwegs · T9 Gehen');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('gleichzeitig T7, T3 (N1)');
+  await expect(page.locator('[data-test=geraet-dabei]')).toHaveAttribute('aria-pressed', 'true');
 });

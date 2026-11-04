@@ -232,7 +232,7 @@ export function validiereSchema(s) {
     }
   }
 
-  // --- Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ort „unterwegs“, ortsfeste Tätigkeiten, „Gehen ohne weitere Tätigkeit“ ---
+  // --- Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ort „unterwegs“, ortsfeste Tätigkeiten, „Gehen“ ---
   for (const o of eintraege(s.orte)) {
     const wo = `Ort ${o.code ?? '?'}`;
     if (o.unterwegs !== undefined && !istBool(o.unterwegs)) f(`${wo}: „unterwegs“ muss true oder false sein.`);

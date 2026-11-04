@@ -46,7 +46,7 @@ Das Kodierhandbuch legt fest, wie die beobachtende Person die Arbeitszeit der Te
 - **Episodenwechsel:** Eine neue Episode beginnt, sobald sich der Ort **oder** die Tätigkeits-/Gerätekategorie ändert oder eine gleichzeitige Tätigkeit (4.8) beginnt bzw. endet. Bei Geräteepisoden (T1–T3) beginnt zusätzlich eine neue Episode, wenn die Nutzungsart wechselt, bei T3 auch bei Wechsel der Körperhaltung.
 - **Reihenfolge der Eingabe:** Ändern sich Ort und Tätigkeit, zuerst den Ort, dann die Tätigkeit tippen. Jeder Tipp wird unverändert mit seinem Zeitpunkt gespeichert; dazwischen entsteht eine kurze Zwischenepisode (z. B. 1 s „PC im Patientenzimmer“). Sie wird nicht in der App korrigiert, sondern in der Auswertung über die Mindestdauer bereinigt. „Rückgängig“ nur für echte Vertipper.
 - **Mindestdauer:** Tätigkeiten unter \[5\] Sekunden müssen nicht kodiert werden. Entstehen sie trotzdem (Zwischenepisoden, kurze Blicke), bleiben sie in den Rohdaten und werden in der Auswertung der vorangehenden Episode zugeschlagen. Ausnahme: jede erkennbare Nutzung von HX Now wird kodiert und bleibt erhalten, auch wenn sie kürzer ist (für die Zählung der Nutzungsepisoden).
-- **Wege (Ort „Unterwegs“, O6):** Wer zwischen zwei Orten unterwegs ist, befindet sich am Ort O6. Die Tätigkeit läuft weiter, z. B. Telefonat (T7), HX Now (T3, Haltung automatisch „gehend“) oder Begleitung einer Patientin (T5). Ohne weitere Tätigkeit gilt T9 „Gehen ohne weitere Tätigkeit“. PC und Visitenwagen (T1, T2) sind unterwegs nicht möglich: Wird „Unterwegs“ während T1/T2 getippt, wechselt die App automatisch zu T9. Gehen innerhalb eines Raumes zählt zum Ort des Raumes. Das Ziel eines Weges ergibt sich aus dem nächsten Ort.
+- **Wege (Ort „Unterwegs“, O6):** Wer zwischen zwei Orten unterwegs ist, befindet sich am Ort O6. Die Haupttätigkeit ist dann T9 „Gehen“; was dabei zusätzlich geschieht (Telefonat, HX Now, Gespräch), wird als „gleichzeitig“ markiert (4.8). Läuft eine Tätigkeit beim Losgehen schon (z. B. Telefonat), darf sie Haupttätigkeit bleiben; beide Schreibweisen gelten in der Auswertung gleich. PC und Visitenwagen (T1, T2) sind unterwegs nicht möglich: Wird „Unterwegs“ während T1/T2 getippt, wechselt die App automatisch zu T9. Gehen innerhalb eines Raumes zählt zum Ort des Raumes. Das Ziel eines Weges ergibt sich aus dem nächsten Ort.
 - **Unterbrechungen:** Wird eine Tätigkeit unterbrochen und danach fortgesetzt, entstehen zwei Episoden derselben Kategorie.
 - **Prioritätsregel bei gleichzeitigen Tätigkeiten:** Haupttätigkeit ist die Kategorie, die in der folgenden Rangfolge zuerst kommt; die anderen sichtbaren Tätigkeiten werden als „gleichzeitig“ markiert (4.8):
   1. Gerätenutzung (T1–T4), wenn die Person sichtbar mit dem Gerät interagiert (tippt, scrollt, spricht hinein, blickt auf den Bildschirm)
@@ -54,7 +54,7 @@ Das Kodierhandbuch legt fest, wie die beobachtende Person die Arbeitszeit der Te
   3. Direkter Patientenkontakt (T5)
   4. Gespräch mit Kolleginnen, Kollegen oder Pflege (T6)
   5. Papierdokumente (T8)
-  6. Gehen ohne weitere Tätigkeit (T9)
+  6. Gehen (T9)
   7. Sonstiges (T10)
 - **Pause statt Kodierung:** Ist die Person nicht sichtbar oder besteht eine Ausschlusssituation, wird nicht kodiert, sondern pausiert (Abschnitt 2, Schritt 5). Die frühere Kategorie T11 „Nicht beobachtbar“ und der Ort O9 „Unbekannt“ entfallen.
 
@@ -70,9 +70,9 @@ Das Kodierhandbuch legt fest, wie die beobachtende Person die Arbeitszeit der Te
 | T4 | Sonstiges mobiles Gerät | Interaktion mit privatem Smartphone oder anderem Gerät ohne HX-Now-Kennzeichnung, außer Telefonieren | Zweck nicht kodieren (dienstlich/privat nicht erkennbar) |
 | T5 | Direkter Patientenkontakt ohne Gerät | Untersuchung, Gespräch mit Patientin/Patient oder Angehörigen, Prozedur | Mit Geräteinteraktion gilt T1–T4, Patientenkontakt dann „gleichzeitig“ |
 | T6 | Gespräch mit Kolleginnen, Kollegen, Pflege | Persönliches dienstliches Gespräch, Übergabe, Besprechung ohne Gerät | Mit Blick auf Bildschirm gilt T1–T4, Gespräch dann „gleichzeitig“ |
-| T7 | Telefonat | Gespräch über Diensttelefon, Pieper-Rückruf oder Smartphone | Gehen während des Telefonats: T7 am Ort O6 |
+| T7 | Telefonat | Gespräch über Diensttelefon, Pieper-Rückruf oder Smartphone | Telefonat im Gehen: Ort O6, T9 mit gleichzeitig T7 (oder T7 läuft weiter) |
 | T8 | Papierdokumente | Lesen oder Schreiben in Papierakte, Kurve, Ausdrucken, Formularen |  |
-| T9 | Gehen ohne weitere Tätigkeit | Unterwegs (O6) ohne andere Tätigkeit | Gehen mit Telefonat, Gerät oder Patient: diese Tätigkeit am Ort O6. Keine gleichzeitigen Tätigkeiten |
+| T9 | Gehen | Gehen zwischen zwei Orten (Ort O6) | Telefonat, HX Now oder Gespräch im Gehen: als „gleichzeitig“ markieren |
 | T10 | Sonstiges | Warten ohne Tätigkeit, Pause, persönliche Zeit, nicht zuordenbare Tätigkeit | Kommentar bei unklaren Fällen |
 
 ### 4.2 Ort
@@ -146,7 +146,7 @@ Läuft neben der Haupttätigkeit sichtbar eine weitere Tätigkeit, wird sie mit 
 
 - Der Schalter bleibt an, auch wenn Ort oder Haupttätigkeit wechseln, und wird abgewählt, sobald die gleichzeitige Tätigkeit endet.
 - Wird die gleichzeitige Tätigkeit zur Haupttätigkeit, entfällt der Schalter automatisch.
-- Bei T9 „Gehen ohne weitere Tätigkeit“ gibt es keine gleichzeitige Tätigkeit.
+- Gerade beim Gehen (T9) sind gleichzeitige Tätigkeiten üblich, z. B. Telefonat oder HX Now.
 - HX Now als gleichzeitige Tätigkeit setzt „Gerät dabei“ (4.6) ebenso wie T3. Zusätzlich kann (optional) die Nutzungsart erfasst werden, also was mit HX Now gemacht wird (4.3).
 - In der App ist „Gleichzeitig“ zugeklappt und wird bei Bedarf geöffnet; eingeschaltete Tätigkeiten bleiben in der Kopfzeile sichtbar.
 
@@ -158,8 +158,8 @@ Da Haupttätigkeit und gleichzeitige Tätigkeiten vollständig gespeichert werde
 | --- | --- | --- |
 | Visite am Bett mit Blick auf den Visitenwagen | T2, O2, N1 | Geräteinteraktion hat Vorrang vor Patientenkontakt |
 | Visite am Bett, Visitenwagen steht daneben, Gespräch mit Patientin | T5, O2 | Keine sichtbare Geräteinteraktion |
-| Gehen auf dem Flur und dabei HX Now lesen | O6, T3, N1 (H1 automatisch) | Unterwegs mit Gerät |
-| Auf dem Weg telefonieren | O6, T7 | Telefonat läuft unterwegs weiter |
+| Gehen auf dem Flur und dabei HX Now lesen | O6, T9, gleichzeitig T3 mit N1 | Unterwegs mit Gerät |
+| Auf dem Weg telefonieren | O6, T9, gleichzeitig T7 | Unterwegs mit Telefonat |
 | Vom PC aufstehen und zum Patientenzimmer gehen | O6 → T9 automatisch, dann O2 und Tätigkeit | PC ist unterwegs nicht möglich |
 | Gespräch im Stehen auf dem Flur | O4, T6 | Aufenthalt, nicht unterwegs |
 | Am PC sitzend telefonieren, Blick auf Bildschirm | O1, T1, N1, gleichzeitig T7 | Sichtbare Interaktion mit dem PC |
@@ -204,4 +204,4 @@ Je Beobachtungstag und Bereich werden zur Einordnung der Arbeitslast erfasst:
 | --- | --- | --- |
 | 0.1 | 10.10.2026 | Entwurf |
 | 0.2 | 02.11.2026 | Pause mit Grund (P1–P5) ersetzt T11 und O9, Pausen zählen nicht zur Blockzeit; Arbeitskontext K1–K7; Nutzungsart auch für T1/T2 (Pilot); HX-Now-Gerät dabei (Post); Smartphone als Erfassungsgerät |
-| 0.3 | 04.11.2026 | Nach den ersten Pilotblöcken: erst Ort, dann Tätigkeit; Orte neu: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege, O4 Flur, O5 Pausenraum, O6 unterwegs, O7 außerhalb, O8 Sonstiges) statt Bereiche wie Notaufnahme/Dialyse/Ambulanz; T9 wird „Gehen ohne weitere Tätigkeit“; gleichzeitige Tätigkeiten (4.8); Nutzungsart N5 „Warten“; Mindestdauer nur in der Auswertung (kein Korrekturfenster in der App). |
+| 0.3 | 04.11.2026 | Nach den ersten Pilotblöcken: erst Ort, dann Tätigkeit; Orte neu: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege, O4 Flur, O5 Pausenraum, O6 unterwegs, O7 außerhalb, O8 Sonstiges) statt Bereiche wie Notaufnahme/Dialyse/Ambulanz; T9 wird „Gehen“; gleichzeitige Tätigkeiten (4.8); Nutzungsart N5 „Warten“; Mindestdauer nur in der Auswertung (kein Korrekturfenster in der App). |

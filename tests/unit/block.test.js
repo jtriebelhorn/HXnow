@@ -688,7 +688,7 @@ describe('Ohne Korrekturfenster (ENTSCHEIDUNGEN Nr. 16 verworfen)', () => {
 describe('Unterwegs (Ort O6, ENTSCHEIDUNGEN Nr. 20)', () => {
   const eps = (z) => B.aktiveEpisoden(z).map((e) => [e.ort, e.taetigkeit, e.haltung]);
 
-  test('Unterwegs während PC/Visitenwagen → „Gehen ohne weitere Tätigkeit“ (T9)', () => {
+  test('Unterwegs während PC/Visitenwagen → „Gehen“ (T9)', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0)); // O1/T1
     z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand;
@@ -756,7 +756,7 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
       ['O2', 'T4', 'T5+T7', 30], ['O6', 'T4', 'T5+T7', 40], ['O6', 'T4', 'T7', 50]]);
   });
 
-  test('Wird die gleichzeitige Tätigkeit zur Tätigkeit, entfällt der Schalter; bei „Gehen“ entfallen alle', () => {
+  test('Wird die gleichzeitige Tätigkeit zur Tätigkeit, entfällt der Schalter', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T1', 'O1']);
     z = ok(B.tippeNeben(z, 'T6', ctx.bei(10))).zustand;
@@ -765,9 +765,19 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
     assert.deepEqual(aktuell(z).neben, ['T6']);
     abgelehnt(B.tippeNeben(z, 'T7', ctx.bei(25)), 'GLEICHE_TAETIGKEIT');
     z = ok(B.tippeTaetigkeit(z, 'T1', ctx.bei(30))).zustand;
-    z = ok(B.tippeOrt(z, 'O6', ctx.bei(40))).zustand; // PC → Gehen
-    assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).neben], ['T9', []]);
-    abgelehnt(B.tippeNeben(z, 'T5', ctx.bei(45)), 'NUR_GEHEN');
+  });
+
+  test('Gehen unterwegs: Telefon und HX Now gleichzeitig möglich; Schalter laufen beim Losgehen vom PC weiter', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T1', 'O1']);
+    z = ok(B.tippeNeben(z, 'T6', ctx.bei(10))).zustand;
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(40))).zustand; // PC → Gehen, das Gespräch läuft weiter
+    assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).neben], ['T9', ['T6']]);
+    z = ok(B.tippeNeben(z, 'T7', ctx.bei(45))).zustand;
+    z = ok(B.tippeNeben(z, 'T3', ctx.bei(50))).zustand;
+    z = ok(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(51))).zustand;
+    assert.deepEqual([aktuell(z).ort, aktuell(z).taetigkeit, aktuell(z).neben, aktuell(z).nebenNutzung, z.block.hxGeraetAutomatisch],
+      ['O6', 'T9', ['T6', 'T7', 'T3'], { T3: 'N1' }, true]);
   });
 
   test('HX Now gleichzeitig setzt „Gerät dabei“ (Post); in Prä nicht wählbar; Rückgängig nimmt es zurück', () => {

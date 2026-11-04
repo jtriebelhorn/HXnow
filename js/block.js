@@ -410,7 +410,7 @@ export function tippeOrt(zustand, code, ctx) {
  * Bei reinem Ortswechsel werden Nutzungsart und Haltung übernommen; ein Tätigkeitswechsel
  * (auch zwischen Geräten) setzt sie zurück. Gleichzeitige Tätigkeiten laufen weiter.
  * Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ortswechsel nach „unterwegs“ während einer ortsfesten Tätigkeit (PC, Visitenwagen)
- * → „Gehen ohne weitere Tätigkeit“; eine ortsfeste Tätigkeit unterwegs wird abgelehnt (erst den Ort wählen).
+ * → „Gehen“; eine ortsfeste Tätigkeit unterwegs wird abgelehnt (erst den Ort wählen).
  */
 export function wechsle(zustand, ziel, ctx) {
   const sperre = eingabeSperre(zustand, ctx);
@@ -464,9 +464,6 @@ export function tippeNeben(zustand, code, ctx) {
   const an = !neben.includes(code);
   if (an && code === akt.taetigkeit) {
     return abgelehnt(zustand, 'GLEICHE_TAETIGKEIT', `${finde(schema.taetigkeiten, code).label} ist bereits die Tätigkeit.`);
-  }
-  if (an && finde(schema.taetigkeiten, akt.taetigkeit)?.nurGehen) {
-    return abgelehnt(zustand, 'NUR_GEHEN', 'Bei „Gehen ohne weitere Tätigkeit“ gibt es nichts Gleichzeitiges – bitte die Tätigkeit wählen.');
   }
   const ep = baueEpisode(zustand, ctx, schema, {
     taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt),
@@ -914,12 +911,8 @@ function haltungAmOrt(schema, t, oVorher, o, zusatz) {
   return zusatz;
 }
 
-/**
- * Gleichzeitige Tätigkeiten in Schema-Reihenfolge, ohne die Tätigkeit der Episode selbst;
- * bei „Gehen ohne weitere Tätigkeit“ keine.
- */
+/** Gleichzeitige Tätigkeiten in Schema-Reihenfolge, ohne die Tätigkeit der Episode selbst. */
 function sortiereNeben(schema, neben, t) {
-  if (finde(schema.taetigkeiten, t)?.nurGehen) return [];
   return nebentaetigkeiten(schema).filter((c) => c !== t && neben.includes(c));
 }
 
