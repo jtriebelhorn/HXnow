@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.3 – 04.11.2026
+- Ortstasten: keine Silbentrennung mehr mitten im Wort („Beim Patienten“).
+
 ## 0.5.2 – 04.11.2026
 - Orte beschreiben, wo die Person im Bereich ist (ENTSCHEIDUNGEN Nr. 24): O1 Arztzimmer, O2 beim Patienten,
   O3 bei der Pflege, O4 Flur, O5 Pausenraum, O6 unterwegs, O7 außerhalb des Bereichs, O8 Sonstiges.

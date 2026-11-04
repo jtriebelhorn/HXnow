@@ -287,7 +287,7 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .raster-o { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .raster-o .taste { min-height: 52px; }
 .raster-o .taste { padding: 2px 4px; }
-.raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
+.raster-o .taste .kurz { font-size: 0.74rem; font-weight: 600; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }
 /* Bereiche der Kodieransicht: Ort (türkis), Tätigkeit (blau), Gleichzeitig (violett) */
 .bereich {
