@@ -12,7 +12,7 @@ const optionenText = (optionen) => (optionen ? optionen.map(([c, l]) => `${c}=${
 /** Zeilen des Codebuchs (Arrays in Spaltenreihenfolge). */
 export function codebuchZeilen(def) {
   return def.boegen.flatMap((b) => alleZellen(b, { mitEntfernten: true }).map((z) => [
-    b.id, z.abschnitt, z.id, z.v, z.paar, z.typ, z.text, optionenText(z.optionen), z.min ?? '', z.max ?? '',
+    b.id, z.abschnitt, z.id, z.v, z.paar, z.typ, z.text, optionenText([...(z.optionen ?? []), ...(z.zusatz ?? [])]), z.min ?? '', z.max ?? '',
     z.skala, z.umpolen ? 1 : 0, z.showIf, z.entfernt ? 1 : 0,
   ]));
 }
@@ -33,6 +33,7 @@ export function codebuchDatei(def) {
 export function paarSchnappschuss(def) {
   return def.boegen.flatMap((b) => alleZellen(b, { mitEntfernten: true }).filter((z) => z.paar).map((z) => ({
     bogen: b.id, paar: z.paar, zelle: z.id, typ: z.typ,
-    codes: z.optionen ? z.optionen.map(([c]) => c) : null, min: z.min, max: z.max, umpolen: z.umpolen,
+    codes: z.optionen ? z.optionen.map(([c]) => c) : null, zusatz: z.zusatz ? z.zusatz.map(([c]) => c) : null,
+    min: z.min, max: z.max, umpolen: z.umpolen,
   })));
 }

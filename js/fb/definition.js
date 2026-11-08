@@ -33,6 +33,7 @@ export function zellen(it) {
   const basis = {
     itemId: it.id, abschnitt: it.abschnitt, v: it.v, typ: it.typ, optionen: it.optionen ?? null,
     min: it.min ?? null, max: it.max ?? null, skala: it.skala ?? '', umpolen: Boolean(it.umpolen),
+    zusatz: it.zusatz ?? null, // Skala: zusätzliche Codes außerhalb min–max, z. B. [[0, 'nicht genutzt']]
     paar: it.paar ?? '', entfernt: Boolean(it.entfernt), art: 'wert',
   };
   switch (it.typ) {
@@ -53,7 +54,7 @@ export function zellen(it) {
         const id = `${it.id}_${z}_${g.id}`;
         return {
           ...basis, id, text: `${it.text} – ${label} – ${g.id}: ${g.titel}`, optionen: g.optionen,
-          paar: it.paarJeZelle ? id : '', showIf: und(it.showIf, it.zeilenShowIf?.[z], g.showIf?.replaceAll('*', z)),
+          paar: it.paarJeZelle ? id : it.paarZeilen ? `${it.paarZeilen}_${Number(z)}` : '', showIf: und(it.showIf, it.zeilenShowIf?.[z], g.showIf?.replaceAll('*', z)),
           art: 'zelle', zeile: z, gruppe: g.id,
         };
       }));
@@ -109,6 +110,10 @@ export function pruefeDefinition(def) {
         for (const d of doppelte(liste.map(([c]) => c))) w(`Optionscode ${d} kommt mehrfach vor.`);
       }
       if (['einfach', 'mehrfach'].includes(it.typ) && !(it.optionen?.length > 0)) w('Optionen fehlen.');
+      if (it.reihenfolge && JSON.stringify([...it.reihenfolge].sort()) !== JSON.stringify((it.optionen ?? []).map(([c]) => c).sort())) {
+        w('reihenfolge muss genau die Optionscodes enthalten.');
+      }
+      if (it.zusatz && (it.typ !== 'skala' || it.zusatz.some(([c]) => c >= it.min && c <= it.max))) w('zusatz nur bei Skalen und außerhalb von min–max.');
       if (['prozentgruppe', 'matrix'].includes(it.typ) && !(it.zeilen?.length > 0)) w('Zeilen fehlen.');
       if (it.typ === 'matrix' && !(it.gruppen?.length > 0)) w('Spaltengruppen fehlen.');
       if (it.freitextBei !== undefined) {

@@ -1,0 +1,226 @@
+Fragebogen 2 – Ende des Regelbetriebs mit HX Now
+Studien-Code:
+__________
+Datum: ____.____.20____ Bereich: ☐ Nephrologie ☐ Notaufnahme
+Bearbeitungszeit ca. 18 Minuten. Bitte kreuzen Sie pro Frage bzw. Zeile eine Antwort an, sofern nicht anders angegeben.
+Es gibt keine richtigen oder falschen Antworten. Ihre Angaben werden pseudonymisiert ausgewertet.
+W Informationsbedarf und Nutzung in den letzten 14 Tagen
+W1 An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst? _______ Tage (bei 0 weiter mit Abschnitt
+A)
+W2 Davon Bereitschafts- oder Nachtdienste: _______
+Informationsbedarf abseits eines PCs: Sie benötigten eine patientenbezogene Information (z. B. Laborwert, Befund,
+Bildgebung, Medikation), während kein stationärer Arbeitsplatz-PC unmittelbar erreichbar war. Sofort vor Ort: ohne
+Ortswechsel, Anruf oder Aufschub, z. B. über HX Now, einen Visitenwagen oder Papierunterlagen.
+W3 Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs
+entstand (A), wie Sie ihn überwiegend gelöst haben (B) und ob Sie dabei HX Now genutzt haben (C). (B und C
+bei „0“ leer lassen)
+Situation A Wie oft? B Wie überwiegend gelöst? C HX Now genutzt?
+0 1–3 4–
+10
+11–
+20
+>
+20
+sofort
+vor
+Ort
+Weg
+zum
+PC
+Anruf
+/
+Rück-
+frage
+Auf-
+schub
+Ver-
+zicht nie teils meist
+1. Auf Wegstrecken
+(Flur, zwischen
+Stationen)
+☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+2. In Wartesituationen (z.
+B. Aufzug, vor
+Untersuchung)
+☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+3. Am Patientenbett / im
+Patientenzimmer ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+4. Während der Visite ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+5. Bei der Übergabe ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+6. Im
+Behandlungsbereich der
+Notaufnahme
+☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+7. Außerhalb des
+eigenen Bereichs (z. B.
+Konsil, andere Station)
+☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+8. In Pausen ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+9. Im Bereitschafts- bzw.
+Nachtdienst ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+10. Vor Dienstbeginn
+oder nach Dienstende ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+W4 Wie oft hatten Sie in den letzten 14 Tagen ein Gerät mit HX Now bei sich?
+☐ nie ☐ selten ☐ meistens ☐ immer
+W5 Wie oft haben Sie die folgenden Funktionen in den letzten 14 Tagen genutzt?
+Funktion Anzahl in den letzten 14 Tagen
+nie 1–3× 4–10× 11–20× > 20×
+1. Krankenakte / Verlauf einsehen ☐ ☐ ☐ ☐ ☐
+2. Laborwerte einsehen ☐ ☐ ☐ ☐ ☐
+3. Bildgebung (PACS-Viewer) ☐ ☐ ☐ ☐ ☐
+4. PMDs bearbeiten (z. B. Basisanamnese, Konsil) ☐ ☐ ☐ ☐ ☐
+5. Fotodokumentation ☐ ☐ ☐ ☐ ☐
+6. Dokumentenscan ☐ ☐ ☐ ☐ ☐
+7. Sprachgestützte Dokumentation ☐ ☐ ☐ ☐ ☐
+W6 Denken Sie an den Informationsbedarf abseits eines PCs, der in den letzten 14 Tagen am häufigsten
+vorkam. (falls in W3 überall „0“: weiter mit W7)
+W6a Welche Information wurde am häufigsten benötigt? (eine Antwort)
+☐ Laborwerte ☐ Befunde/Bildgebung ☐ Vorbefunde/Arztbriefe ☐ Medikation ☐ Verlauf/Kurve
+☐ Sonstiges: ________
+HX Now im Klinikalltag · Fragebogen 2 (Post) · Version 0.3 vom 08.11.2026 · Seite 1 von 4
+W6b Wo entstand dieser Bedarf meistens? (eine Antwort)
+☐ Flur/Wegstrecke ☐ Patientenzimmer ☐ Visite ☐ Übergabe ☐ Behandlungsbereich
+Notaufnahme ☐ anderer Bereich ☐ Bereitschafts-/Nachtdienst
+W6c Wie haben Sie ihn meistens gelöst? (eine Antwort)
+☐ mit HX Now ☐ anders vor Ort (z. B. Visitenwagen) aufgeschoben ☐ verzichtet → W6d überspringen
+☐ Weg zum PC ☐ Anruf / Rückfrage ☐
+W6d Wie lange dauerte es typischerweise, bis Sie die Information hatten?
+☐ sofort ☐ < 5 Minuten ☐ 5–30 Minuten ☐ > 30 Minuten ☐ gar nicht
+W7 Wofür haben Sie HX Now in den letzten 14 Tagen am häufigsten genutzt? (falls Sie HX Now nicht genutzt
+haben: weiter mit W8)
+W7a Häufigster Verwendungszweck (eine Antwort)
+☐ Laborwerte ☐ Befunde/Bildgebung ☐ Vorbefunde/Arztbriefe ☐ Verlauf/Kurve ☐ PMD-
+Dokumentation ☐ Sprachdokumentation ☐ Foto/Scan ☐ Sonstiges: ________
+W7b Wo nutzten Sie HX Now dafür meistens? (eine Antwort)
+☐ Flur/Wegstrecke ☐ Patientenzimmer ☐ Visite ☐ Übergabe ☐ Behandlungsbereich
+Notaufnahme ☐ anderer Bereich ☐ Bereitschafts-/Nachtdienst ☐ Pause
+W7c Was hätten Sie ohne HX Now meistens getan?
+☐ Weg zum PC ☐ Anruf / Rückfrage
+☐ aufgeschoben ☐ verzichtet ☐ anders vor Ort gelöst (z.
+B. Visitenwagen)
+W8 Möchten Sie etwas zu den letzten 14 Tagen anmerken?
+__________________________________________________________________________________
+__________________________________________________________________________________
+Bitte beziehen Sie sich in den folgenden Abschnitten auf Ihre gesamte Erfahrung mit HX Now.
+A Gebrauchstauglichkeit (System Usability Scale, SUS)
+1 = stimme gar nicht zu · 2 = stimme nicht zu · 3 = unentschieden · 4 = stimme eher zu · 5 = stimme voll zu
+1 2 3 4 5
+A1. Ich denke, dass ich HX Now gerne häufig benutzen würde. ☐ ☐ ☐ ☐ ☐
+A2. Ich fand HX Now unnötig komplex. ☐ ☐ ☐ ☐ ☐
+A3. Ich fand HX Now einfach zu benutzen. ☐ ☐ ☐ ☐ ☐
+A4. Ich glaube, ich würde die Hilfe einer technisch versierten Person benötigen, um HX
+Now benutzen zu können. ☐ ☐ ☐ ☐ ☐
+A5. Ich fand, die verschiedenen Funktionen in HX Now waren gut integriert. ☐ ☐ ☐ ☐ ☐
+A6. Ich denke, HX Now enthielt zu viele Inkonsistenzen. ☐ ☐ ☐ ☐ ☐
+A7. Ich kann mir vorstellen, dass die meisten Menschen den Umgang mit HX Now sehr
+schnell lernen. ☐ ☐ ☐ ☐ ☐
+A8. Ich fand HX Now sehr umständlich zu nutzen. ☐ ☐ ☐ ☐ ☐
+A9. Ich fühlte mich bei der Benutzung von HX Now sicher. ☐ ☐ ☐ ☐ ☐
+A10. Ich musste eine Menge lernen, bevor ich anfangen konnte, HX Now zu
+verwenden. ☐ ☐ ☐ ☐ ☐
+B Akzeptanz (Technologieakzeptanzmodell, TAM)
+Wahrgenommene Nützlichkeit
+1 = stimme gar nicht zu · 4 = teils/teils · 7 = stimme voll zu
+1 2 3 4 5 6 7
+B1. Mit HX Now kann ich meine Aufgaben schneller erledigen. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B2. HX Now verbessert die Qualität meiner Arbeit. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B3. HX Now steigert meine Produktivität. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B4. HX Now steigert meine Effektivität bei der Arbeit. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B5. HX Now erleichtert meine Arbeit. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B6. HX Now ist für meine Arbeit nützlich. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+HX Now im Klinikalltag · Fragebogen 2 (Post) · Version 0.3 vom 08.11.2026 · Seite 2 von 4
+Wahrgenommene Benutzerfreundlichkeit
+1 = stimme gar nicht zu · 4 = teils/teils · 7 = stimme voll zu
+1 2 3 4 5 6 7
+B7. Den Umgang mit HX Now zu erlernen, ist für mich leicht. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B8. Es ist leicht, mit HX Now das zu erreichen, was ich möchte. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B9. Die Bedienung von HX Now ist klar und verständlich. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B10. HX Now ist flexibel in der Bedienung. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B11. Es ist leicht, im Umgang mit HX Now geübt zu werden. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B12. HX Now ist einfach zu bedienen. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+Nutzungsabsicht
+1 = stimme gar nicht zu · 4 = teils/teils · 7 = stimme voll zu
+1 2 3 4 5 6 7
+B13. Ich beabsichtige, HX Now auch künftig regelmäßig zu nutzen. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+B14. Ich werde HX Now nutzen, wann immer es sinnvoll ist. ☐ ☐ ☐ ☐ ☐ ☐ ☐
+E Nützlichkeit der Funktionen
+Funktion 1 = gar nicht nützlich · 5 = sehr nützlich
+1 2 3 4 5 nicht
+genutzt
+E1. Krankenakte / Verlauf einsehen ☐ ☐ ☐ ☐ ☐ ☐
+E2. Laborwerte einsehen ☐ ☐ ☐ ☐ ☐ ☐
+E3. Bildgebung (PACS-Viewer) ☐ ☐ ☐ ☐ ☐ ☐
+E4. PMDs bearbeiten (z. B. Basisanamnese, Konsil) ☐ ☐ ☐ ☐ ☐ ☐
+E5. Fotodokumentation ☐ ☐ ☐ ☐ ☐ ☐
+E6. Dokumentenscan ☐ ☐ ☐ ☐ ☐ ☐
+E7. Sprachgestützte Dokumentation ☐ ☐ ☐ ☐ ☐ ☐
+T Technik
+T1 Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten?
+Problem
+nie selten gelegent-
+lich oft sehr oft
+1. Keine oder schlechte Netzverbindung (WLAN) ☐ ☐ ☐ ☐ ☐
+2. Akku leer oder zu schwach ☐ ☐ ☐ ☐ ☐
+3. Probleme bei der Anmeldung ☐ ☐ ☐ ☐ ☐
+4. Lange Ladezeiten ☐ ☐ ☐ ☐ ☐
+5. Absturz oder Fehlermeldung ☐ ☐ ☐ ☐ ☐
+6. Fehlerhafte Spracherkennung ☐ ☐ ☐ ☐ ☐
+7. Gerät nicht griffbereit ☐ ☐ ☐ ☐ ☐
+T2 Wie bewerten Sie folgende Funktionen?
+1 = stimme gar nicht zu · 5 = stimme
+voll zu
+1 2 3 4 5 nicht
+genutzt
+1. Die Spracherkennung ist genau. ☐ ☐ ☐ ☐ ☐ ☐
+2. Die Bildgebung ist auf dem Smartphone ausreichend
+beurteilbar. ☐ ☐ ☐ ☐ ☐ ☐
+3. Fotos und Scans werden zuverlässig dem richtigen
+Patienten zugeordnet. ☐ ☐ ☐ ☐ ☐ ☐
+4. PMDs lassen sich vollständig in der App bearbeiten. ☐ ☐ ☐ ☐ ☐ ☐
+T3 Wie wahrscheinlich ist es, dass Sie HX Now Kolleginnen und Kollegen empfehlen?
+0 1 2 3 4 5 6 7 8 9 10
+☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐ ☐
+0 = sehr unwahrscheinlich · 10 = sehr wahrscheinlich
+HX Now im Klinikalltag · Fragebogen 2 (Post) · Version 0.3 vom 08.11.2026 · Seite 3 von 4
+C Veränderung Ihrer Arbeitsweise
+Wie hat sich seit der Einführung von HX Now Folgendes bei Ihnen verändert? 1 = deutlich weniger · 2 = etwas weniger · 3 =
+unverändert · 4 = etwas mehr · 5 = deutlich mehr
+1 2 3 4 5
+C1. Zeit am stationären Arbeitsplatz-PC ☐ ☐ ☐ ☐ ☐
+C2. Wege zu einem PC, um Informationen nachzusehen ☐ ☐ ☐ ☐ ☐
+C3. Telefonische Rückfragen zu Patienteninformationen ☐ ☐ ☐ ☐ ☐
+C4. Aufgeschobene Aufgaben wegen fehlender Information ☐ ☐ ☐ ☐ ☐
+C5. Zeit am Patientenbett ☐ ☐ ☐ ☐ ☐
+C6. Aufwand für Dokumentation ☐ ☐ ☐ ☐ ☐
+C7. Unterbrechungen meiner Arbeit ☐ ☐ ☐ ☐ ☐
+C8. Arbeitsbelastung insgesamt ☐ ☐ ☐ ☐ ☐
+C9 Wie häufig haben Sie HX Now insgesamt genutzt?
+☐ nie ☐ seltener als wöchentlich ☐ wöchentlich ☐ täglich ☐ mehrmals täglich
+C10 Würden Sie HX Now weiterhin nutzen, wenn die Nutzung freiwillig wäre?
+☐ ja ☐ eher ja ☐ eher nein ☐ nein
+F Erreichbarkeit und IT-Belastung
+1 = stimme gar nicht zu · 2 = stimme eher nicht zu · 3 = teils/teils · 4 = stimme eher zu · 5 = stimme voll zu
+1 2 3 4 5
+F1. Durch die Möglichkeit, jederzeit auf Patientendaten zuzugreifen, fällt es mir
+schwerer, in Pausen und nach Dienstende abzuschalten. ☐ ☐ ☐ ☐ ☐
+F2. Die IT-Systeme, mit denen ich arbeite, verursachen mir Stress. ☐ ☐ ☐ ☐ ☐
+D Offene Fragen
+D1 In welchen Situationen hat Ihnen HX Now am meisten geholfen?
+__________________________________________________________________________________
+__________________________________________________________________________________
+__________________________________________________________________________________
+D2 Was hat die Nutzung von HX Now erschwert oder verhindert?
+__________________________________________________________________________________
+__________________________________________________________________________________
+__________________________________________________________________________________
+D3 Was sollte an HX Now oder an der Einführung verbessert werden?
+__________________________________________________________________________________
+__________________________________________________________________________________
+__________________________________________________________________________________
+D4 Sonstige Anmerkungen
+__________________________________________________________________________________
+__________________________________________________________________________________
+__________________________________________________________________________________
+Vielen Dank für Ihre Teilnahme!
+HX Now im Klinikalltag · Fragebogen 2 (Post) · Version 0.3 vom 08.11.2026 · Seite 4 von 4
+

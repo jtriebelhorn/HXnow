@@ -13,6 +13,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -29,6 +30,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -45,6 +47,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -61,6 +64,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -77,6 +81,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -93,6 +98,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -109,6 +115,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -125,6 +132,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -141,6 +149,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -157,6 +166,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -173,6 +183,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -189,6 +200,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -205,6 +217,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -221,6 +234,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -237,6 +251,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -253,6 +268,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -269,6 +285,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -285,6 +302,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -301,6 +319,7 @@
         3,
         4
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -317,6 +336,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -334,6 +354,7 @@
         5,
         9
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -352,6 +373,7 @@
         6,
         7
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -368,6 +390,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -384,6 +407,7 @@
         4,
         5
       ],
+      "zusatz": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -394,6 +418,7 @@
       "zelle": "D1",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -404,6 +429,7 @@
       "zelle": "D2",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -414,6 +440,7 @@
       "zelle": "D3",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -424,6 +451,7 @@
       "zelle": "D4",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -434,6 +462,7 @@
       "zelle": "D5",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -444,6 +473,7 @@
       "zelle": "D6",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -454,6 +484,7 @@
       "zelle": "D7",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -464,6 +495,7 @@
       "zelle": "D8",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -474,6 +506,7 @@
       "zelle": "D9",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -484,6 +517,7 @@
       "zelle": "D10",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -494,6 +528,7 @@
       "zelle": "D11",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -504,6 +539,7 @@
       "zelle": "D12",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -514,6 +550,7 @@
       "zelle": "D13",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -524,6 +561,7 @@
       "zelle": "D14",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -534,6 +572,7 @@
       "zelle": "E1",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -544,6 +583,7 @@
       "zelle": "E2",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -554,6 +594,7 @@
       "zelle": "E3",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -564,6 +605,7 @@
       "zelle": "E4",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -574,6 +616,7 @@
       "zelle": "E5",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -584,6 +627,7 @@
       "zelle": "E6",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -594,6 +638,7 @@
       "zelle": "E7",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -604,6 +649,7 @@
       "zelle": "F1",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -614,6 +660,971 @@
       "zelle": "F2",
       "typ": "skala",
       "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_01_A",
+      "zelle": "W3_01_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_01_B",
+      "zelle": "W3_01_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_01_C",
+      "zelle": "W3_01_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_02_A",
+      "zelle": "W3_02_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_02_B",
+      "zelle": "W3_02_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_02_C",
+      "zelle": "W3_02_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_03_A",
+      "zelle": "W3_03_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_03_B",
+      "zelle": "W3_03_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_03_C",
+      "zelle": "W3_03_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_04_A",
+      "zelle": "W3_04_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_04_B",
+      "zelle": "W3_04_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_04_C",
+      "zelle": "W3_04_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_05_A",
+      "zelle": "W3_05_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_05_B",
+      "zelle": "W3_05_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_05_C",
+      "zelle": "W3_05_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_06_A",
+      "zelle": "W3_06_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_06_B",
+      "zelle": "W3_06_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_06_C",
+      "zelle": "W3_06_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_07_A",
+      "zelle": "W3_07_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_07_B",
+      "zelle": "W3_07_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_07_C",
+      "zelle": "W3_07_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_08_A",
+      "zelle": "W3_08_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_08_B",
+      "zelle": "W3_08_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_08_C",
+      "zelle": "W3_08_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_09_A",
+      "zelle": "W3_09_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_09_B",
+      "zelle": "W3_09_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_09_C",
+      "zelle": "W3_09_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_10_A",
+      "zelle": "W3_10_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_10_B",
+      "zelle": "W3_10_B",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "W3_10_C",
+      "zelle": "W3_10_C",
+      "typ": "matrix",
+      "codes": [
+        1,
+        2,
+        3
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "GERAET_DABEI",
+      "zelle": "W4",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_1",
+      "zelle": "W5_01_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_2",
+      "zelle": "W5_02_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_3",
+      "zelle": "W5_03_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_4",
+      "zelle": "W5_04_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_5",
+      "zelle": "W5_05_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_6",
+      "zelle": "W5_06_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_HAEUF_7",
+      "zelle": "W5_07_A",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "INFO_HAEUF_ART",
+      "zelle": "W6a",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        9
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "INFO_HAEUF_ORT",
+      "zelle": "W6b",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "INFO_HAEUF_LOES",
+      "zelle": "W6c",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "INFO_HAEUF_DAUER",
+      "zelle": "W6d",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "zusatz": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_1",
+      "zelle": "B1",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_2",
+      "zelle": "B2",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_3",
+      "zelle": "B3",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_4",
+      "zelle": "B4",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_5",
+      "zelle": "B5",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PU_6",
+      "zelle": "B6",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_1",
+      "zelle": "B7",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_2",
+      "zelle": "B8",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_3",
+      "zelle": "B9",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_4",
+      "zelle": "B10",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_5",
+      "zelle": "B11",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_PEOU_6",
+      "zelle": "B12",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_BI_1",
+      "zelle": "B13",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "TAM_BI_2",
+      "zelle": "B14",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 7,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_1",
+      "zelle": "E1",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_2",
+      "zelle": "E2",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_3",
+      "zelle": "E3",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_4",
+      "zelle": "E4",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_5",
+      "zelle": "E5",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_6",
+      "zelle": "E6",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "FUNK_NUTZEN_7",
+      "zelle": "E7",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": [
+        0
+      ],
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "ABSCHALTEN",
+      "zelle": "F1",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
+      "min": 1,
+      "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "IT_STRESS",
+      "zelle": "F2",
+      "typ": "skala",
+      "codes": null,
+      "zusatz": null,
       "min": 1,
       "max": 5,
       "umpolen": false
