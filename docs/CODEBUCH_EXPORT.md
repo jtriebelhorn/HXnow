@@ -1,6 +1,6 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.6 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+Gilt ab App-Version 0.5.6 (Kodierschema 0.3); Fragebogen, Logbuch, Sicherung und Widerruf ab 0.14.0. Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
 (Version in der Spalte `schema_version`).
 
@@ -20,6 +20,11 @@ exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhand
 | Beobachtungsblock | `HXNOW_BEOB_<pseudonym>_<JJJJMMTT>_<HHMM>_<block-id, 8 Zeichen>.csv` |
 | Person nicht angetroffen | `HXNOW_VERSUCH_<pseudonym>_<JJJJMMTT>_<HHMM>_<id, 8 Zeichen>.csv` |
 | Tageskennzahlen | `HXNOW_TAG_<bereich>_<JJJJMMTT>_<HHMM>.csv` |
+| Fragebogen | `HXNOW_FB_<FB1/KB/FB2>_<pseudonym>_<JJJJMMTT>_<HHMM>_<sitzungs-id, 8 Zeichen>.csv` |
+| Logbuch (je Gerät, wird ersetzt) | `HXNOW_Logbuch_<geräte-id, 8 Zeichen>.csv` |
+| Komplettsicherung | `HXNOW_Komplettsicherung_<geräte-id, 8>_<JJJJMMTT>_<HHMM>.json` |
+| Teilnehmerliste | `HXNOW_Teilnehmende_<geräte-id, 8>_<JJJJMMTT>_<HHMM>.csv` |
+| Widerrufsprotokoll | `HXNOW_Widerruf_<pseudonym>_<JJJJMMTT>.txt` |
 | Probelauf (Test-Code, z. B. P000) | wie oben, aber mit `HXNOW_TEST_` statt `HXNOW_` – **nicht auswerten** |
 
 ## Beobachtungsblock (`HXNOW_BEOB_…`)
@@ -130,3 +135,77 @@ der eine Episode angelegt hat (`erfasstTs`). Blöcke aus Version 0.4.0 können a
 | `beobachter` | Kürzel |
 | `geraete_id`, `schema_version`, `app_version` | wie oben |
 | `erfasst` | Zeitpunkt der Erfassung |
+
+## Fragebogen (`HXNOW_FB_…`)
+
+Long-Format: eine Zeile je Zelle (Item, Matrixzelle, Freitextfeld, weiche Sprungregel), auch für ausgeblendete. Die
+Zellen-IDs, Codes und Paare stehen im Codebuch `docs/codebuch/codebuch_<definition_version>.csv` (`npm run codebuch`).
+
+| Spalte | Inhalt |
+| --- | --- |
+| `datensatz` | immer `antwort` |
+| `sitzung_id`, `geraete_id`, `app_version`, `definition_version` | Herkunft; `definition_version` = Fassung der Fragebogen-Definition |
+| `bogen` | `FB1` · `KB` · `FB2` |
+| `pseudonym`, `bereich` | Studien-Code, Bereich (Vorbereitung durch die Doktorandin) |
+| `erhebungsmodus`, `papier_datum` | `APP` oder `PAPIER` (nacherfasst; Datum auf dem Bogen) |
+| `start`, `ende`, `dauer_sek` | Ausfüllzeitraum (bei Papier: Erfassungszeitraum) |
+| `abschnitt`, `abschnitt_dauer_sek` | Abschnitt der Zelle und die darauf verbrachte Zeit |
+| `item_id`, `item_v` | Zellen-ID (z. B. `A1`, `W3_01_A`, `A3_TXT`, `A6_ZNA_BEH_PCT`) und Item-Version |
+| `paar` | Paar-ID für den Vorher-Nachher-Vergleich (leer = kein Paar) |
+| `typ` | Fragetyp der Zelle |
+| `wert` | Code bzw. Zahl; −88 = gefiltert (Frage nicht gestellt), −99 = keine Angabe; leer = ausgelassen |
+| `wert_text` | Freitext |
+| `status` | `beantwortet` · `ausgelassen` · `gefiltert` · `keine_angabe` · `automatisch` (Wert aus einer Regel, z. B. W2 = 0 bei A8 = nein) |
+| `n_zeilen` | Zeilen der Datei (Vollständigkeit) |
+
+## Logbuch-Datei (`HXNOW_Logbuch_…`)
+
+Eine Kopfzeile für alle Datensätze; die Spalte `datensatz` sagt, welche Spalten belegt sind. Enthält keine
+Beobachtungs- oder Antwortinhalte. Die Datei nicht in Excel speichern (Prüfsumme).
+
+| `datensatz` | Belegte Spalten |
+| --- | --- |
+| `meta` (immer erste Zeile) | `export_ts` (mit Millisekunden), `geraete_id`, `app_version`, `db_version`, `definition_version`, `schema_version`, `n_zeilen` (Zeilen ohne meta), `pruefsumme` (CRC32 über alle Zeilen nach der meta-Zeile, Text wie in der Datei), `stand_text` |
+| `proband` | `pseudonym`, `bereich`, `status` (aktiv · pausiert · ausgeschieden · widerrufen), `status_ts`, `registriert_ts`, `notiz`, eigene Phasendaten in `baseline_start` … `phase_ende` (leer = Plan des Bereichs) |
+| `phasenplan` | `bereich`, `baseline_start`, `einfuehrung_start`, `regelbetrieb_start`, `abschluss_start`, `phase_ende` (Datum) |
+| `eintrag` | ein Block, Versuch oder Fragebogen: `eintrag_id` (= block_id, versuch_id bzw. sitzung_id), `art` (BLOCK · VERSUCH · FB1 · KB · FB2), `pseudonym`, `phase`, `bereich`, `dienst`, `arbeitskontext`, `start`, `ende`, `beobachtet_sek`, `pausen_anzahl`, `pausen_sek`, `status`, `ende_art`, `abbruch_code`, `erhebungsmodus`, `papier_datum`, `beantwortet`, `ausgelassen`, `export_status` (offen · exportiert · bestaetigt), `testmodus`, `geraete_id` – so, wie erfasst |
+| `aenderung` | `aenderung_id`, `ts` (mit Millisekunden), `geraete_id`, `app_version`, `art`, `ziel_typ` (eintrag · proband · bereich · aenderung), `ziel_id`, `feld`, `alt`, `neu`, `grund`, `text` |
+
+Änderungsarten: `KOMMENTAR`, `KOMMENTAR_ZURUECK` (ziel = Kommentar), `UNGUELTIG` (`grund` U1 Testeintrag, U2 falscher
+Proband, U3 Fehlbedienung, U4 doppelt, U9 Sonstiges), `UNGUELTIG_AUFGEHOBEN`, `ZUORDNUNG` (Code), `PHASE`, `STATUS`,
+`PHASENDATEN` (`feld` = Datumsfeld), `WIDERRUF_LOESCHUNG`. Der wirksame Stand ergibt sich, indem die Änderungen eines
+Ziels nach `ts` angewendet werden; die Einträge selbst bleiben unverändert.
+
+## Komplettsicherung (`HXNOW_Komplettsicherung_…json`)
+
+JSON mit `format` = `hxnow-beobachtung-sicherung`, `formatVersion` 3, `erstellt`, `geraeteId`, `appVersion`,
+`schemaVersion`, `dbVersion`, `anzahl` (je Store), `pruefsumme` (CRC32 über `JSON.stringify(stores)`) und `stores` mit
+allen Datensätzen aller Stores außer `meta`. Formate 1 und 2 (ohne Prüfsumme) bleiben ladbar.
+
+## Teilnehmerliste (`HXNOW_Teilnehmende_…`)
+
+Spalten `pseudonym`, `bereich`, `status`, `registriert` (Datum), `notiz`. Zum Laden genügen `pseudonym` und
+optional `bereich`, `status`, `notiz`.
+
+## Widerrufsprotokoll (`HXNOW_Widerruf_…`)
+
+Text: Code, Zeitpunkt, Gerät, Anzahl gelöschter Blöcke, Versuche und Fragebögen und die Namen aller Dateien des
+Codes, die im Exportordner zu löschen sind.
+
+## Ausgabe des Zusammenführungstools
+
+`werkzeuge/zusammenfuehren.html` erzeugt `HXNOW_Auswertung_<JJJJMMTT>_<HHMM>.zip`:
+
+| Datei | Inhalt |
+| --- | --- |
+| `beobachtung.csv`, `versuche.csv`, `fb_long.csv` | alle Zeilen der Sitzungsdateien; `pseudonym` und `phase` = wirksamer Stand, zusätzlich `gueltig` (0/1), `ungueltig_grund`, `pseudonym_original`, `phase_original` |
+| `tageskennzahlen.csv` | alle Tageskennzahlen |
+| `fb1_wide.csv`, `kb_wide.csv`, `fb2_wide.csv` | eine Zeile je gültigem Bogen, eine Spalte je Zelle (`wert`, bei Freitext `wert_text`) |
+| `prae_post.csv` | je Code und Paar-ID: FB1-Wert, FB2-Wert und `fb2_wert_wie_fb1` (FB2 auf FB1-Codes umkodiert, z. B. W6c) |
+| `scores.csv` | ATI (Mittelwert, C3/C6/C8 umgepolt), TAM_PU, TAM_PEOU, TAM_BI (Mittelwerte), SUS (0–100); nur bei vollständigen gültigen Items, auf 4 Stellen gerundet |
+| `logbuch_gesamt.csv` | alle Logbuch-Einträge aller Geräte mit wirksamem Stand, Kommentaranzahl und Dateiname |
+| `alle_eintraege.csv` | Abgleich Logbuch ↔ Dateien (`pruefung`: Datei fehlt · nicht exportiert · nicht im Logbuch) |
+| `phasen.csv` | je Code und Phase: geplant, tatsächlich, Blöcke (gültig/ungültig, Ziel), Minuten, nicht angetroffen, Fragebogen |
+| `aenderungen.csv` | alle Änderungen (ohne widerrufene Codes) |
+| `HXNOW_CODEBUCH_FB_<version>.csv` | Codebuch der Fragebogen-Zellen |
+| `pruefbericht.txt` | Zählungen, verworfene Dateien (Prüfsumme, Widerruf, Probelauf), fehlende Dateien, Hinweise |

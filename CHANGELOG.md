@@ -1,5 +1,13 @@
 # Changelog
 
+## Dokumentation (F6/L6) – 08.11.2026
+Ohne neue App-Version (keine ausgelieferte Datei geändert):
+- `docs/ANLEITUNG_DOKTORANDIN.md` (Fragebogen, Exportordner, Sichern, Studienübersicht, Korrekturen, Widerruf, Update)
+  und `docs/NOTFALLKARTE.md` („Daten weg – was tun?“, Gerätewechsel, abgelehnte Dateien).
+- `docs/CODEBUCH_EXPORT.md`: Fragebogen-Datei, Logbuch-Datei, Komplettsicherung, Teilnehmerliste, Widerrufsprotokoll,
+  Ausgabe des Zusammenführungstools.
+- README: Stand, Zusammenführen, `npm run version`, Regeln für Fragebögen und IDs. ENTSCHEIDUNGEN Nr. 37–42.
+
 ## 0.14.0 – 08.11.2026
 Phasen F5 und L6 – Zusammenführungstool (`werkzeuge/zusammenfuehren.html`, `js/auswertung/`); App unverändert:
 - Liest den ganzen Exportordner (Ordner- oder Dateiauswahl) im Browser, ohne Upload: Beobachtung, Versuche,
