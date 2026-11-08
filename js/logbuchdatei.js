@@ -1,5 +1,6 @@
 // Logbuch-Datei (PLAN_Logbuch_Datensicherheit 5): fester Name je Gerät, wird bei jedem Export ersetzt. Enthält
-// Teilnehmerliste, Phasenplan, Logbuch-Einträge und Änderungsprotokoll, aber keine Beobachtungs- oder Antwortinhalte.
+// Teilnehmerliste, Phasenplan, Logbuch-Einträge (ohne Probeläufe) und Änderungsprotokoll, aber keine Beobachtungs- oder
+// Antwortinhalte.
 // Eine Kopfzeile für alle Zeilen; `datensatz` = meta · proband · phasenplan · eintrag · aenderung.
 // Die meta-Zeile (immer zuerst) trägt n_zeilen und die CRC32-Prüfsumme über alle übrigen Zeilen. DOM-frei, synchron.
 import { csvFeld, csvText } from './export.js';
@@ -10,13 +11,14 @@ import { isoMitOffset, datumLokal, uhrzeit } from './zeit.js';
 export const SPALTEN_LOGBUCH = Object.freeze([
   'datensatz', 'export_ts', 'geraete_id', 'app_version', 'db_version', 'definition_version', 'schema_version',
   'n_zeilen', 'pruefsumme', 'stand_text',
-  'pseudonym', 'bereich', 'status', 'status_ts', 'registriert_ts', 'notiz',
+  'pseudonym', 'bereich', 'proband_status', 'status_ts', 'registriert_ts', 'notiz',
   'baseline_start', 'einfuehrung_start', 'regelbetrieb_start', 'abschluss_start', 'phase_ende',
-  'eintrag_id', 'art', 'phase', 'dienst', 'arbeitskontext', 'start', 'ende', 'beobachtet_sek', 'pausen_anzahl', 'pausen_sek',
-  'ende_art', 'abbruch_code', 'erhebungsmodus', 'papier_datum', 'beantwortet', 'ausgelassen', 'export_status', 'testmodus',
+  'eintrag_id', 'art', 'phase', 'dienst', 'arbeitskontext', 'start', 'ende', 'dauer_sek', 'beobachtet_sek', 'pausen_anzahl', 'pausen_sek',
+  'eintrag_status', 'ende_art', 'abbruch_code', 'erhebungsmodus', 'papier_datum', 'beantwortet', 'ausgelassen', 'export_status', 'testmodus',
   'aenderung_id', 'ts', 'ziel_typ', 'ziel_id', 'feld', 'alt', 'neu', 'grund', 'text',
 ]);
 
+const FB_ARTEN = ['FB1', 'KB', 'FB2'];
 const PHASEN_FELDER = [['baselineStart', 'baseline_start'], ['einfuehrungStart', 'einfuehrung_start'],
   ['regelbetriebStart', 'regelbetrieb_start'], ['abschlussStart', 'abschluss_start'], ['ende', 'phase_ende']];
 
@@ -25,6 +27,12 @@ const iso = (ts) => (ts === null || ts === undefined || ts === '' ? '' : isoMitO
 const isoMs = (ts) => (ts === null || ts === undefined || ts === '' ? '' : isoMitOffset(ts, true));
 const ms = (s) => (s ? Date.parse(s) : null);
 const zahl = (s) => (s === '' || s === undefined ? null : Number(s));
+const istFb = (l) => ['FB1', 'KB', 'FB2'].includes(l.art);
+/** Dauer: Blöcke Wandzeit Beginn–Ende, Fragebögen Ausfüllzeit (ältere Einträge: in beobachtetSek). */
+const dauer = (l) => {
+  if (istFb(l)) return l.dauerSek ?? l.beobachtetSek ?? '';
+  return l.startTs && l.endTs ? Math.round((l.endTs - l.startTs) / 1000) : '';
+};
 
 export function dateinameLogbuch(geraeteId, test = false) {
   return `HXNOW_${test ? 'TEST_' : ''}Logbuch_${String(geraeteId).slice(0, 8)}.csv`;
@@ -50,15 +58,17 @@ export function logbuchDatei(daten, kopf) {
   const zeile = (werte) => SPALTEN_LOGBUCH.map((s) => werte[s] ?? '');
   const zeilen = [
     ...daten.teilnehmende.map((t) => zeile({
-      ...leer, datensatz: 'proband', pseudonym: t.pseudonym, bereich: t.bereich ?? '', status: t.status, status_ts: iso(t.statusTs),
+      ...leer, datensatz: 'proband', pseudonym: t.pseudonym, bereich: t.bereich ?? '', proband_status: t.status, status_ts: iso(t.statusTs),
       registriert_ts: iso(t.registriertTs), notiz: t.notiz ?? '',
       ...Object.fromEntries(PHASEN_FELDER.map(([f, s]) => [s, t.phasenAbweichung?.[f] ?? ''])),
     })),
     ...daten.phasenplan.map((p) => zeile({ ...leer, datensatz: 'phasenplan', bereich: p.bereich, ...Object.fromEntries(PHASEN_FELDER.map(([f, s]) => [s, p[f] ?? ''])) })),
-    ...daten.logbuch.map((l) => zeile({
+    // Probeläufe (Test-Code) gehören nicht ins Studien-Logbuch
+    ...daten.logbuch.filter((l) => !l.testmodus).map((l) => zeile({
       ...leer, datensatz: 'eintrag', eintrag_id: l.eintragId, art: l.art, pseudonym: l.pseudonym, phase: l.phase ?? '', bereich: l.bereich ?? '',
       dienst: l.dienst ?? '', arbeitskontext: l.arbeitskontext ?? '', start: iso(l.startTs), ende: iso(l.endTs),
-      beobachtet_sek: l.beobachtetSek ?? '', pausen_anzahl: l.pausenAnzahl ?? '', pausen_sek: l.pausenSek ?? '', status: l.status ?? '',
+      dauer_sek: dauer(l), beobachtet_sek: istFb(l) ? '' : l.beobachtetSek ?? '', pausen_anzahl: l.pausenAnzahl ?? '', pausen_sek: l.pausenSek ?? '',
+      eintrag_status: l.status ?? '',
       ende_art: l.endeArt ?? '', abbruch_code: l.abbruchCode ?? '', erhebungsmodus: l.erhebungsmodus ?? '', papier_datum: l.papierDatum ?? '',
       beantwortet: l.beantwortet ?? '', ausgelassen: l.ausgelassen ?? '', export_status: l.exportStatus ?? '',
       testmodus: l.testmodus ? 1 : 0, geraete_id: l.geraeteId ?? '',
@@ -101,14 +111,17 @@ export function leseLogbuchDatei(text) {
     ok: fehler.length === 0, fehler,
     meta: meta ? { exportTs: ms(meta.export_ts), geraeteId: meta.geraete_id, appVersion: meta.app_version, standText: meta.stand_text } : null,
     teilnehmende: art('proband').map((z) => ({
-      pseudonym: z.pseudonym, bereich: z.bereich || null, status: z.status, statusTs: ms(z.status_ts), registriertTs: ms(z.registriert_ts),
+      pseudonym: z.pseudonym, bereich: z.bereich || null, status: z.proband_status ?? z.status, statusTs: ms(z.status_ts), registriertTs: ms(z.registriert_ts),
       notiz: z.notiz, phasenAbweichung: hatPhasen(phasen(z)) ? phasen(z) : null,
     })),
     phasenplan: art('phasenplan').map((z) => ({ bereich: z.bereich, ...phasen(z) })),
     logbuch: art('eintrag').map((z) => ({
       eintragId: z.eintrag_id, art: z.art, pseudonym: z.pseudonym, phase: z.phase || null, bereich: z.bereich || null,
       dienst: z.dienst || null, arbeitskontext: z.arbeitskontext || null, startTs: ms(z.start), endTs: ms(z.ende),
-      beobachtetSek: zahl(z.beobachtet_sek), pausenAnzahl: zahl(z.pausen_anzahl), pausenSek: zahl(z.pausen_sek), status: z.status,
+      ...(FB_ARTEN.includes(z.art)
+        ? { dauerSek: zahl(z.dauer_sek) ?? zahl(z.beobachtet_sek), beobachtetSek: null }
+        : { beobachtetSek: zahl(z.beobachtet_sek) }),
+      pausenAnzahl: zahl(z.pausen_anzahl), pausenSek: zahl(z.pausen_sek), status: z.eintrag_status ?? z.status,
       endeArt: z.ende_art || null, abbruchCode: z.abbruch_code || null, erhebungsmodus: z.erhebungsmodus, papierDatum: z.papier_datum || null,
       beantwortet: zahl(z.beantwortet), ausgelassen: zahl(z.ausgelassen), exportStatus: z.export_status, testmodus: z.testmodus === '1',
       geraeteId: z.geraete_id,

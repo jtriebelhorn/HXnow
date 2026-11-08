@@ -6,12 +6,13 @@ import { isoMitOffset, dateinameZeit } from '../zeit.js';
 import { berechneStand } from './stand.js';
 
 export const SPALTEN_FB = Object.freeze([
-  'datensatz', 'sitzung_id', 'geraete_id', 'app_version', 'definition_version', 'bogen', 'pseudonym', 'bereich',
+  'datensatz', 'sitzung_id', 'geraete_id', 'app_version', 'definition_version', 'testmodus', 'bogen', 'pseudonym', 'bereich',
   'erhebungsmodus', 'papier_datum', 'start', 'ende', 'dauer_sek', 'abschnitt', 'abschnitt_dauer_sek',
   'item_id', 'item_v', 'paar', 'typ', 'wert', 'wert_text', 'status', 'n_zeilen',
 ]);
 
-const WERT = { beantwortet: (e) => e.wert, automatisch: (e) => e.wert, keine_angabe: () => -99, gefiltert: (e) => e.wert ?? '', ausgelassen: () => '' };
+// Ausgeblendet (gefiltert) ist immer −88, auch bei Freitextfeldern; ausgelassen bleibt leer.
+const WERT = { beantwortet: (e) => e.wert, automatisch: (e) => e.wert, keine_angabe: () => -99, gefiltert: (e) => e.wert ?? -88, ausgelassen: () => '' };
 
 /** Dateiname; Probeläufe (Test-Code) beginnen mit HXNOW_TEST_. */
 export function dateinameFb(sitzung, test = false) {
@@ -32,7 +33,7 @@ export function fbDatei(b, sitzung, antworten, { definitionVersion, test = false
   const zeilen = [...stand.zellen.values()].map((e) => {
     const z = e.zelle;
     return [
-      'antwort', s.sitzungId, s.geraeteId, s.appVersion, definitionVersion, b.id, s.pseudonym, s.bereich ?? '',
+      'antwort', s.sitzungId, s.geraeteId, s.appVersion, definitionVersion, test ? 1 : 0, b.id, s.pseudonym, s.bereich ?? '',
       s.erhebungsmodus, s.papierDatum ?? '', s.startTs ? isoMitOffset(s.startTs) : '', s.endTs ? isoMitOffset(s.endTs) : '', dauer,
       z.abschnitt, Math.round(s.seitenzeiten?.[z.abschnitt] ?? 0), z.id, z.v, z.paar, z.typ,
       WERT[e.status](e), e.text, e.status,

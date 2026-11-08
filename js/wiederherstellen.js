@@ -71,7 +71,7 @@ export function erkenneDatei(name, text) {
       name, typ: 'fb', fehler: [], test,
       eintrag: {
         eintragId: z.sitzung_id, art: z.bogen, pseudonym: z.pseudonym, phase: PHASE_BOGEN[z.bogen] ?? null, bereich: z.bereich || null,
-        dienst: null, arbeitskontext: null, startTs: ms(z.start) ?? ms(z.papier_datum), endTs: ms(z.ende), beobachtetSek: zahl(z.dauer_sek) ?? 0,
+        dienst: null, arbeitskontext: null, startTs: ms(z.start) ?? ms(z.papier_datum), endTs: ms(z.ende), beobachtetSek: null, dauerSek: zahl(z.dauer_sek),
         pausenAnzahl: 0, pausenSek: 0, status: 'abgeschlossen', endeArt: null, abbruchCode: null, erhebungsmodus: z.erhebungsmodus,
         papierDatum: z.papier_datum || null, beantwortet: zaehle('beantwortet'), ausgelassen: zaehle('ausgelassen'), geraeteId: z.geraete_id,
       },

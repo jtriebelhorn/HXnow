@@ -560,3 +560,4 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .legende { margin: 4px 0 12px; }
 .aufklapp { margin: 8px 0; padding: 4px 12px; border: 1px solid var(--rand); border-radius: var(--radius); }
 .aufklapp summary { font-weight: 700; min-height: 44px; display: flex; align-items: center; cursor: pointer; }
+.hinweis-frage { margin: 0 0 8px; padding: 6px 10px; border-left: 4px solid var(--primaer); background: var(--hintergrund); border-radius: 6px; font-size: 0.9rem; }

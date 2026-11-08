@@ -2,6 +2,7 @@
 import { test, expect } from '@playwright/test';
 import { oeffne, starteBlock, tippe, leseDb } from './hilfen.js';
 import { APP_VERSION } from '../../js/version.js';
+import { FRAGEBOGEN_DEFINITION } from '../../js/frageboegen.js';
 
 test.describe('mit Service Worker', () => {
   test.use({ serviceWorkers: 'allow' });
@@ -124,5 +125,5 @@ test('Info zeigt Datenbank- und Definitionsversion', async ({ page }) => {
   await oeffne(page);
   await page.click('[data-test=menue-info]');
   await expect(page.locator('[data-test=info-db-version]')).toHaveText('hxnow-beobachtung, Version 3');
-  await expect(page.locator('[data-test=info-definition-version]')).toHaveText('0.1.0');
+  await expect(page.locator('[data-test=info-definition-version]')).toHaveText(FRAGEBOGEN_DEFINITION.definitionVersion);
 });

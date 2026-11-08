@@ -33,7 +33,7 @@ export function eintragAusFb(s, schema, phase, kennzahlen = null) {
   return {
     eintragId: s.sitzungId, art: s.bogen, pseudonym: s.pseudonym, phase, bereich: s.bereich ?? null,
     dienst: null, arbeitskontext: null, startTs: s.startTs ?? s.angelegtTs, endTs: s.endTs ?? null,
-    beobachtetSek: s.endTs && s.startTs ? Math.round((s.endTs - s.startTs) / 1000) : 0, pausenAnzahl: 0, pausenSek: 0,
+    beobachtetSek: null, dauerSek: s.endTs && s.startTs ? Math.round((s.endTs - s.startTs) / 1000) : null, pausenAnzahl: 0, pausenSek: 0,
     status: s.status, endeArt: null, abbruchCode: null, erhebungsmodus: s.erhebungsmodus,
     papierDatum: s.papierDatum ?? null, beantwortet: kennzahlen?.beantwortet ?? null, ausgelassen: kennzahlen?.ausgelassen ?? null,
     exportStatus: s.exportStatus ?? 'offen', geraeteId: s.geraeteId, testmodus: Boolean(s.testmodus) || istTestPseudonym(schema, s.pseudonym),

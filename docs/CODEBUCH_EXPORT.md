@@ -145,6 +145,7 @@ Zellen-IDs, Codes und Paare stehen im Codebuch `docs/codebuch/codebuch_<definiti
 | --- | --- |
 | `datensatz` | immer `antwort` |
 | `sitzung_id`, `geraete_id`, `app_version`, `definition_version` | Herkunft; `definition_version` = Fassung der Fragebogen-Definition |
+| `testmodus` | 1 = Probelauf (Test-Code), 0 = Studiendaten – unabhängig vom Dateinamen |
 | `bogen` | `FB1` · `KB` · `FB2` |
 | `pseudonym`, `bereich` | Studien-Code, Bereich (Vorbereitung durch die Doktorandin) |
 | `erhebungsmodus`, `papier_datum` | `APP` oder `PAPIER` (nacherfasst; Datum auf dem Bogen) |
@@ -153,22 +154,24 @@ Zellen-IDs, Codes und Paare stehen im Codebuch `docs/codebuch/codebuch_<definiti
 | `item_id`, `item_v` | Zellen-ID (z. B. `A1`, `W3_01_A`, `A3_TXT`, `A6_ZNA_BEH_PCT`) und Item-Version |
 | `paar` | Paar-ID für den Vorher-Nachher-Vergleich (leer = kein Paar) |
 | `typ` | Fragetyp der Zelle |
-| `wert` | Code bzw. Zahl; −88 = gefiltert (Frage nicht gestellt), −99 = keine Angabe; leer = ausgelassen |
+| `wert` | Code bzw. Zahl; −88 = gefiltert (Frage nicht gestellt, auch bei Freitextfeldern), −99 = keine Angabe; leer = ausgelassen |
 | `wert_text` | Freitext |
 | `status` | `beantwortet` · `ausgelassen` · `gefiltert` · `keine_angabe` · `automatisch` (Wert aus einer Regel, z. B. W2 = 0 bei A8 = nein) |
 | `n_zeilen` | Zeilen der Datei (Vollständigkeit) |
 
 ## Logbuch-Datei (`HXNOW_Logbuch_…`)
 
-Eine Kopfzeile für alle Datensätze; die Spalte `datensatz` sagt, welche Spalten belegt sind. Enthält keine
+Eine Kopfzeile für alle Datensätze; die Spalte `datensatz` sagt, welche Spalten belegt sind. Ab App 0.16.0 getrennte
+Status-Spalten und `dauer_sek`; ältere Dateien mit gemeinsamer Spalte `status` bleiben lesbar. Enthält keine
 Beobachtungs- oder Antwortinhalte. Die Datei nicht in Excel speichern (Prüfsumme).
 
 | `datensatz` | Belegte Spalten |
 | --- | --- |
+| (Probeläufe) | stehen nicht im Logbuch; sie sind nur auf dem Gerät und in den `HXNOW_TEST_…`-Dateien |
 | `meta` (immer erste Zeile) | `export_ts` (mit Millisekunden), `geraete_id`, `app_version`, `db_version`, `definition_version`, `schema_version`, `n_zeilen` (Zeilen ohne meta), `pruefsumme` (CRC32 über alle Zeilen nach der meta-Zeile, Text wie in der Datei), `stand_text` |
-| `proband` | `pseudonym`, `bereich`, `status` (aktiv · pausiert · ausgeschieden · widerrufen), `status_ts`, `registriert_ts`, `notiz`, eigene Phasendaten in `baseline_start` … `phase_ende` (leer = Plan des Bereichs) |
+| `proband` | `pseudonym`, `bereich`, `proband_status` (aktiv · pausiert · ausgeschieden · widerrufen), `status_ts`, `registriert_ts`, `notiz`, eigene Phasendaten in `baseline_start` … `phase_ende` (leer = Plan des Bereichs) |
 | `phasenplan` | `bereich`, `baseline_start`, `einfuehrung_start`, `regelbetrieb_start`, `abschluss_start`, `phase_ende` (Datum) |
-| `eintrag` | ein Block, Versuch oder Fragebogen: `eintrag_id` (= block_id, versuch_id bzw. sitzung_id), `art` (BLOCK · VERSUCH · FB1 · KB · FB2), `pseudonym`, `phase`, `bereich`, `dienst`, `arbeitskontext`, `start`, `ende`, `beobachtet_sek`, `pausen_anzahl`, `pausen_sek`, `status`, `ende_art`, `abbruch_code`, `erhebungsmodus`, `papier_datum`, `beantwortet`, `ausgelassen`, `export_status` (offen · exportiert · bestaetigt), `testmodus`, `geraete_id` – so, wie erfasst |
+| `eintrag` | ein Block, Versuch oder Fragebogen: `eintrag_id` (= block_id, versuch_id bzw. sitzung_id), `art` (BLOCK · VERSUCH · FB1 · KB · FB2), `pseudonym`, `phase`, `bereich`, `dienst`, `arbeitskontext`, `start`, `ende`, `dauer_sek` (Block: Beginn bis Ende; Fragebogen: Ausfüllzeit), `beobachtet_sek` (nur Block: beobachtete Zeit ohne Pausen), `pausen_anzahl`, `pausen_sek`, `eintrag_status` (beendet · abgebrochen · nicht_angetroffen · abgeschlossen · laufend …), `ende_art`, `abbruch_code`, `erhebungsmodus`, `papier_datum`, `beantwortet`, `ausgelassen`, `export_status` (offen · exportiert · bestaetigt), `testmodus`, `geraete_id` – so, wie erfasst |
 | `aenderung` | `aenderung_id`, `ts` (mit Millisekunden), `geraete_id`, `app_version`, `art`, `ziel_typ` (eintrag · proband · bereich · aenderung), `ziel_id`, `feld`, `alt`, `neu`, `grund`, `text` |
 
 Änderungsarten: `KOMMENTAR`, `KOMMENTAR_ZURUECK` (ziel = Kommentar), `UNGUELTIG` (`grund` U1 Testeintrag, U2 falscher

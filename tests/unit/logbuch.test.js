@@ -25,7 +25,7 @@ const daten = () => ({
     block('b2', 'P001', 'PRE', '2026-11-25T15:00:00+01:00', { dienst: 'SPAET' }),
     block('b3', 'P002', 'PRE', '2026-11-26T09:00:00+01:00', { status: 'abgebrochen', abbruchCode: 'A2' }),
     block('t1', 'P000', 'PRE', '2026-11-26T09:00:00+01:00', { testmodus: true }),
-    { ...block('f1', 'P001', 'PRE', '2026-11-27T09:00:00+01:00'), art: 'FB1', status: 'abgeschlossen', erhebungsmodus: 'APP', beantwortet: 80, ausgelassen: 6 },
+    { ...block('f1', 'P001', 'PRE', '2026-11-27T09:00:00+01:00'), art: 'FB1', status: 'abgeschlossen', erhebungsmodus: 'APP', beantwortet: 80, ausgelassen: 6, beobachtetSek: null, dauerSek: 840, pausenAnzahl: 0, pausenSek: 0 },
   ],
   aenderungen: [
     { aenderungId: 'a1', ts: T('2026-11-28T10:00:00.123+01:00'), geraeteId: 'abcdef12-3456', appVersion: '0.9.0', art: 'KOMMENTAR', zielTyp: 'eintrag', zielId: 'b1', feld: null, alt: null, neu: null, grund: null, text: 'Visite verlängert' },
@@ -67,10 +67,27 @@ describe('Logbuch-Datei', () => {
     assert.deepEqual(r.teilnehmende, d.teilnehmende);
     assert.deepEqual(r.phasenplan, d.phasenplan);
     assert.deepEqual(r.aenderungen, d.aenderungen);
-    for (const [i, l] of d.logbuch.entries()) {
+    assert.ok(!r.logbuch.some((l) => l.testmodus), 'Probeläufe stehen nicht im Studien-Logbuch');
+    for (const [i, l] of d.logbuch.filter((x) => !x.testmodus).entries()) {
       const zurueck = r.logbuch[i];
       for (const [k, v] of Object.entries(l)) assert.deepEqual(zurueck[k] ?? null, v ?? null, `${l.eintragId}.${k}`);
     }
+  });
+  test('Getrennte Spalten: proband_status, eintrag_status; Fragebogen-Dauer in dauer_sek', () => {
+    const z = leseCsv(logbuchDatei(daten(), kopf).inhalt).zeilen;
+    assert.ok(!('status' in z[0]));
+    assert.equal(z.find((x) => x.datensatz === 'proband').proband_status, 'aktiv');
+    const fb = z.find((x) => x.eintrag_id === 'f1');
+    assert.deepEqual([fb.eintrag_status, fb.dauer_sek, fb.beobachtet_sek], ['abgeschlossen', '840', '']);
+    const b = z.find((x) => x.eintrag_id === 'b1');
+    assert.deepEqual([b.eintrag_status, b.dauer_sek, b.beobachtet_sek], ['beendet', '3600', '3600']);
+    // ältere Datei mit gemeinsamer Spalte status bleibt lesbar
+    const alt = 'datensatz;export_ts;n_zeilen;pruefsumme;pseudonym;status;eintrag_id;art;beobachtet_sek\r\n';
+    const koerper = 'proband;;;;P1;aktiv;;;\r\neintrag;;;;P1;abgeschlossen;e1;FB1;600';
+    const r = leseLogbuchDatei(`${alt}meta;2026-12-03T10:00:00+01:00;2;${crc32(koerper)};;;;;\r\n${koerper}\r\n`);
+    assert.equal(r.ok, true, r.fehler.join());
+    assert.equal(r.teilnehmende[0].status, 'aktiv');
+    assert.deepEqual([r.logbuch[0].status, r.logbuch[0].dauerSek], ['abgeschlossen', 600]);
   });
   test('Veränderte Datei: Prüfsumme schlägt an; fehlende Zeile: Zeilenzahl', () => {
     const { inhalt } = logbuchDatei(daten(), kopf);

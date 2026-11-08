@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.16.0 – 08.11.2026
+Anmerkungen aus der Prüfung der Testdateien; keine Datenbank-Migration, Fragebogen-Definition 0.1.1:
+- Fragebogen-Datei: neue Spalte `testmodus` (nach `definition_version`); ausgeblendete Freitextfelder `wert` = −88
+  wie alle ausgeblendeten Zellen.
+- Logbuch: „ausgelassen“ zählt wie die Fragebogen-Datei (auch Freitextfelder). Datei mit getrennten Spalten
+  `proband_status` und `eintrag_status`; Fragebogen-Dauer in `dauer_sek` (Blöcke: `dauer_sek` = Beginn bis Ende,
+  `beobachtet_sek` ohne Pausen). Probeläufe stehen nicht mehr im Studien-Logbuch. Ältere Logbuch-Dateien bleiben lesbar.
+- FB1 und FB2: Hinweis an W3 „Bitte für jede Situation eine Häufigkeit angeben – auch 0 …“ (nur in der App;
+  `definitionVersion` 0.1.1, Codebuch `docs/codebuch/codebuch_0.1.1.csv`).
+- Zusammenführungstool: `logbuch_gesamt.csv` mit `dauer_sek`.
+
 ## 0.15.0 – 08.11.2026
 Probandenverwaltung und Studienübersicht; keine Datenbank-Migration, Kodierschema-Feld `pseudonym.muster` geändert:
 - Probanden-Codes frei wählbar (2–20 Zeichen: Buchstaben, Ziffern, Bindestrich; keine Klarnamen), statt nur

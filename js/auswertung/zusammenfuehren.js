@@ -198,14 +198,14 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   const logbuchListe = [...logbuchKarte.values()].filter((l) => !l.testmodus);
   const wirksam = logbuchListe.map((l) => wirksamerStand(l, aenderungen)).filter((e) => !istWiderrufen(e.pseudonymOriginal ?? e.pseudonym, e.pseudonym));
   const LOGBUCH_SPALTEN = ['eintrag_id', 'art', 'pseudonym', 'pseudonym_original', 'phase', 'phase_original', 'bereich', 'dienst', 'arbeitskontext',
-    'start', 'ende', 'beobachtet_sek', 'pausen_anzahl', 'pausen_sek', 'status', 'abbruch_code', 'erhebungsmodus', 'papier_datum', 'export_status',
+    'start', 'ende', 'dauer_sek', 'beobachtet_sek', 'pausen_anzahl', 'pausen_sek', 'status', 'abbruch_code', 'erhebungsmodus', 'papier_datum', 'export_status',
     'geraete_id', 'gueltig', 'ungueltig_grund', 'kommentare', 'wiederhergestellt', 'datei'];
   const iso = (ts) => (ts ? isoMitOffset(ts) : '');
   ausgaben.push({
     name: 'logbuch_gesamt.csv',
     inhalt: csvText(LOGBUCH_SPALTEN, wirksam.sort((a, b) => a.startTs - b.startTs).map((e) => [
       e.eintragId, e.art, e.pseudonym, e.pseudonymOriginal ?? '', e.phase ?? '', e.phaseOriginal ?? '', e.bereich ?? '', e.dienst ?? '', e.arbeitskontext ?? '',
-      iso(e.startTs), iso(e.endTs), e.beobachtetSek ?? '', e.pausenAnzahl ?? '', e.pausenSek ?? '', e.status, e.abbruchCode ?? '', e.erhebungsmodus ?? '',
+      iso(e.startTs), iso(e.endTs), FB_ARTEN.includes(e.art) ? e.dauerSek ?? e.beobachtetSek ?? '' : (e.startTs && e.endTs ? Math.round((e.endTs - e.startTs) / 1000) : ''), FB_ARTEN.includes(e.art) ? '' : e.beobachtetSek ?? '', e.pausenAnzahl ?? '', e.pausenSek ?? '', e.status, e.abbruchCode ?? '', e.erhebungsmodus ?? '',
       e.papierDatum ?? '', e.exportStatus ?? '', e.geraeteId ?? '', e.gueltig ? 1 : 0, e.ungueltigGrund ?? '', e.kommentare.filter((k) => !k.zurueckgezogen).length,
       e.wiederhergestellt ? 1 : 0, dateiZu.get(e.eintragId) ?? '',
     ])),

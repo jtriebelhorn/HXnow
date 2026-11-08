@@ -211,6 +211,8 @@ export function zeigeEintrag(app, { eintragId }) {
       el('dt', {}, 'Ende'), el('dd', {}, zeitDe(e.endTs)),
       e.art === 'BLOCK' ? el('dt', {}, 'Beobachtet') : null, e.art === 'BLOCK' ? el('dd', {}, `${Math.round((e.beobachtetSek ?? 0) / 60)} min, ${e.pausenAnzahl ?? 0} Pausen`) : null,
       el('dt', {}, 'Status'), el('dd', {}, STATUS_NAME[e.status] ?? e.status, e.abbruchCode ? ` (${e.abbruchCode})` : ''),
+      ['FB1', 'KB', 'FB2'].includes(e.art) && (e.dauerSek ?? e.beobachtetSek) ? el('dt', {}, 'Dauer') : null,
+      ['FB1', 'KB', 'FB2'].includes(e.art) && (e.dauerSek ?? e.beobachtetSek) ? el('dd', {}, `${Math.round((e.dauerSek ?? e.beobachtetSek) / 60)} min`) : null,
       e.erhebungsmodus ? el('dt', {}, 'Erhebung') : null, e.erhebungsmodus ? el('dd', {}, e.erhebungsmodus === 'PAPIER' ? `Papier (${tagDe(e.papierDatum)})` : 'App') : null,
       e.beantwortet !== null && e.beantwortet !== undefined ? el('dt', {}, 'Antworten') : null,
       e.beantwortet !== null && e.beantwortet !== undefined ? el('dd', {}, `${e.beantwortet} beantwortet, ${e.ausgelassen ?? 0} offen gelassen`) : null,

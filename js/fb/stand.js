@@ -109,7 +109,8 @@ export function zusammenfassungStand(stand) {
   const werte = [...stand.zellen.values()];
   return {
     beantwortet: werte.filter((e) => e.status === 'beantwortet' || e.status === 'keine_angabe').length,
-    ausgelassen: werte.filter((e) => e.status === 'ausgelassen' && !istTextZelle(e.zelle) && e.zelle.art !== 'angekreuzt').length,
+    // wie in der Fragebogen-Datei: jede Zelle mit Status „ausgelassen“ (auch Freitextfelder)
+    ausgelassen: werte.filter((e) => e.status === 'ausgelassen').length,
     zellen: werte.length,
   };
 }

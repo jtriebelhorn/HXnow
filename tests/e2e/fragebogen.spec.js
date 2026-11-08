@@ -2,6 +2,7 @@
 // Papier-Nacherfassung, Rückkehr per langem Druck, Statusansicht ohne Antworten, Export im Long-Format.
 import { test, expect } from '@playwright/test';
 import { oeffne, waehleCode, leseDb, mockeTeilen, geteilt } from './hilfen.js';
+import { FRAGEBOGEN_DEFINITION } from '../../js/frageboegen.js';
 
 async function vorbereiten(page, { bogen = 'FB1', code = 'P050', modus = 'APP', datum = null } = {}) {
   await page.click('[data-test=neuer-fragebogen]');
@@ -44,6 +45,9 @@ test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, S
   await expect(page.locator('[data-test=fb-abschnitt]')).toContainText('B');
   await weiter(page);
   await expect(page.locator('[data-test=fb-abschnitt]')).toContainText('W');
+  await page.fill('[data-test=fb-W1]', '3');
+  await page.locator('[data-test=fb-W1]').blur();
+  await expect(page.locator('[data-test=fb-hinweis-W3]')).toContainText('auch „0“');
   await page.fill('[data-test=fb-W1]', '0');
   await page.locator('[data-test=fb-W1]').blur();
   await expect(page.locator('[data-test=fb-W3_01_A-0]')).toHaveCount(0); // W1 = 0: Rest von W ausgeblendet
@@ -81,10 +85,12 @@ test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, S
   expect(zeile('W2')).toMatchObject({ wert: '0', status: 'automatisch' });
   expect(zeile('W3_01_A')).toMatchObject({ wert: '-88', status: 'gefiltert', paar: 'W3_01_A' });
   expect(zeile('A2')).toMatchObject({ wert: '', status: 'ausgelassen' });
-  expect(zeile('C1')).toMatchObject({ wert: '4', erhebungsmodus: 'APP', definition_version: '0.1.0', bogen: 'FB1' });
+  expect(zeile('C1')).toMatchObject({ wert: '4', erhebungsmodus: 'APP', definition_version: FRAGEBOGEN_DEFINITION.definitionVersion, bogen: 'FB1', testmodus: '0' });
+  expect(zeile('A6_SONST_TXT')).toMatchObject({ wert: '-88', wert_text: '', status: 'gefiltert' }); // ausgeblendetes Freitextfeld
+  const ausgelassen = zeilen.filter((z) => z[kopf.indexOf('status')] === 'ausgelassen').length;
 
   const db = await leseDb(page);
-  expect(db.logbuch.find((l) => l.art === 'FB1')).toMatchObject({ pseudonym: 'P050', status: 'abgeschlossen', phase: 'PRE', exportStatus: 'exportiert' });
+  expect(db.logbuch.find((l) => l.art === 'FB1')).toMatchObject({ pseudonym: 'P050', status: 'abgeschlossen', phase: 'PRE', exportStatus: 'exportiert', ausgelassen }); // gleiche Zählung wie in der Datei
 });
 
 test('Unterbrechung: Neustart mitten im Bogen → Fortsetzen an derselben Stelle ohne Datenverlust; Block solange gesperrt', async ({ page }) => {

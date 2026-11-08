@@ -30,7 +30,7 @@ describe('Datei am Inhalt erkennen', () => {
     assert.deepEqual([b.eintrag.eintragId, b.eintrag.pseudonym, b.eintrag.phase, b.eintrag.beobachtetSek, b.eintrag.status], ['id-0001', 'P017', 'POST', 900, 'beendet']);
     assert.equal(erkenneDatei(versuch.dateiname, versuch.inhalt).eintrag.status, 'nicht_angetroffen');
     const f = erkenneDatei(fb.dateiname, fb.inhalt);
-    assert.deepEqual([f.typ, f.eintrag.art, f.eintrag.phase, f.eintrag.beantwortet, f.eintrag.beobachtetSek], ['fb', 'FB1', 'PRE', 1, 600]);
+    assert.deepEqual([f.typ, f.eintrag.art, f.eintrag.phase, f.eintrag.beantwortet, f.eintrag.dauerSek], ['fb', 'FB1', 'PRE', 1, 600]);
     const tag = tagDatei({ datum: '2026-12-03', bereich: 'NEPH', auslastung: 3, aerzteAnwesend: 4, beobachter: 'B1', ts: START });
     assert.equal(erkenneDatei(tag.dateiname, tag.inhalt).satz.aerzteAnwesend, 4);
     const lb = logbuchDatei({ teilnehmende: [t('P017')], phasenplan: [], logbuch: [], aenderungen: [] }, kopf(START));

@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.15.0",
+  "appVersion": "0.16.0",
   "datum": "2026-11-08",
-  "hinweis": "Frei wählbare Probanden-Codes mit Auswahlliste und „Neuen Probanden anlegen“; knappere Studienübersicht."
+  "hinweis": "Fragebogen- und Logbuch-Dateien präzisiert (testmodus, −88, getrennte Status-Spalten); Hinweis an W3."
 }

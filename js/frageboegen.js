@@ -68,6 +68,8 @@ const INFO_ART = [[1, 'Laborwerte'], [2, 'Befunde/Bildgebung'], [3, 'Vorbefunde/
 const ORTE = [[1, 'Flur/Wegstrecke'], [2, 'Patientenzimmer'], [3, 'Visite'], [4, 'Übergabe'], [5, 'Behandlungsbereich Notaufnahme'], [6, 'anderer Bereich'], [7, 'Bereitschafts-/Nachtdienst']];
 
 const MIT_DIENST = 'W1 > 0';
+// Nur in der App (nicht im Papierbogen): Wer die Tabelle überspringt, verliert die Folgefragen W4/W6 (Filter MIT_BEDARF).
+const W3_HINWEIS = 'Bitte für jede Situation eine Häufigkeit angeben – auch „0“, wenn es nicht vorkam. Die folgenden Fragen hängen davon ab.';
 const MIT_BEDARF = 'W1 > 0 UND IRGENDEIN(W3_*_A) > 0';
 
 // ===================================================================== FB1
@@ -143,6 +145,7 @@ const FB1 = {
           id: 'W3', v: 1, typ: 'matrix', showIf: MIT_DIENST,
           text: 'Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B).',
           zeilen: W3_ZEILEN,
+          hinweis: W3_HINWEIS,
           zeilenShowIf: { '04': 'A6_STAT = 1 ODER A6_ZNA_STAT = 1', '06': 'A6_ZNA_BEH = 1', '09': 'A8 = 1' },
           gruppen: [
             { id: 'A', titel: 'Wie oft?', optionen: HAEUFIGKEIT_14_TAGE, paarJeZelle: true },
@@ -268,6 +271,7 @@ const FB2 = {
           id: 'W3', v: 1, typ: 'matrix', showIf: MIT_DIENST,
           text: 'Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A), wie Sie ihn überwiegend gelöst haben (B) und ob Sie dabei HX Now genutzt haben (C).',
           zeilen: W3_ZEILEN,
+          hinweis: W3_HINWEIS,
           zeilenShowIf: { '09': 'W2 > 0 ODER UNBEKANNT(W2)' },
           gruppen: [
             { id: 'A', titel: 'Wie oft?', optionen: HAEUFIGKEIT_14_TAGE, paarJeZelle: true },
@@ -476,7 +480,7 @@ const KB = {
 };
 
 export const FRAGEBOGEN_DEFINITION = Object.freeze({
-  definitionVersion: '0.1.0', // SemVer (Plan 4.2); 1.0.0 erst nach dem Pretest
+  definitionVersion: '0.1.1', // SemVer (Plan 4.2); 1.0.0 erst nach dem Pretest
   stand: '2026-11-08',
   boegen: [FB1, KB, FB2],
 });

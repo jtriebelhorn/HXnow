@@ -299,7 +299,8 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
       default:
         koerper = null;
     }
-    return el('div', { class: `frage${it.typ === 'matrix' ? ' frage-matrix' : ''}`, 'data-item': it.id, 'data-sprung': it.typ === 'matrix' ? undefined : it.id }, kopf, [koerper].flat(3));
+    const hinweisItem = it.hinweis && it.typ !== 'freitext' ? el('p', { class: 'hinweis-frage', 'data-test': `fb-hinweis-${it.id}` }, it.hinweis) : null;
+    return el('div', { class: `frage${it.typ === 'matrix' ? ' frage-matrix' : ''}`, 'data-item': it.id, 'data-sprung': it.typ === 'matrix' ? undefined : it.id }, kopf, hinweisItem, [koerper].flat(3));
   }
 
   function zeichneSprung(s) {
