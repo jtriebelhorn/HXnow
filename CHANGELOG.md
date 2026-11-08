@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.14.1 – 08.11.2026
+Darstellung auf normal großen iPhones (375–393 px Breite); keine Datenbank-Migration:
+- Raster (Orte, Tätigkeiten, Nutzung/Haltung, Fragebogen-Optionen) werden nie breiter als der Bildschirm
+  (`minmax(0, 1fr)` statt `1fr`).
+- Nutzung und Haltung: Beschriftung über den Tasten statt daneben, Tasten über die volle Breite, keine Worttrennung
+  mehr („Ste-hend“).
+- Untere Leiste der Kodieransicht: Schriftgröße passt sich der Breite an („Rückgängig“, „Kommentar“ stoßen nicht mehr
+  an den Rand).
+- Fragebogen: Zusatzantworten wie „nicht genutzt“ in eigener Zeile unter der Skala; Skala 1–7 passt auch auf 375 px.
+- Test „Studie“ an die PIN-Abfrage beim Phasenplan angepasst (schlug seit 0.12.0 fehl, die App war korrekt).
+
 ## Dokumentation (F6/L6) – 08.11.2026
 Ohne neue App-Version (keine ausgelieferte Datei geändert):
 - `docs/ANLEITUNG_DOKTORANDIN.md` (Fragebogen, Exportordner, Sichern, Studienübersicht, Korrekturen, Widerruf, Update)
