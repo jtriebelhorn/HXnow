@@ -1,0 +1,84 @@
+﻿bogen;abschnitt;item_id;v;paar;typ;text;optionen;min;max;skala;umpolen;showIf;entfernt
+FB1;A;A1;1;;einfach;Alter;1=< 30 Jahre | 2=30–39 Jahre | 3=40–49 Jahre | 4=≥ 50 Jahre;;;;0;;0
+FB1;A;A2;1;;einfach;Geschlecht;1=weiblich | 2=männlich | 3=divers | -99=keine Angabe;;;;0;;0
+FB1;A;A3;1;;einfach;Funktion;1=Assistenzärztin/-arzt | 2=Fachärztin/-arzt | 3=Oberärztin/-arzt | 9=Sonstiges;;;;0;;0
+FB1;A;A4;1;;einfach;Ärztliche Berufserfahrung;1=< 2 Jahre | 2=2–5 Jahre | 3=6–10 Jahre | 4=> 10 Jahre;;;;0;;0
+FB1;A;A5;1;;einfach;Tätigkeit im aktuellen Bereich;1=< 6 Monate | 2=6–12 Monate | 3=> 12 Monate;;;;0;;0
+FB1;A;A6_STAT;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Station";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_STAT_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Station (Anteil in %)";;0;100;;0;A6.STAT = 1;0
+FB1;A;A6_AMB;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Ambulanz";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_AMB_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Ambulanz (Anteil in %)";;0;100;;0;A6.AMB = 1;0
+FB1;A;A6_FUNK;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Funktionsbereich (z. B. Dialyse)";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_FUNK_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Funktionsbereich (z. B. Dialyse) (Anteil in %)";;0;100;;0;A6.FUNK = 1;0
+FB1;A;A6_ZNA_BEH;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Notaufnahme: Behandlungsbereich";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_ZNA_BEH_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Notaufnahme: Behandlungsbereich (Anteil in %)";;0;100;;0;A6.ZNA_BEH = 1;0
+FB1;A;A6_ZNA_STAT;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Notaufnahme: Notaufnahmestation";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_ZNA_STAT_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Notaufnahme: Notaufnahmestation (Anteil in %)";;0;100;;0;A6.ZNA_STAT = 1;0
+FB1;A;A6_SONST;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Sonstiges";0=nein | 1=ja;;;;0;;0
+FB1;A;A6_SONST_P;1;;prozentgruppe;"In welchen Bereichen arbeiten Sie im Studienzeitraum, und mit welchem Anteil Ihrer Arbeitszeit? (Mehrfachnennung möglich; Summe 100 %) – Sonstiges (Anteil in %)";;0;100;;0;A6.SONST = 1;0
+FB1;A;A7;1;;zahl;Beschäftigungsumfang:;;1;100;;0;;0
+FB1;A;A8;1;;einfach;Nehmen Sie im Studienzeitraum an Bereitschafts- oder Nachtdiensten teil?;1=ja | 2=nein;;;;0;;0
+FB1;B;B1;1;;einfach;Wie häufig nutzen Sie derzeit einen mobilen Visitenwagen bzw. Laptop für Patienteninformationen?;1=nie | 2=seltener als wöchentlich | 3=wöchentlich | 4=täglich;;;;0;;0
+FB1;B;B2;1;;einfach;Wie häufig nutzen Sie bei der Arbeit Ihr privates Smartphone für medizinische Informationen (z. B. Apps, Leitlinien)?;1=nie | 2=seltener als wöchentlich | 3=wöchentlich | 4=täglich;;;;0;;0
+FB1;B;B3;1;;einfach;Haben Sie HX Now vor dieser Studie bereits genutzt?;1=nein | 2=ja, kurz ausprobiert | 3=ja, regelmäßig;;;;0;;0
+FB1;B;B4;1;;einfach;Wie zufrieden sind Sie mit dem Zugriff auf Patientendaten über das bestehende Klinikinformationssystem (SAP)?;1=sehr unzufrieden | 2=eher unzufrieden | 3=teils/teils | 4=eher zufrieden | 5=sehr zufrieden;;;;0;;0
+FB1;B;B5;1;;einfach;Betriebssystem Ihres privaten Smartphones;1=iOS | 2=Android | 3=anderes | 4=kein Smartphone;;;;0;;0
+FB1;W;W1;1;;zahl;An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst?;;0;14;;0;;0
+FB1;W;W2;1;;zahl;Davon Bereitschafts- oder Nachtdienste:;;0;14;;0;W1 > 0 UND A8 = 1;0
+FB1;W;W3_01_A;1;W3_01_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Auf Wegstrecken (Flur, zwischen Stationen) – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_01_B;1;W3_01_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Auf Wegstrecken (Flur, zwischen Stationen) – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_01_A > 0);0
+FB1;W;W3_02_A;1;W3_02_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – In Wartesituationen (z. B. Aufzug, vor Untersuchung) – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_02_B;1;W3_02_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – In Wartesituationen (z. B. Aufzug, vor Untersuchung) – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_02_A > 0);0
+FB1;W;W3_03_A;1;W3_03_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Am Patientenbett / im Patientenzimmer – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_03_B;1;W3_03_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Am Patientenbett / im Patientenzimmer – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_03_A > 0);0
+FB1;W;W3_04_A;1;W3_04_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Während der Visite – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;(W1 > 0) UND (A6.STAT = 1 ODER A6.ZNA_STAT = 1);0
+FB1;W;W3_04_B;1;W3_04_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Während der Visite – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (A6.STAT = 1 ODER A6.ZNA_STAT = 1) UND (W3_04_A > 0);0
+FB1;W;W3_05_A;1;W3_05_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Bei der Übergabe – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_05_B;1;W3_05_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Bei der Übergabe – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_05_A > 0);0
+FB1;W;W3_06_A;1;W3_06_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Im Behandlungsbereich der Notaufnahme – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;(W1 > 0) UND (A6.ZNA_BEH = 1);0
+FB1;W;W3_06_B;1;W3_06_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Im Behandlungsbereich der Notaufnahme – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (A6.ZNA_BEH = 1) UND (W3_06_A > 0);0
+FB1;W;W3_07_A;1;W3_07_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Außerhalb des eigenen Bereichs (z. B. Konsil, andere Station) – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_07_B;1;W3_07_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Außerhalb des eigenen Bereichs (z. B. Konsil, andere Station) – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_07_A > 0);0
+FB1;W;W3_08_A;1;W3_08_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – In Pausen – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_08_B;1;W3_08_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – In Pausen – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_08_A > 0);0
+FB1;W;W3_09_A;1;W3_09_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Im Bereitschafts- bzw. Nachtdienst – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;(W1 > 0) UND (A8 = 1);0
+FB1;W;W3_09_B;1;W3_09_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Im Bereitschafts- bzw. Nachtdienst – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (A8 = 1) UND (W3_09_A > 0);0
+FB1;W;W3_10_A;1;W3_10_A;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Vor Dienstbeginn oder nach Dienstende – A: Wie oft? (letzte 14 Tage);0=0 | 1=1–3 | 2=4–10 | 3=11–20 | 4=> 20;;;;0;W1 > 0;0
+FB1;W;W3_10_B;1;W3_10_B;matrix;Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B). – Vor Dienstbeginn oder nach Dienstende – B: Wie überwiegend gelöst? (eine Antwort);1=sofort vor Ort | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=Aufschub | 5=Verzicht;;;;0;(W1 > 0) UND (W3_10_A > 0);0
+FB1;W;W4a;1;INFO_HAEUF_ART;einfach;Welche Information wurde am häufigsten benötigt? (eine Antwort);1=Laborwerte | 2=Befunde/Bildgebung | 3=Vorbefunde/Arztbriefe | 4=Medikation | 5=Verlauf/Kurve | 9=Sonstiges;;;;0;W1 > 0 UND (W3_01_A > 0 ODER W3_02_A > 0 ODER W3_03_A > 0 ODER W3_04_A > 0 ODER W3_05_A > 0 ODER W3_06_A > 0 ODER W3_07_A > 0 ODER W3_08_A > 0 ODER W3_09_A > 0 ODER W3_10_A > 0);0
+FB1;W;W4b;1;INFO_HAEUF_ORT;einfach;Wo entstand dieser Bedarf meistens? (eine Antwort);1=Flur/Wegstrecke | 2=Patientenzimmer | 3=Visite | 4=Übergabe | 5=Behandlungsbereich Notaufnahme | 6=anderer Bereich | 7=Bereitschafts-/Nachtdienst;;;;0;W1 > 0 UND (W3_01_A > 0 ODER W3_02_A > 0 ODER W3_03_A > 0 ODER W3_04_A > 0 ODER W3_05_A > 0 ODER W3_06_A > 0 ODER W3_07_A > 0 ODER W3_08_A > 0 ODER W3_09_A > 0 ODER W3_10_A > 0);0
+FB1;W;W4c;1;INFO_HAEUF_LOES;einfach;Wie haben Sie ihn meistens gelöst? (eine Antwort);1=sofort vor Ort (z. B. Visitenwagen) | 2=Weg zum PC | 3=Anruf / Rückfrage | 4=aufgeschoben | 5=verzichtet;;;;0;W1 > 0 UND (W3_01_A > 0 ODER W3_02_A > 0 ODER W3_03_A > 0 ODER W3_04_A > 0 ODER W3_05_A > 0 ODER W3_06_A > 0 ODER W3_07_A > 0 ODER W3_08_A > 0 ODER W3_09_A > 0 ODER W3_10_A > 0);0
+FB1;W;W4d;1;INFO_HAEUF_DAUER;einfach;Wie lange dauerte es typischerweise, bis Sie die Information hatten?;1=sofort | 2=< 5 Minuten | 3=5–30 Minuten | 4=> 30 Minuten | 5=gar nicht;;;;0;W1 > 0 UND (W3_01_A > 0 ODER W3_02_A > 0 ODER W3_03_A > 0 ODER W3_04_A > 0 ODER W3_05_A > 0 ODER W3_06_A > 0 ODER W3_07_A > 0 ODER W3_08_A > 0 ODER W3_09_A > 0 ODER W3_10_A > 0) UND W4c != 5;0
+FB1;W;W5;1;;freitext;Möchten Sie etwas zu den letzten 14 Tagen anmerken?;;;;;0;W1 > 0;0
+FB1;C;C1;1;;skala;Ich beschäftige mich gern genauer mit technischen Systemen.;;1;6;ATI;0;;0
+FB1;C;C2;1;;skala;Ich probiere gern die Funktionen neuer technischer Systeme aus.;;1;6;ATI;0;;0
+FB1;C;C3;1;;skala;In erster Linie beschäftige ich mich mit technischen Systemen, weil ich muss.;;1;6;ATI;1;;0
+FB1;C;C4;1;;skala;Wenn ich ein neues technisches System vor mir habe, probiere ich es intensiv aus.;;1;6;ATI;0;;0
+FB1;C;C5;1;;skala;Ich verbringe sehr gern Zeit mit dem Kennenlernen eines neuen technischen Systems.;;1;6;ATI;0;;0
+FB1;C;C6;1;;skala;Es genügt mir, dass ein technisches System funktioniert, mir ist es egal, wie oder warum.;;1;6;ATI;1;;0
+FB1;C;C7;1;;skala;Ich versuche zu verstehen, wie ein technisches System genau funktioniert.;;1;6;ATI;0;;0
+FB1;C;C8;1;;skala;Es genügt mir, die Grundfunktionen eines technischen Systems zu kennen.;;1;6;ATI;1;;0
+FB1;C;C9;1;;skala;Ich versuche, die Möglichkeiten eines technischen Systems vollständig auszunutzen.;;1;6;ATI;0;;0
+FB1;D;D1;1;TAM_PU_1;skala;Mit HX Now werde ich meine Aufgaben schneller erledigen können.;;1;7;TAM_PU;0;;0
+FB1;D;D2;1;TAM_PU_2;skala;HX Now wird die Qualität meiner Arbeit verbessern.;;1;7;TAM_PU;0;;0
+FB1;D;D3;1;TAM_PU_3;skala;HX Now wird meine Produktivität steigern.;;1;7;TAM_PU;0;;0
+FB1;D;D4;1;TAM_PU_4;skala;HX Now wird meine Effektivität bei der Arbeit steigern.;;1;7;TAM_PU;0;;0
+FB1;D;D5;1;TAM_PU_5;skala;HX Now wird meine Arbeit erleichtern.;;1;7;TAM_PU;0;;0
+FB1;D;D6;1;TAM_PU_6;skala;HX Now wird für meine Arbeit nützlich sein.;;1;7;TAM_PU;0;;0
+FB1;D;D7;1;TAM_PEOU_1;skala;Den Umgang mit HX Now zu erlernen, wird für mich leicht sein.;;1;7;TAM_PEOU;0;;0
+FB1;D;D8;1;TAM_PEOU_2;skala;Es wird leicht sein, mit HX Now das zu erreichen, was ich möchte.;;1;7;TAM_PEOU;0;;0
+FB1;D;D9;1;TAM_PEOU_3;skala;Die Bedienung von HX Now wird klar und verständlich sein.;;1;7;TAM_PEOU;0;;0
+FB1;D;D10;1;TAM_PEOU_4;skala;HX Now wird flexibel in der Bedienung sein.;;1;7;TAM_PEOU;0;;0
+FB1;D;D11;1;TAM_PEOU_5;skala;Es wird leicht sein, im Umgang mit HX Now geübt zu werden.;;1;7;TAM_PEOU;0;;0
+FB1;D;D12;1;TAM_PEOU_6;skala;HX Now wird einfach zu bedienen sein.;;1;7;TAM_PEOU;0;;0
+FB1;D;D13;1;TAM_BI_1;skala;Ich beabsichtige, HX Now regelmäßig zu nutzen.;;1;7;TAM_BI;0;;0
+FB1;D;D14;1;TAM_BI_2;skala;Ich werde HX Now nutzen, wann immer es sinnvoll ist.;;1;7;TAM_BI;0;;0
+FB1;E;E1;1;FUNK_NUTZEN_1;skala;Krankenakte / Verlauf einsehen;;1;5;;0;;0
+FB1;E;E2;1;FUNK_NUTZEN_2;skala;Laborwerte einsehen;;1;5;;0;;0
+FB1;E;E3;1;FUNK_NUTZEN_3;skala;Bildgebung (PACS-Viewer);;1;5;;0;;0
+FB1;E;E4;1;FUNK_NUTZEN_4;skala;PMDs bearbeiten (z. B. Basisanamnese, Konsil);;1;5;;0;;0
+FB1;E;E5;1;FUNK_NUTZEN_5;skala;Fotodokumentation;;1;5;;0;;0
+FB1;E;E6;1;FUNK_NUTZEN_6;skala;Dokumentenscan;;1;5;;0;;0
+FB1;E;E7;1;FUNK_NUTZEN_7;skala;Sprachgestützte Dokumentation;;1;5;;0;;0
+FB1;F;F1;1;ABSCHALTEN;skala;Durch die Möglichkeit, jederzeit auf Patientendaten zuzugreifen, wird es mir schwerer fallen, in Pausen und nach Dienstende abzuschalten.;;1;5;;0;;0
+FB1;F;F2;1;IT_STRESS;skala;Die IT-Systeme, mit denen ich arbeite, verursachen mir Stress.;;1;5;;0;;0

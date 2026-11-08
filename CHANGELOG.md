@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0 – 08.11.2026
+Fragebogen-Modus, Phase F0 (Definition; noch keine Oberfläche):
+- `js/frageboegen.js`: FB1 (Baseline) wortgetreu nach Version 0.3, `definitionVersion` 0.1.0, stabile Item- und
+  Zellen-IDs, Paar-IDs für den Vorher-Nachher-Vergleich, Filterbedingungen (`showIf`) und Auto-Werte.
+- `js/fb/definition.js` (Zellen, Prüfung), `js/fb/codebuch.js` (Codebuch-CSV, Paar-Schnappschuss),
+  `npm run codebuch` erzeugt `docs/codebuch/codebuch_<version>.csv` und mit `--snapshot` den Schnappschuss.
+- Tests: Wortlaut und Vollständigkeit gegen den Originaltext, Codes, Zellen, Paar-Schnappschuss, Codebuch.
+
 ## 0.5.6 – 08.11.2026
 Nach zwei Testläufen (P000):
 - „Gehen“ setzt den Ort automatisch auf „Unterwegs“; O4 heißt „Flur (Aufenthalt)“ (ENTSCHEIDUNGEN Nr. 27).
