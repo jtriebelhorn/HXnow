@@ -10,7 +10,7 @@
 // - Fehlt ein Logbuch-Eintrag, wird er aus der Sitzungsdatei aufgebaut (`wiederhergestellt`). Liegt die
 //   Sitzungsdatei im Exportordner, gilt der Eingang als bestätigt.
 // - Daten widerrufener Codes werden abgewiesen (nur die Zeile der Teilnehmerliste und die Änderungen bleiben).
-import { leseCsv } from './csvlesen.js';
+import { leseCsv, dateiArtAusKopf } from './csvlesen.js';
 import { leseLogbuchDatei } from './logbuchdatei.js';
 import { pruefeSicherung, GESICHERTE_STORES } from './sicherung.js';
 
@@ -32,14 +32,15 @@ export function erkenneDatei(name, text) {
   }
   const ersteZeile = t.slice(0, t.indexOf('\n') >>> 0).replace(/\r$/, '');
   const kopf = ersteZeile.split(';');
-  if (kopf[0] === 'datensatz' && kopf[1] === 'export_ts') {
+  const art = dateiArtAusKopf(kopf);
+  if (art === 'logbuch') {
     const lb = leseLogbuchDatei(t);
     return { name, typ: lb.ok ? 'logbuch' : 'unbekannt', fehler: lb.fehler, logbuch: lb, ts: lb.meta?.exportTs ?? 0 };
   }
   const { zeilen } = leseCsv(t);
   const z = zeilen[0];
   if (!z) return { name, typ: 'unbekannt', fehler: ['Leere Datei.'] };
-  if (kopf[1] === 'block_id') {
+  if (art === 'block') {
     const n = zahl(z.n_zeilen_block);
     if (n !== zeilen.length && !(n === 0 && zeilen.length === 1)) {
       return { name, typ: 'unbekannt', fehler: [`Zeilenzahl ${zeilen.length} statt ${z.n_zeilen_block} – Datei unvollständig.`] };
@@ -54,7 +55,7 @@ export function erkenneDatei(name, text) {
       },
     };
   }
-  if (kopf[1] === 'versuch_id') {
+  if (art === 'versuch') {
     return {
       name, typ: 'versuch', fehler: [], test,
       eintrag: {
@@ -64,7 +65,7 @@ export function erkenneDatei(name, text) {
       },
     };
   }
-  if (kopf[1] === 'sitzung_id') {
+  if (art === 'fb') {
     if (zahl(z.n_zeilen) !== zeilen.length) return { name, typ: 'unbekannt', fehler: [`Zeilenzahl ${zeilen.length} statt ${z.n_zeilen} – Datei unvollständig.`] };
     const zaehle = (st) => zeilen.filter((r) => r.status === st).length;
     return {
@@ -77,10 +78,11 @@ export function erkenneDatei(name, text) {
       },
     };
   }
-  if (kopf[0] === 'datensatz' && kopf[1] === 'datum' && z.datensatz === 'tageskennzahlen') {
+  if (art === 'tag') {
     return {
       name, typ: 'tag', fehler: [],
-      satz: { datum: z.datum, bereich: z.bereich, teilbereich: z.teilbereich ?? '', auslastung: zahl(z.auslastung), aerzteAnwesend: zahl(z.aerzte_anwesend), ereignisse: z.ereignisse,
+      satz: { datum: z.datum, bereich: z.bereich, teilbereich: z.teilbereich ?? '', belegung: zahl(z.belegung), aufnahmen: zahl(z.aufnahmen), entlassungen: zahl(z.entlassungen),
+        ambulant: zahl(z.ambulant), aerzteAnwesend: zahl(z.aerzte_anwesend), ereignisse: z.ereignisse,
         beobachter: z.beobachter, geraeteId: z.geraete_id, schemaVersion: z.schema_version, appVersion: z.app_version, ts: ms(z.erfasst), exportStatus: 'bestaetigt' },
     };
   }

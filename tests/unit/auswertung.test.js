@@ -7,6 +7,7 @@ import { execFileSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fuehreZusammen, score } from '../../js/auswertung/zusammenfuehren.js';
+import { bereinigeBlock } from '../../js/auswertung/bereinigen.js';
 import { zipDatei } from '../../js/auswertung/zip.js';
 import { leseCsv } from '../../js/csvlesen.js';
 import { logbuchDatei } from '../../js/logbuchdatei.js';
@@ -59,7 +60,7 @@ function eingabe() {
 describe('Zusammenführen', () => {
   const aus = fuehreZusammen(eingabe(), { def: DEF, schema: SCHEMA, jetzt: START + 86_400_000 });
   test('Ausgabedateien vollständig', () => {
-    assert.deepEqual(aus.ausgaben.map((a) => a.name), ['beobachtung.csv', 'versuche.csv', 'tageskennzahlen.csv', 'fb_long.csv', 'fb1_wide.csv', 'kb_wide.csv', 'fb2_wide.csv',
+    assert.deepEqual(aus.ausgaben.map((a) => a.name), ['beobachtung.csv', 'beobachtung_bereinigt.csv', 'versuche.csv', 'tageskennzahlen.csv', 'fb_long.csv', 'fb1_wide.csv', 'kb_wide.csv', 'fb2_wide.csv',
       'prae_post.csv', 'scores.csv', 'logbuch_gesamt.csv', 'alle_eintraege.csv', 'phasen.csv', 'aenderungen.csv', `HXNOW_CODEBUCH_FB_${DEF.definitionVersion}.csv`, 'pruefbericht.txt']);
   });
   test('Beobachtung: Zuordnung angewendet, Original erhalten, Doppelte nur einmal', () => {
@@ -121,4 +122,31 @@ test('ZIP ist mit unzip lesbar und enthält die Dateien unverändert', () => {
   try { ausgabe = execFileSync('unzip', ['-t', join(dir, 't.zip')]).toString(); } catch (err) { if (err.code === 'ENOENT') return; throw err; }
   assert.match(ausgabe, /No errors detected/);
   assert.equal(execFileSync('unzip', ['-p', join(dir, 't.zip'), 'ordner/b.txt']).toString(), 'Prüfbericht');
+});
+
+describe('Bereinigung kurzer Episoden (Mindestdauer 3 s, T3 ausgenommen)', () => {
+  const ep = (nr, t, o, dauer, extra = {}) => ({ datensatz: 'episode', block_id: 'b', nr: String(nr), taetigkeit: t, ort: o, nutzungsart: '', haltung: '', nebentaetigkeiten: '', dauer_sek: String(dauer), start: `s${nr}`, ende: `e${nr}`, ...extra });
+  const regeln = { mindestdauerSek: 3, mindestdauerAusnahmen: ['T3'] };
+  test('Zwischenzeile (Ort zuerst getippt) geht in der vorangehenden Episode auf; Gesamtdauer bleibt', () => {
+    const r = bereinigeBlock([ep(1, 'T5', 'O4', 34), ep(2, 'T5', 'O8', 1.4), ep(3, 'T6', 'O8', 86)], regeln);
+    assert.deepEqual(r.map((z) => [z.taetigkeit, z.ort, Number(z.dauer_sek), z.zusammengelegt, z.ende]), [['T5', 'O4', 35.4, 2, 'e2'], ['T6', 'O8', 86, 1, 'e3']]);
+  });
+  test('HX Now bleibt immer; kurze erste Episode geht in die folgende; Pause trennt', () => {
+    const r = bereinigeBlock([ep(1, 'T1', 'O1', 2), ep(2, 'T6', 'O1', 20), ep(3, 'T3', 'O1', 1, { nutzungsart: 'N1', haltung: 'H1' }),
+      { datensatz: 'pause', nr: '4', dauer_sek: '60' }, ep(5, 'T5', 'O2', 2), ep(6, 'T5', 'O2', 30)], regeln);
+    assert.deepEqual(r.map((z) => [z.datensatz, z.taetigkeit ?? '', Number(z.dauer_sek), z.zusammengelegt]),
+      [['episode', 'T6', 22, 2], ['episode', 'T3', 1, 1], ['pause', '', 60, 1], ['episode', 'T5', 32, 2]]);
+    assert.equal(r[0].start, 's1');
+  });
+  test('gleich kodierte Nachbarn nach dem Entfernen werden vereint (Nebentätigkeiten zählen mit)', () => {
+    const r = bereinigeBlock([ep(1, 'T6', 'O2', 10), ep(2, 'T5', 'O2', 2), ep(3, 'T6', 'O2', 10), ep(4, 'T6', 'O2', 10, { nebentaetigkeiten: 'NT4', NT4: '1' })], regeln);
+    assert.deepEqual(r.map((z) => [Number(z.dauer_sek), z.zusammengelegt, z.nebentaetigkeiten]), [[22, 3, ''], [10, 1, 'NT4']]);
+  });
+  test('Dateien ohne format_version (vor der Festschreibung) werden nicht ausgewertet', () => {
+    const alt = BLOCK.split('\r\n').map((z) => z.replace('datensatz;format_version;', 'datensatz;').replace(/^(episode|pause|block);1\.0;/, '$1;')).join('\r\n');
+    const aus = fuehreZusammen([{ name: 'alt.csv', text: alt }], { def: DEF, schema: SCHEMA });
+    assert.equal(aus.zahlen.vorFestschreibung, 1);
+    assert.equal(leseCsv(aus.ausgaben[0].inhalt).zeilen.length, 0);
+    assert.match(aus.bericht.join('\n'), /Vor der Festschreibung erzeugt/);
+  });
 });

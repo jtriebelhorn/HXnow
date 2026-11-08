@@ -18,3 +18,18 @@ export function leseCsv(text) {
   const [kopf = [], ...rest] = saetze.filter((s) => !(s.length === 1 && s[0] === ''));
   return { kopf, zeilen: rest.map((s) => Object.fromEntries(kopf.map((k, i) => [k, s[i] ?? '']))) };
 }
+
+/**
+ * Dateityp an den Spaltennamen erkennen (nicht an Positionen, damit zusätzliche Spalten nichts brechen):
+ * 'logbuch' · 'block' · 'versuch' · 'fb' · 'tag' oder null.
+ */
+export function dateiArtAusKopf(kopf) {
+  const hat = (s) => kopf.includes(s);
+  if (kopf[0] !== 'datensatz') return null;
+  if (hat('export_ts') && hat('pruefsumme')) return 'logbuch';
+  if (hat('block_id')) return 'block';
+  if (hat('versuch_id')) return 'versuch';
+  if (hat('sitzung_id') && hat('item_id')) return 'fb';
+  if (hat('aerzte_anwesend')) return 'tag';
+  return null;
+}

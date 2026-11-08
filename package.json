@@ -14,7 +14,8 @@
     "pruefen:serie": "node tests/workflow/serie.js",
     "icons": "node scripts/icons.js",
     "codebuch": "node scripts/fragebogen-dateien.js",
-    "version": "node scripts/neue-version.js"
+    "version": "node scripts/neue-version.js",
+    "versionen": "node scripts/versionen.js"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1"

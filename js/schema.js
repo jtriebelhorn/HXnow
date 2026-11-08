@@ -18,7 +18,7 @@ export const GERAET_DABEI = Object.freeze({ JA: 'J', NEIN: 'N', UNKLAR: 'U' });
 export const PFLICHT_FELDER = Object.freeze({
   block: ['pseudonym', 'phase', 'bereich', 'beobachter', 'dienst', 'arbeitskontext'],
   versuch: ['pseudonym', 'phase', 'bereich', 'beobachter', 'dienst'],
-  tageskennzahlen: ['datum', 'bereich', 'beobachter', 'auslastung', 'aerzteAnwesend', 'ereignisse'],
+  tageskennzahlen: ['datum', 'bereich', 'beobachter', 'belegung', 'aufnahmen', 'entlassungen', 'ambulant', 'aerzteAnwesend', 'ereignisse'],
 });
 // Immer Pflicht, unabhängig von der Konfiguration (Zuordnung, Prä/Post-Regeln, Dateiname, Schlüssel)
 export const IMMER_PFLICHT = Object.freeze({
@@ -204,8 +204,8 @@ export function validiereSchema(s) {
   if (Array.isArray(s.bereiche)) {
     for (const b of s.bereiche.filter((x) => istObjekt(x) && x.teilbereiche !== undefined)) {
       const t = b.teilbereiche;
-      if (!Array.isArray(t) || t.length === 0 || !t.every((x) => istObjekt(x) && istText(x.code) && istText(x.label) && /^[A-Z0-9_-]+$/.test(x.code))) {
-        f(`„bereiche“ (${b.code}): „teilbereiche“ muss eine nicht leere Liste aus { code (A–Z, 0–9, _ -), label } sein.`);
+      if (!Array.isArray(t) || t.length === 0 || !t.every((x) => istObjekt(x) && istText(x.code) && istText(x.label) && /^[A-Z0-9_-]+$/.test(x.code) && (x.stationaer === undefined || istBool(x.stationaer)))) {
+        f(`„bereiche“ (${b.code}): „teilbereiche“ muss eine nicht leere Liste aus { code (A–Z, 0–9, _ -), label, stationaer? (true/false) } sein.`);
       } else {
         for (const d of duplikate(t.map((x) => x.code))) f(`„bereiche“ (${b.code}): Teilbereich „${d}“ kommt mehrfach vor.`);
       }

@@ -17,7 +17,7 @@ test('Teilen aus der Abschlussseite: direkt aus der Geste, Status offen → expo
   expect(g.titel).toBe(g.name);
   // Teilen wurde innerhalb der Nutzergeste aufgerufen (kein await davor)
   if (g.aktiv !== null) expect(g.aktiv).toBe(true);
-  expect(g.text.startsWith('﻿datensatz;block_id;')).toBe(true);
+  expect(g.text.startsWith('﻿datensatz;format_version;block_id;')).toBe(true);
   const zeilen = g.text.split('\r\n').filter(Boolean);
   expect(zeilen).toHaveLength(3);
   // …;nr;start;ende;dauer_sek;taetigkeit;ort;nutzungsart;haltung;nebentaetigkeiten;NT3;NT4;NT5;NT6;NT7;NT3_nutzung;NT3_haltung;unvollstaendig;pause_grund;pause_freitext;kommentar;n_zeilen_block
@@ -156,7 +156,7 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
   await page.click('[data-test=tageskennzahlen]');
   await page.click('[data-test=tag-bereich-NEPH]');
   await page.click('[data-test=tag-teilbereich-DIALYSE]');
-  await page.click('[data-test=tag-auslastung-plus]');
+  await page.click('[data-test=tag-aufnahmen-plus]');
   await page.click('[data-test=tag-aerzte-plus]');
   await page.click('[data-test=tag-speichern]');
 

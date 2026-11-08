@@ -1,12 +1,12 @@
 // Export eines Fragebogens (Fragebogenplan 6.2): Long-Format, eine Zeile je Zelle (Item, Matrixzelle, Freitextfeld,
 // weiche Sprungregel), auch für ausgeblendete. Für alle Bögen und Definitionsversionen gleich aufgebaut.
 // DOM-frei; synchron aus dem Speicherzustand (Teilen in der Nutzergeste).
-import { csvText } from '../export.js';
+import { csvText, EXPORT_FORMAT } from '../export.js';
 import { isoMitOffset, dateinameZeit } from '../zeit.js';
 import { berechneStand } from './stand.js';
 
 export const SPALTEN_FB = Object.freeze([
-  'datensatz', 'sitzung_id', 'geraete_id', 'app_version', 'definition_version', 'testmodus', 'bogen', 'pseudonym', 'bereich',
+  'datensatz', 'format_version', 'sitzung_id', 'geraete_id', 'app_version', 'definition_version', 'testmodus', 'bogen', 'pseudonym', 'bereich',
   'erhebungsmodus', 'papier_datum', 'start', 'ende', 'dauer_sek', 'abschnitt', 'abschnitt_dauer_sek',
   'item_id', 'item_v', 'paar', 'typ', 'wert', 'wert_text', 'status', 'n_zeilen',
 ]);
@@ -33,7 +33,7 @@ export function fbDatei(b, sitzung, antworten, { definitionVersion, test = false
   const zeilen = [...stand.zellen.values()].map((e) => {
     const z = e.zelle;
     return [
-      'antwort', s.sitzungId, s.geraeteId, s.appVersion, definitionVersion, test ? 1 : 0, b.id, s.pseudonym, s.bereich ?? '',
+      'antwort', EXPORT_FORMAT, s.sitzungId, s.geraeteId, s.appVersion, definitionVersion, test ? 1 : 0, b.id, s.pseudonym, s.bereich ?? '',
       s.erhebungsmodus, s.papierDatum ?? '', s.startTs ? isoMitOffset(s.startTs) : '', s.endTs ? isoMitOffset(s.endTs) : '', dauer,
       z.abschnitt, Math.round(s.seitenzeiten?.[z.abschnitt] ?? 0), z.id, z.v, z.paar, z.typ,
       WERT[e.status](e), e.text, e.status,

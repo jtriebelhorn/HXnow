@@ -46,7 +46,7 @@ describe('Block anlegen', () => {
     const b = r.zustand.block;
     assert.deepEqual(
       [b.status, b.startTs, b.endTs, b.schemaVersion, b.arbeitskontext, b.blockDauerSek, b.hxGeraetMarkiertTs, b.hxGeraetAutomatisch, b.hxGeraetDabei],
-      ['laufend', START, null, '0.3', 'K1', 900, null, false, null],
+      ['laufend', START, null, SCHEMA.schemaVersion, 'K1', 900, null, false, null],
     );
     assert.deepEqual(r.schreiben.block, b);
     assert.deepEqual(r.zustand.pausen, []);

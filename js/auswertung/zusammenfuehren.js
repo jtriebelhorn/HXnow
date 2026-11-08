@@ -11,7 +11,7 @@
 //   `phase_original`). Ungültige Sitzungen bleiben in den Long-Dateien (gueltig = 0), fehlen aber in Wide, Prä-Post,
 //   Scores und Phasen.
 // - Widerrufene Codes: alle Daten werden verworfen (auch aus Dateien, die noch im Ordner liegen).
-import { leseCsv } from '../csvlesen.js';
+import { leseCsv, dateiArtAusKopf } from '../csvlesen.js';
 import { csvText } from '../export.js';
 import { leseLogbuchDatei } from '../logbuchdatei.js';
 import { wirksamerStand } from '../aenderungen.js';
@@ -20,19 +20,14 @@ import { exportDateiname } from '../widerruf.js';
 import { alleZellen, bogen as bogenNach } from '../fb/definition.js';
 import { codebuchDatei } from '../fb/codebuch.js';
 import { isoMitOffset } from '../zeit.js';
+import { bereinigeBlock } from './bereinigen.js';
 
 const FB_ARTEN = ['FB1', 'KB', 'FB2'];
 const ZUSATZ = ['gueltig', 'ungueltig_grund', 'pseudonym_original', 'phase_original'];
 
-/** Datei am Kopf erkennen. */
+/** Datei am Kopf erkennen (Spaltennamen). */
 export function dateiArt(text) {
-  const kopf = String(text).replace(/^﻿/, '').split(/\r?\n/, 1)[0].split(';');
-  if (kopf[0] === 'datensatz' && kopf[1] === 'export_ts') return 'logbuch';
-  if (kopf[1] === 'block_id') return 'block';
-  if (kopf[1] === 'versuch_id') return 'versuch';
-  if (kopf[1] === 'sitzung_id') return 'fb';
-  if (kopf[0] === 'datensatz' && kopf[1] === 'datum' && kopf[2] === 'bereich') return 'tag';
-  return null;
+  return dateiArtAusKopf(String(text).replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0].split(';'));
 }
 
 /**
@@ -45,7 +40,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   const hinweis = (t) => bericht.push(t);
   const testCode = schema.pseudonym?.testCode;
   const istTest = (name, code) => /^HXNOW_TEST_/.test(name) || (testCode && code === testCode);
-  const zahlen = { gelesen: dateien.length, uebersprungenTest: 0, unbekannt: 0, doppelt: 0, abweichend: 0, widerrufen: 0, logbuecher: 0, logbuchFehler: 0 };
+  const zahlen = { vorFestschreibung: 0, gelesen: dateien.length, uebersprungenTest: 0, unbekannt: 0, doppelt: 0, abweichend: 0, widerrufen: 0, logbuecher: 0, logbuchFehler: 0 };
 
   // ------------------------------------------------------------------ Dateien einlesen
   const logbuecher = [];
@@ -53,6 +48,12 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   for (const d of dateien) {
     const art = dateiArt(d.text);
     if (!art) { zahlen.unbekannt += 1; hinweis(`Nicht erkannt, übersprungen: ${d.name}`); continue; }
+    // Dateien ohne format_version stammen aus der Zeit vor der Festschreibung (App < 1.0.0) und werden nicht ausgewertet
+    if (!String(d.text).replace(/^\uFEFF/, '').split(/\r?\n/, 1)[0].split(';').includes('format_version')) {
+      zahlen.vorFestschreibung += 1;
+      hinweis(`Vor der Festschreibung erzeugt (ohne format_version), nicht ausgewertet: ${d.name}`);
+      continue;
+    }
     if (art === 'logbuch') {
       if (/^HXNOW_TEST_/.test(d.name)) { zahlen.uebersprungenTest += 1; continue; }
       const lb = leseLogbuchDatei(d.text);
@@ -137,6 +138,14 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     ausgaben.push({ name, inhalt: csvText(art === 'tag' ? kopf : alle, art === 'tag' ? zeilen.map((z) => z.slice(0, kopf.length)) : zeilen) });
   }
   langDatei('block', 'beobachtung.csv', 'block_id', 'phase');
+  // Bereinigte Beobachtung: kurze Episoden zusammengelegt (Kodierhandbuch 1.0, Mindestdauer)
+  const regeln = { mindestdauerSek: schema.regelnAuswertung?.mindestdauerSek ?? 3, mindestdauerAusnahmen: schema.regelnAuswertung?.mindestdauerAusnahmen ?? ['T3'] };
+  const roh = leseCsv(ausgaben[0].inhalt);
+  const jeBlock = Map.groupBy(roh.zeilen, (z) => z.block_id);
+  const bereinigt = [...jeBlock.values()].flatMap((z) => bereinigeBlock(z, regeln));
+  const zusammengelegt = bereinigt.reduce((s, z) => s + (z.datensatz === 'episode' ? z.zusammengelegt - 1 : 0), 0);
+  ausgaben.push({ name: 'beobachtung_bereinigt.csv', inhalt: csvText([...roh.kopf, 'zusammengelegt'], bereinigt.map((z) => [...roh.kopf.map((k) => z[k] ?? ''), z.zusammengelegt])) });
+  const gehenMitNeben = roh.zeilen.filter((z) => z.datensatz === 'episode' && z.taetigkeit === 'T9' && z.nebentaetigkeiten).length;
   langDatei('versuch', 'versuche.csv', 'versuch_id', 'phase');
   langDatei('tag', 'tageskennzahlen.csv', null, null);
   langDatei('fb', 'fb_long.csv', 'sitzung_id', null);
@@ -256,12 +265,14 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     'HX Now – Prüfbericht der Zusammenführung',
     `Erstellt: ${isoMitOffset(jetzt)} · Fragebogen-Definition ${def.definitionVersion}`,
     '',
-    `Dateien gelesen: ${zahlen.gelesen}; Probeläufe übersprungen: ${zahlen.uebersprungenTest}; nicht erkannt: ${zahlen.unbekannt}; doppelt: ${zahlen.doppelt}; gleiche ID mit anderem Inhalt: ${zahlen.abweichend}`,
+    `Dateien gelesen: ${zahlen.gelesen}; vor der Festschreibung (nicht ausgewertet): ${zahlen.vorFestschreibung}; Probeläufe übersprungen: ${zahlen.uebersprungenTest}; nicht erkannt: ${zahlen.unbekannt}; doppelt: ${zahlen.doppelt}; gleiche ID mit anderem Inhalt: ${zahlen.abweichend}`,
     `Blöcke: ${n('block')} · Nicht angetroffen: ${n('versuch')} · Fragebögen: ${n('fb')} (gültig ${gueltigeBoegen.length}) · Tageskennzahlen: ${sitzungen.tag.size}`,
     `Logbuch-Dateien verwendet: ${zahlen.logbuecher} (Geräte) · verworfen wegen Prüfsumme/Zeilenzahl: ${zahlen.logbuchFehler}`,
     `Ungültig markiert: ${wirksam.filter((e) => !e.gueltig).length} · anderem Code zugeordnet: ${wirksam.filter((e) => e.pseudonymOriginal).length} · Phase geändert: ${wirksam.filter((e) => e.phaseOriginal).length}`,
     `Widerrufene Codes: ${widerrufen.size ? [...widerrufen].sort().join(', ') : 'keine'} · verworfene Sitzungsdateien: ${zahlen.widerrufen}`,
     `Konflikte (Änderungen von mehreren Geräten): ${wirksam.filter((e) => e.konflikt).length}`,
+    `Bereinigung: ${zusammengelegt} kurze bzw. gleich kodierte Episoden zusammengelegt (Mindestdauer ${regeln.mindestdauerSek} s, ausgenommen ${regeln.mindestdauerAusnahmen.join(', ')}) → beobachtung_bereinigt.csv`,
+    `Gehen (T9) mit Nebentätigkeit: ${gehenMitNeben} Episoden – laut Kodierhandbuch 1.0 ist dann die Nebentätigkeit (z. B. Telefon) Haupttätigkeit mit Ort Unterwegs`,
     '',
     `Laut Logbuch exportiert, aber Datei fehlt (${fehlendeDateien.length}):`, ...fehlendeDateien.map((f) => `  - ${f}`),
     `Datei ohne Logbuch-Eintrag (${ohneLogbuch.length}):`, ...ohneLogbuch.map((f) => `  - ${f}`),

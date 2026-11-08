@@ -136,19 +136,17 @@ test('Papier-Nacherfassung: ohne Übergabe, Modus und Datum im Export', async ({
   expect(datei.text.split('\r\n').filter(Boolean)).toHaveLength(11);
 });
 
-test('FB2 ist ein Entwurf: nur mit Test-Code; Probelauf-Datei HXNOW_TEST_FB_', async ({ page }) => {
+test('FB2 freigegeben (Definition 1.0.0): echter Code möglich; weiche Sprungregel bei Nichtnutzung', async ({ page }) => {
   await oeffne(page);
   await page.click('[data-test=neuer-fragebogen]');
+  await expect(page.locator('[data-test=fb-bogen-FB2]')).not.toContainText('Entwurf');
   await page.click('[data-test=fb-bogen-FB2]');
   await waehleCode(page, 'P053');
   await page.click('[data-test=fb-bereich-NEPH]');
-  await expect(page.locator('[data-test=fb-hinweis]')).toContainText('nur im Probelauf');
-  await expect(page.locator('[data-test=fb-vorbereitung-weiter]')).toBeDisabled();
-  await page.click('[data-test=probelauf-code]');
-  await expect(page.locator('[data-test=fb-vorbereitung-weiter]')).toBeEnabled();
+  await expect(page.locator('[data-test=fb-hinweis]')).toHaveText('');
   await page.click('[data-test=fb-vorbereitung-weiter]');
   await page.click('[data-test=fb-start]');
-  await expect(page.locator('[data-test=probelauf]')).toBeVisible();
+  await expect(page.locator('[data-test=probelauf]')).toHaveCount(0);
   // Nichtnutzung → weiche Sprungregel
   await page.fill('[data-test=fb-W1]', '5'); await page.locator('[data-test=fb-W1]').blur();
   await page.click('[data-test=fb-W4-1]'); // Gerät nie dabei → W5 automatisch 0

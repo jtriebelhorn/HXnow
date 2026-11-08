@@ -1,5 +1,7 @@
 # Kodierhandbuch Fremdbeobachtung: HX Now im Klinikalltag
 
+> **Abgelöst durch [Version 1.0](KODIERHANDBUCH_v1.0.md) (Festschreibung 09.11.2026).** Diese Fassung bleibt nur zur Nachvollziehbarkeit.
+
 Version 0.3 (Entwurf vom 04.11.2026). Wird nach den Pilotbeobachtungen finalisiert und vor Beginn der Prä-Phase festgeschrieben. Angaben in \[eckigen Klammern\] sind noch offen. Die Änderungen gegenüber 0.2 (Ort vor Tätigkeit, Ort „Unterwegs“, Nebentätigkeiten, Nutzungsart „Warten“) sind mit der Studienleitung abzustimmen.
 
 > Kopie zur Referenz für die Entwicklung. Maßgeblich ist das Original der Studienleitung.

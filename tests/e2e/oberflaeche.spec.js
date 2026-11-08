@@ -103,7 +103,7 @@ test('kompletter Block: 20 Episoden, 2 Pausen, T3 mit N/H, T1 mit N, Gerät dabe
   await expect(page.locator('[data-test=eintrag-block]')).toContainText('P017');
 });
 
-test('Pause länger als 5 Minuten → Hinweis „Block mit A3 abbrechen?“, kein automatischer Abbruch', async ({ page }) => {
+test('Pause länger als 5 Minuten → Erinnerung, Entscheidung bei der beobachtenden Person, kein automatischer Abbruch', async ({ page }) => {
   await oeffne(page);
   await starteBlock(page);
   await tippe(page, 'o-O1');
@@ -112,7 +112,7 @@ test('Pause länger als 5 Minuten → Hinweis „Block mit A3 abbrechen?“, kei
   await page.clock.fastForward('05:00');
   await expect(page.locator('[data-test=pause-zu-lang]')).toHaveCount(0);
   await page.clock.fastForward('00:02');
-  await expect(page.locator('[data-test=pause-zu-lang]')).toContainText('Block mit A3 abbrechen?');
+  await expect(page.locator('[data-test=pause-zu-lang]')).toContainText('nach Ihrer Einschätzung');
   expect((await leseDb(page)).bloecke[0].status).toBe('pausiert');
   await page.click('[data-test=pause-abbruch-a3]');
   await expect(page.locator('[data-test=abbruch-A3]')).toHaveAttribute('aria-pressed', 'true');
@@ -353,10 +353,15 @@ test('Person nicht angetroffen und Tageskennzahlen; rotes Banner nach 24 h', asy
   await page.click('[data-test=tag-bereich-ZNA]');
   await expect(page.locator('[data-test=tag-speichern]')).toBeDisabled(); // Teilbereich fehlt noch
   await expect(page.locator('[data-test=tag-teilbereich-box] button')).toHaveText(['Notaufnahme', 'Notaufnahmestation']);
+  await expect(page.locator('[data-test=tag-belegung]')).toBeHidden();
   await page.click('[data-test=tag-teilbereich-NA-STATION]');
+  await expect(page.locator('[data-test=tag-belegung]')).toBeVisible(); // Belegung nur bei stationären Teilbereichen
   await pruefeTastengroessen(page, 'Tageskennzahlen mit Teilbereich');
   await expect(page.locator('[data-test=tag-speichern]')).toBeEnabled(); // Datum + Bereich + Teilbereich genügen
-  for (let i = 0; i < 3; i++) await page.click('[data-test=tag-auslastung-plus]');
+  for (let i = 0; i < 3; i++) await page.click('[data-test=tag-belegung-plus]');
+  await page.fill('[data-test=tag-aufnahmen]', '7');
+  await page.fill('[data-test=tag-entlassungen]', '5');
+  await expect(page.locator('[data-test=tag-umsatz]')).toHaveText('Tagesumsatz: 12 Patienten (Aufnahmen + Entlassungen + ambulant)');
   await page.fill('[data-test=tag-aerzte]', '4');
   await page.fill('[data-test=tag-ereignisse]', 'MANV-Übung');
   await page.click('[data-test=tag-speichern]');
@@ -374,8 +379,8 @@ test('Person nicht angetroffen und Tageskennzahlen; rotes Banner nach 24 h', asy
 
   const db = await leseDb(page);
   expect(db.versuche[0]).toMatchObject({ beobachter: 'B1', pseudonym: 'P099', bereich: 'ZNA', phase: 'PRE', exportStatus: 'offen' });
-  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NA-STATION')).toMatchObject({ datum: '2026-12-03', bereich: 'ZNA', auslastung: 3, aerzteAnwesend: 4, ereignisse: 'MANV-Übung' });
-  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NOTAUFNAHME')).toMatchObject({ aerzteAnwesend: 6 });
+  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NA-STATION')).toMatchObject({ datum: '2026-12-03', bereich: 'ZNA', belegung: 3, aufnahmen: 7, entlassungen: 5, ambulant: null, aerzteAnwesend: 4, ereignisse: 'MANV-Übung' });
+  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NOTAUFNAHME')).toMatchObject({ aerzteAnwesend: 6, belegung: null }); // nicht stationär
 
   await expect(page.locator('[data-test=banner-24h]')).toHaveCount(0);
   await page.clock.fastForward('25:00:00');
@@ -390,7 +395,7 @@ test('Info und Datensicherung ohne Platzhaltertexte', async ({ page }) => {
   await page.click('[data-test=zurueck]');
   await page.click('[data-test=menue-info]');
   await pruefeTastengroessen(page, 'Info');
-  await expect(page.locator('[data-test=info-schema-version]')).toHaveText('0.3');
+  await expect(page.locator('[data-test=info-schema-version]')).toHaveText('1.0');
   await expect(page.locator('[data-test=info-geraete-id]')).toHaveText(/^[0-9a-f-]{36}$/);
 });
 

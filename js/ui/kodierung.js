@@ -344,8 +344,9 @@ export async function zeigeKodierung(app, { blockId }) {
     ersetze(inhalt,
       geraetSchalter(zz),
       zuLangAngezeigt
-        ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'pause-zu-lang' },
-          `Pause länger als ${Math.round(schema.pauseMaxSek / 60)} Minuten. Block mit A3 abbrechen?`,
+        // Nur Erinnerung: ob gewartet, fortgesetzt oder abgebrochen wird, entscheidet die beobachtende Person (Kodierhandbuch 1.0)
+        ? el('div', { class: 'banner-gelb', role: 'status', 'data-test': 'pause-zu-lang' },
+          `Pause seit über ${Math.round(schema.pauseMaxSek / 60)} Minuten. Weiter warten, fortsetzen oder abbrechen – nach Ihrer Einschätzung.`,
           el('button', { type: 'button', class: 'gefahr abstand-links', 'data-test': 'pause-abbruch-a3', onclick: () => abbruch('A3') }, 'Abbruch A3'))
         : null,
       status,

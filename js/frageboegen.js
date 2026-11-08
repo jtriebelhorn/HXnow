@@ -247,7 +247,7 @@ const FB2 = {
   id: 'FB2',
   titel: 'Fragebogen 2 – Ende des Regelbetriebs mit HX Now',
   phase: 'POST',
-  status: 'entwurf', // bis zur Freigabe nur im Testmodus (Spezifikation FB2)
+  // freigegeben mit Definition 1.0.0 (ENTSCHEIDUNGEN Nr. 47); `status: 'entwurf'` würde ihn wieder auf den Probelauf beschränken
   quelle: 'FB2_Post_v0.3.md vom 08.11.2026 (Papier: Fragebogen2_Post_v0.3)',
   dauerMin: 18,
   einleitung: FB1.einleitung,
@@ -480,7 +480,7 @@ const KB = {
 };
 
 export const FRAGEBOGEN_DEFINITION = Object.freeze({
-  definitionVersion: '0.1.1', // SemVer (Plan 4.2); 1.0.0 erst nach dem Pretest
+  definitionVersion: '1.0.0', // SemVer (Plan 4.2); festgeschrieben vor Studienbeginn (ENTSCHEIDUNGEN Nr. 47)
   stand: '2026-11-08',
   boegen: [FB1, KB, FB2],
 });

@@ -3,13 +3,13 @@
 // Antwortinhalte.
 // Eine Kopfzeile für alle Zeilen; `datensatz` = meta · proband · phasenplan · eintrag · aenderung.
 // Die meta-Zeile (immer zuerst) trägt n_zeilen und die CRC32-Prüfsumme über alle übrigen Zeilen. DOM-frei, synchron.
-import { csvFeld, csvText } from './export.js';
-import { leseCsv } from './csvlesen.js';
+import { csvFeld, csvText, EXPORT_FORMAT } from './export.js';
+import { leseCsv, dateiArtAusKopf } from './csvlesen.js';
 import { crc32 } from './crc32.js';
 import { isoMitOffset, datumLokal, uhrzeit } from './zeit.js';
 
 export const SPALTEN_LOGBUCH = Object.freeze([
-  'datensatz', 'export_ts', 'geraete_id', 'app_version', 'db_version', 'definition_version', 'schema_version',
+  'datensatz', 'format_version', 'export_ts', 'geraete_id', 'app_version', 'db_version', 'definition_version', 'schema_version',
   'n_zeilen', 'pruefsumme', 'stand_text',
   'pseudonym', 'bereich', 'proband_status', 'status_ts', 'registriert_ts', 'notiz',
   'baseline_start', 'einfuehrung_start', 'regelbetrieb_start', 'abschluss_start', 'phase_ende',
@@ -54,7 +54,7 @@ export function standText({ teilnehmende, logbuch }) {
  * @param {{ geraeteId, appVersion, dbVersion, definitionVersion, schemaVersion, now, test }} kopf
  */
 export function logbuchDatei(daten, kopf) {
-  const leer = Object.fromEntries(SPALTEN_LOGBUCH.map((s) => [s, '']));
+  const leer = { ...Object.fromEntries(SPALTEN_LOGBUCH.map((s) => [s, ''])), format_version: EXPORT_FORMAT };
   const zeile = (werte) => SPALTEN_LOGBUCH.map((s) => werte[s] ?? '');
   const zeilen = [
     ...daten.teilnehmende.map((t) => zeile({
@@ -95,7 +95,7 @@ export function leseLogbuchDatei(text) {
   const roh = String(text).replace(/^﻿/, '');
   const { kopf, zeilen } = leseCsv(roh);
   const fehler = [];
-  if (kopf[0] !== 'datensatz' || kopf[1] !== 'export_ts') return { ok: false, fehler: ['Keine Logbuch-Datei.'] };
+  if (dateiArtAusKopf(kopf) !== 'logbuch') return { ok: false, fehler: ['Keine Logbuch-Datei.'] };
   const meta = zeilen[0];
   if (meta?.datensatz !== 'meta') fehler.push('Die erste Zeile ist keine meta-Zeile.');
   // Prüfsumme über den Originaltext aller Zeilen nach der meta-Zeile (CSV-Felder können Zeilenumbrüche enthalten)

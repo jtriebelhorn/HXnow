@@ -14,7 +14,7 @@ test('App lädt, Schema ist gültig, Startseite erscheint', async ({ page }) => 
 
   await page.goto('./');
   await expect(page.locator('[data-test=neuer-block]')).toBeEnabled();
-  await expect(page.locator('[data-test=info]')).toContainText('Schema-Version 0.3');
+  await expect(page.locator('[data-test=info]')).toContainText('Schema-Version 1.0');
   await expect(page.locator('[data-test=schema-fehler]')).toHaveCount(0);
 
   expect(fremde).toEqual([]);

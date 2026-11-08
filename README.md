@@ -4,8 +4,8 @@ Progressive Web App für die Time-Motion-Studie „HX Now im Klinikalltag“. Re
 kein Backend, keine externen Abhängigkeiten zur Laufzeit. Verbindliche Spezifikation:
 [docs/ENTWICKLUNGSPLAN.md](docs/ENTWICKLUNGSPLAN.md).
 
-Stand 0.14.0: Beobachtung (Spezifikation v2, Kodierhandbuch v0.3), Fragebogen-Modus (FB1, Kurzbogen, FB2 als
-Entwurf), Teilnehmerliste und Logbuch mit Studienübersicht, Updates mit Migration, Sicherung nach jeder Sitzung,
+Stand 1.0.0 (Festschreibung 09.11.2026): Beobachtung nach [Kodierhandbuch 1.0](docs/KODIERHANDBUCH_v1.0.md) und
+Kodierschema 1.0, Fragebögen FB1, Kurzbogen und FB2 (Definition 1.0.0), Exportformat 1.0, Teilnehmerliste und Logbuch mit Studienübersicht, Updates mit Migration, Sicherung nach jeder Sitzung,
 Wiederherstellen, Korrekturen mit PIN, Widerruf und Zusammenführungstool. Pläne: [docs/plaene/](docs/plaene/);
 abgestimmte Abweichungen: [docs/ENTSCHEIDUNGEN.md](docs/ENTSCHEIDUNGEN.md).
 
@@ -40,6 +40,7 @@ und im Browser http://localhost:8080/ öffnen. Daten liegen im Browser (IndexedD
 | `npm run icons` | App-Icons in `icons/` neu erzeugen |
 | `npm run version -- <x.y.z> "Hinweis"` | neue Version in `js/version.js`, `sw.js` (inkl. Dateiliste) und `version.json` |
 | `npm run codebuch` | Codebuch der Fragebögen (`docs/codebuch/`) neu erzeugen |
+| `npm run versionen` | Fingerabdrücke neuer Versionen (Kodierschema, Fragebögen, Exportformat) eintragen |
 | `npm run pruefen` | Prüf-Workflow: realitätsnahe Simulation zweier Beobachtungstage, Abgleich aller gespeicherten Daten, Bericht in `pruefberichte/` ([Anleitung](docs/PRUEF_WORKFLOW.md)) |
 
 Die ausgelieferten Dateien im Repository brauchen keinen Build-Schritt.
@@ -65,12 +66,25 @@ Startseite zum Aktualisieren an.
    jede Migration mit Test (`tests/e2e/l0.spec.js`).
 5. Testversionen nur mit `TESTVERSION = true` in `js/config.js` (eigene Datenbank, gelbes Band).
 
+## Festschreibung und Versionen (ab 1.0.0)
+
+Kodierschema (`schemaVersion` 1.0), Fragebogen-Definition (`definitionVersion` 1.0.0) und Exportformat
+(`EXPORT_FORMAT` 1.0 in `js/export.js`, Spalte `format_version`) sind festgeschrieben. Damit bleiben alle Studiendaten
+gleich lesbar, auch wenn die App weiterentwickelt wird:
+
+- Ändert sich der Inhalt eines der drei, muss seine Version steigen: neue Codes, Items oder Spalten → Nebenversion
+  (1.1, 1.1.0), geänderte Bedeutung → Hauptversion (2.0). Bestehende Codes, IDs und Spalten nie umdeuten oder löschen.
+- `tests/unit/versionen.test.js` vergleicht Fingerabdrücke mit `tests/fixtures/versionen.json`; nach einer bewussten
+  Versionserhöhung `npm run versionen` ausführen (alte Einträge bleiben unverändert).
+- `tests/unit/referenz/` enthält je Dateityp eine Referenzdatei; jede Abweichung ist eine Formatänderung.
+- Kodierhandbuch, Codebuch (`docs/CODEBUCH_EXPORT.md`, `npm run codebuch`) und CHANGELOG gehören zu jeder Änderung.
+
 ## Regeln für Fragebögen und IDs
 
 - Item-, Zellen- und Paar-IDs ändern sich nie. Neue Fragen bekommen neue IDs; entfernte bleiben mit `entfernt: true`
   in der Definition (Codebuch und Export bleiben lesbar).
 - Inhaltliche Änderung einer Frage: `v` des Items erhöhen. Jede Änderung der Definition: `definitionVersion` erhöhen
-  (SemVer; 1.0.0 erst nach dem Pretest) und `npm run codebuch` ausführen. Ändert sich ein gepaartes Item, schlägt der
+  (SemVer, festgeschrieben ab 1.0.0) und `npm run codebuch` ausführen. Ändert sich ein gepaartes Item, schlägt der
   Schnappschuss-Test an (`npm run codebuch -- --snapshot` nur nach bewusster Prüfung).
 - Ein Bogen mit `status: 'entwurf'` ist nur mit dem Test-Code möglich.
 - Studien-Codes: frei wählbare Pseudonyme (2–20 Zeichen A–Z, 0–9, Bindestrich), keine Klarnamen; Test-Code `P000`;

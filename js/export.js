@@ -10,6 +10,15 @@ import { istTestPseudonym, nebentaetigkeiten, ntCode, NUTZUNGSART_UNBEKANNT, HAL
 import { isoMitOffset, datumLokal, dateinameZeit } from './zeit.js';
 
 const BOM = '\uFEFF';
+
+/**
+ * Version des Exportformats (Spalten und ihre Bedeutung), steht als 2. Spalte `format_version` in jeder Datei.
+ * 1.0 = Festschreibung vor Studienbeginn (ENTSCHEIDUNGEN Nr. 47). Danach nur noch neue Spalten am Ende oder neue Codes
+ * (→ 1.1 …); geänderte Bedeutung einer Spalte → 2.0. tests/unit/versionen.test.js prüft, dass Spalten und Version
+ * zusammenpassen.
+ */
+export const EXPORT_FORMAT = '1.0';
+const mitFormat = (z) => [z[0], EXPORT_FORMAT, ...z.slice(1)];
 const TRENNER = ';';
 const ZEILENENDE = '\r\n';
 
@@ -20,7 +29,7 @@ const ZEILENENDE = '\r\n';
  * siehe spaltenBeobachtung(). Bedeutung: docs/CODEBUCH_EXPORT.md.
  */
 export const SPALTEN_BEOBACHTUNG = Object.freeze([
-  'datensatz', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
+  'datensatz', 'format_version', 'block_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
   'bereich', 'dienst', 'phase', 'arbeitskontext', 'datum', 'block_start', 'block_ende',
   'block_dauer_soll_sek', 'block_beobachtet_sek', 'block_pausen_anzahl', 'block_pausen_sek',
   'block_status', 'block_ende_art', 'block_ende_grund', 'abbruch_code', 'block_kommentar',
@@ -55,12 +64,13 @@ function nebenSpalten(schema) {
 }
 
 export const SPALTEN_VERSUCH = Object.freeze([
-  'datensatz', 'versuch_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
+  'datensatz', 'format_version', 'versuch_id', 'geraete_id', 'schema_version', 'app_version', 'pseudonym', 'beobachter',
   'bereich', 'dienst', 'phase', 'datum', 'zeitpunkt', 'kommentar',
 ]);
 
 export const SPALTEN_TAG = Object.freeze([
-  'datensatz', 'datum', 'bereich', 'teilbereich', 'auslastung', 'aerzte_anwesend', 'ereignisse', 'beobachter',
+  'datensatz', 'format_version', 'datum', 'bereich', 'teilbereich', 'belegung', 'aufnahmen', 'entlassungen', 'ambulant', 'umsatz',
+  'aerzte_anwesend', 'ereignisse', 'beobachter',
   'geraete_id', 'schema_version', 'app_version', 'erfasst',
 ]);
 
@@ -131,7 +141,7 @@ export function blockDatei(zustand, schema) {
   ];
   const spalten = spaltenBeobachtung(schema);
   const neben = nebenSpalten(schema);
-  const leerZeile = Array(spalten.length - blockFelder.length - 2).fill('');
+  const leerZeile = Array(spalten.length - blockFelder.length - 3).fill(''); // ohne datensatz, format_version, n_zeilen_block
   const zeilen = zl.length === 0
     ? [['block', ...blockFelder, ...leerZeile, 0]]
     : zl.map((x, i) => [
@@ -143,7 +153,7 @@ export function blockDatei(zustand, schema) {
         : ['', '', '', '', ...neben.map(() => ''), '', x.grund ?? '', x.freitext ?? '', '']),
       zl.length,
     ]);
-  return { dateiname: dateinameBlock(b, schema), inhalt: csvText(spalten, zeilen), typ: 'text/csv' };
+  return { dateiname: dateinameBlock(b, schema), inhalt: csvText(spalten, zeilen.map(mitFormat)), typ: 'text/csv' };
 }
 
 // ---------------------------------------------------------------------------
@@ -158,21 +168,28 @@ export function versuchDatei(v, schema = null) {
   ];
   return {
     dateiname: `${praefix(schema, v.pseudonym, 'VERSUCH')}_${dateinameTeil(v.pseudonym)}_${datum}_${uhrzeit}_${v.versuchId.slice(0, 8)}.csv`,
-    inhalt: csvText(SPALTEN_VERSUCH, [zeile]),
+    inhalt: csvText(SPALTEN_VERSUCH, [mitFormat(zeile)]),
     typ: 'text/csv',
   };
+}
+
+/** Tagesumsatz = Aufnahmen + Entlassungen + ambulant betreute Patienten (leer, wenn nichts davon angegeben). */
+export function umsatz(t) {
+  const teile = [t.aufnahmen, t.entlassungen, t.ambulant].filter((x) => Number.isInteger(x));
+  return teile.length ? teile.reduce((a, b) => a + b, 0) : '';
 }
 
 export function tagDatei(t) {
   const { uhrzeit } = dateinameZeit(t.ts);
   const zeile = [
-    'tageskennzahlen', t.datum, t.bereich, t.teilbereich ?? '', t.auslastung, t.aerzteAnwesend, t.ereignisse ?? '', t.beobachter,
+    'tageskennzahlen', t.datum, t.bereich, t.teilbereich ?? '', t.belegung ?? '', t.aufnahmen ?? '', t.entlassungen ?? '', t.ambulant ?? '',
+    umsatz(t), t.aerzteAnwesend ?? '', t.ereignisse ?? '', t.beobachter,
     t.geraeteId ?? '', t.schemaVersion ?? '', t.appVersion ?? '', isoMitOffset(t.ts),
   ];
   return {
     // Teilbereich mit Bindestrich am Bereich: HXNOW_TAG_NEPH-DIALYSE_20261203_1530.csv
     dateiname: `HXNOW_TAG_${dateinameTeil(t.bereich)}${t.teilbereich ? `-${dateinameTeil(t.teilbereich)}` : ''}_${t.datum.replace(/-/g, '')}_${uhrzeit}.csv`,
-    inhalt: csvText(SPALTEN_TAG, [zeile]),
+    inhalt: csvText(SPALTEN_TAG, [mitFormat(zeile)]),
     typ: 'text/csv',
   };
 }

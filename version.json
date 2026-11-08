@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.18.0",
-  "datum": "2026-11-08",
-  "hinweis": "Nicht abgeschlossene Exporte lassen sich mit × löschen (nach Rückfrage)."
+  "appVersion": "1.0.0",
+  "datum": "2026-11-09",
+  "hinweis": "Festschreibung für den Studienbeginn: Kodierschema 1.0, Fragebögen 1.0.0 (FB2 freigegeben), Exportformat 1.0, neue Tageskennzahlen (Belegung, Tagesumsatz)."
 }

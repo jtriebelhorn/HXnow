@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.0.0 – 09.11.2026
+**Festschreibung für den Studienbeginn** (ENTSCHEIDUNGEN Nr. 47); keine Datenbank-Migration:
+- **Kodierschema 1.0** und **[Kodierhandbuch 1.0](docs/KODIERHANDBUCH_v1.0.md)**: keine offenen Werte mehr; Mindestdauer
+  3 s (nur Auswertung, HX Now ausgenommen); unterwegs ist die inhaltliche Tätigkeit Haupttätigkeit (Telefon = T7 mit
+  O6, T9 nur bei reinem Gehen); Zeitgrenzen, Abstand, Abbruch und Löschen nach Ermessen der beobachtenden Person (der
+  Pausenhinweis nach 5 min ist nur noch eine Erinnerung).
+- **Fragebögen 1.0.0**: FB1, Kurzbogen und FB2 festgeschrieben, FB2 für echte Codes freigegeben
+  (`docs/codebuch/codebuch_1.0.0.csv`).
+- **Tageskennzahlen**: Belegung (nur Normalstation, Notaufnahmestation), Aufnahmen, Entlassungen, ambulant betreute
+  Patienten und Tagesumsatz (Summe) statt „Auslastung“.
+- **Exportformat 1.0**: Spalte `format_version` an 2. Stelle in allen Dateien (Block, Versuch, Tageskennzahlen,
+  Fragebogen, Logbuch); Dateityp wird an Spaltennamen erkannt; Referenzdateien je Typ und ein Test, der Änderungen an
+  Kodierschema, Fragebögen oder Exportspalten ohne neue Version verhindert (`npm run versionen`).
+- **Zusammenführungstool**: `beobachtung_bereinigt.csv` (kurze Episoden zusammengelegt, Spalte `zusammengelegt`);
+  Prüfbericht nennt zusammengelegte Episoden und „Gehen mit Nebentätigkeit“; Dateien ohne `format_version` (vor der
+  Festschreibung) werden nicht ausgewertet.
+- Behoben: `hidden` wurde von Klassen mit eigener Anzeige (z. B. Formularfelder) überschrieben.
+
 ## 0.18.0 – 08.11.2026
 Löschen nicht abgeschlossener Exporte; keine Datenbank-Migration:
 - Startseite, „Nicht abgeschlossene Exporte“: kleines × oben rechts an jedem Eintrag, Rückfrage „Wirklich löschen?“.

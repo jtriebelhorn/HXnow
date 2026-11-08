@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "0.3",
+  "schemaVersion": "1.0",
   "studie": "HX Now im Klinikalltag",
   "blockDauerSek": 900,
   "blockDauerOptionenSek": [600, 900],
@@ -19,14 +19,14 @@
   "beobachter": ["B1"],
   "bereiche": [
     { "code": "NEPH", "label": "Nephrologie", "teilbereiche": [
-      { "code": "STATION", "label": "Normalstation" },
+      { "code": "STATION", "label": "Normalstation", "stationaer": true },
       { "code": "DIALYSE", "label": "Dialyse" },
       { "code": "AMBULANZ", "label": "Ambulanz" },
       { "code": "KONSIL", "label": "Konsile" }
     ] },
     { "code": "ZNA", "label": "Notaufnahme", "teilbereiche": [
       { "code": "NOTAUFNAHME", "label": "Notaufnahme" },
-      { "code": "NA-STATION", "label": "Notaufnahmestation" }
+      { "code": "NA-STATION", "label": "Notaufnahmestation", "stationaer": true }
     ] }
   ],
   "dienste": [
@@ -104,5 +104,5 @@
     { "code": "U", "label": "nicht erkennbar" }
   ],
   "export": { "mailEmpfaenger": "", "mailBetreffPraefix": "HXNow-Beobachtung" },
-  "regelnAuswertung": { "mindestdauerSek": 5, "mindestdauerAusnahmen": ["T3"] }
+  "regelnAuswertung": { "mindestdauerSek": 3, "mindestdauerAusnahmen": ["T3"] }
 }

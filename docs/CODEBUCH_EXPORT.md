@@ -1,8 +1,20 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.6 (Kodierschema 0.3); Fragebogen, Logbuch, Sicherung und Widerruf ab 0.14.0. Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
-exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
-(Version in der Spalte `schema_version`).
+**Exportformat 1.0** – festgeschrieben mit App 1.0.0 am 09.11.2026 (Kodierschema 1.0, Fragebogen-Definition 1.0.0,
+[Kodierhandbuch 1.0](KODIERHANDBUCH_v1.0.md)). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`.
+
+## Versionen und Gültigkeit
+
+- Jede Datei trägt in der 2. Spalte `format_version` (hier 1.0), Beobachtungen zusätzlich `schema_version`,
+  Fragebögen `definition_version`. Dateien ohne `format_version` stammen aus der Zeit vor der Festschreibung (Tests,
+  Pilot) und werden vom Zusammenführungstool nicht ausgewertet.
+- Regeln nach der Festschreibung: Spalten werden nie umbenannt, entfernt oder in ihrer Bedeutung geändert. Neue Spalten
+  kommen nur hinzu (→ `format_version` 1.1 …); eine geänderte Bedeutung erfordert 2.0. Codes im Kodierschema und Items
+  der Fragebögen ebenso (`schemaVersion` bzw. `definitionVersion`). Ein Test (`tests/unit/versionen.test.js`) verhindert,
+  dass sich Inhalte ohne neue Versionsnummer ändern; Referenzdateien für jeden Dateityp liegen in
+  `tests/unit/referenz/`.
+- Auswertungen lesen Spalten immer über ihren Namen, nie über die Position.
 
 ## Allgemeines Format
 
@@ -128,8 +140,12 @@ der eine Episode angelegt hat (`erfasstTs`). Blöcke aus Version 0.4.0 können a
 | Spalte | Inhalt |
 | --- | --- |
 | `datensatz` | immer `tageskennzahlen` |
+| `format_version` | Version des Exportformats (1.0) |
 | `datum`, `bereich`, `teilbereich` | Tag, Bereich und Teilbereich (Schlüssel). Teilbereiche laut Kodierschema: NEPH = `STATION` Normalstation · `DIALYSE` Dialyse · `AMBULANZ` Ambulanz · `KONSIL` Konsile; ZNA = `NOTAUFNAHME` Notaufnahme · `NA-STATION` Notaufnahmestation. Leer bei Erfassungen vor App 0.17.0 (ganzer Bereich). |
-| `auslastung` | Bettenbelegung (Station) bzw. Patientenzugänge (Notaufnahme) |
+| `belegung` | belegte Betten; nur bei stationären Teilbereichen (Normalstation, Notaufnahmestation), sonst leer |
+| `aufnahmen`, `entlassungen` | Zahl der am Tag aufgenommenen bzw. entlassenen Patientinnen und Patienten |
+| `ambulant` | Zahl ambulant betreuter Patientinnen und Patienten (z. B. Ambulanz, Dialyse, Konsile, Notaufnahme) |
+| `umsatz` | Tagesumsatz = `aufnahmen` + `entlassungen` + `ambulant` (leer, wenn nichts davon angegeben) |
 | `aerzte_anwesend` | Zahl der anwesenden Ärztinnen und Ärzte |
 | `ereignisse` | besondere Ereignisse, Freitext |
 | `beobachter` | Kürzel |
@@ -201,6 +217,7 @@ Codes, die im Exportordner zu löschen sind.
 
 | Datei | Inhalt |
 | --- | --- |
+| `beobachtung_bereinigt.csv` | wie `beobachtung.csv`, aber Episoden unter der Mindestdauer (3 s, `regelnAuswertung` im Kodierschema; HX Now T3 ausgenommen) der vorangehenden Episode zugeschlagen und gleich kodierte Nachbarn vereint; Spalte `zusammengelegt` = Zahl der Rohzeilen |
 | `beobachtung.csv`, `versuche.csv`, `fb_long.csv` | alle Zeilen der Sitzungsdateien; `pseudonym` und `phase` = wirksamer Stand, zusätzlich `gueltig` (0/1), `ungueltig_grund`, `pseudonym_original`, `phase_original` |
 | `tageskennzahlen.csv` | alle Tageskennzahlen |
 | `fb1_wide.csv`, `kb_wide.csv`, `fb2_wide.csv` | eine Zeile je gültigem Bogen, eine Spalte je Zelle (`wert`, bei Freitext `wert_text`) |

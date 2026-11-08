@@ -1,6 +1,6 @@
 # Anleitung für die Doktorandin
 
-Gilt ab App-Version 0.14.0. Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
+Gilt ab App-Version 1.0.0 (Kodierhandbuch 1.0). Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
 („Beobachtung“). Alle Daten liegen nur auf dem iPhone, bis Sie sie in den Exportordner teilen.
 
 > **Wichtigste Regel:** Nach jeder Sitzung (Block, Fragebogen, „nicht angetroffen“) sofort **Exportieren** und die
@@ -44,14 +44,17 @@ Gilt ab App-Version 0.14.0. Die App läuft auf dem Studien-iPhone als Symbol auf
 4. Die Statusansicht zeigt keine Antworten, nur Eckdaten. **Exportieren** tippen.
 5. Wird der Bogen unterbrochen (Anruf, Akku …): Auf der Startseite steht er unter „Nicht abgeschlossene Fragebögen“
    → **Fortsetzen**. Solange ein Bogen offen ist, startet kein Beobachtungsblock und kein Update.
-6. Fragebogen 2 ist noch ein Entwurf und nur mit P000 möglich, bis der Pretest abgeschlossen ist.
 
 ## 3a. Tageskennzahlen
 
 Startseite → **Tageskennzahlen**: Datum, Bereich und **Teilbereich** wählen – Nephrologie: Normalstation, Dialyse,
-Ambulanz oder Konsile; Notaufnahme: Notaufnahme oder Notaufnahmestation. Für jeden Teilbereich gibt es je Tag einen
-eigenen Eintrag (Belegung bzw. Zugänge, anwesende Ärztinnen und Ärzte, besondere Ereignisse). Danach exportieren wie
-jede Sitzung.
+Ambulanz oder Konsile; Notaufnahme: Notaufnahme oder Notaufnahmestation. Je Tag und Teilbereich ein Eintrag:
+
+- **Belegung** (nur Normalstation und Notaufnahmestation): belegte Betten
+- **Aufnahmen**, **Entlassungen**, **ambulant betreute Patienten** – die App zeigt die Summe als Tagesumsatz
+- anwesende Ärztinnen und Ärzte, besondere Ereignisse
+
+Danach exportieren wie jede Sitzung.
 
 ## 4. Exportieren und sichern
 

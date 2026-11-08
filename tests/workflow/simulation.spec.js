@@ -71,19 +71,28 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
   async function tageskennzahlen(bereich) {
     await tippe('tageskennzahlen');
     await tippe(`tag-bereich-${bereich}`);
-    const teil = r.wahl(SCHEMA.bereiche.find((b) => b.code === bereich).teilbereiche).code;
+    const teilDef = r.wahl(SCHEMA.bereiche.find((b) => b.code === bereich).teilbereiche);
+    const teil = teilDef.code;
     await tippe(`tag-teilbereich-${teil}`);
-    const auslastung = r.ganz(14, 32);
+    const belegung = teilDef.stationaer ? r.ganz(14, 32) : null;
+    const aufnahmen = r.ganz(0, 12);
+    const entlassungen = r.ganz(0, 12);
+    const ambulant = teilDef.stationaer ? null : r.ganz(3, 40);
     const aerzte = r.ganz(2, 6);
     const ereignis = r.wahl(['Personalausfall Pflege; 2 Betten gesperrt', 'Systemstörung KIS 10–11 Uhr', '"Massenanfall" geübt', '']);
-    await page.locator('[data-test=tag-auslastung]').fill(String(auslastung));
+    if (belegung !== null) await page.locator('[data-test=tag-belegung]').fill(String(belegung));
+    await page.locator('[data-test=tag-aufnahmen]').fill(String(aufnahmen));
+    await page.locator('[data-test=tag-entlassungen]').fill(String(entlassungen));
+    if (ambulant !== null) await page.locator('[data-test=tag-ambulant]').fill(String(ambulant));
     for (let i = 0; i < aerzte; i++) await tippe('tag-aerzte-plus');
     if (ereignis) await page.locator('[data-test=tag-ereignisse]').fill(ereignis);
     const ts = await jetzt();
     await tippe('tag-speichern');
     await expect(page.locator('[data-test=eintrag-tag]').first()).toBeVisible();
     tagErwartet.push({ bereich, teil, datum: isoBerlin(ts).slice(0, 10), werte: {
-      datensatz: 'tageskennzahlen', datum: isoBerlin(ts).slice(0, 10), bereich, teilbereich: teil, auslastung: String(auslastung),
+      datensatz: 'tageskennzahlen', format_version: '1.0', datum: isoBerlin(ts).slice(0, 10), bereich, teilbereich: teil,
+      belegung: belegung === null ? '' : String(belegung), aufnahmen: String(aufnahmen), entlassungen: String(entlassungen),
+      ambulant: ambulant === null ? '' : String(ambulant), umsatz: String(aufnahmen + entlassungen + (ambulant ?? 0)),
       aerzte_anwesend: String(aerzte), ereignisse: ereignis, beobachter: SCHEMA.beobachter[0],
       schema_version: SCHEMA.schemaVersion, app_version: APP_VERSION, erfasst: isoBerlin(ts),
     } });

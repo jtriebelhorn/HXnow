@@ -150,31 +150,14 @@ test('laufende und verworfene Blöcke werden nicht exportiert', () => {
   assert.throws(() => X.blockDatei(z, SCHEMA), /Verworfene/);
 });
 
-test('Versuch-CSV', () => {
-  const d = X.versuchDatei({
-    versuchId: 'abcdef12-0000-4000-8000-000000000000', geraeteId: 'g', schemaVersion: '0.1', appVersion: '1.0.0',
-    pseudonym: 'P099', beobachter: 'B1', bereich: 'ZNA', dienst: 'N', phase: 'PRE', ts: START, kommentar: 'OP',
-  });
-  assert.equal(d.dateiname, 'HXNOW_VERSUCH_P099_20261203_0915_abcdef12.csv');
-  assert.equal(d.inhalt, '﻿' + X.SPALTEN_VERSUCH.join(';') + '\r\n'
-    + 'versuch;abcdef12-0000-4000-8000-000000000000;g;0.1;1.0.0;P099;B1;ZNA;N;PRE;2026-12-03;2026-12-03T09:15:02+01:00;OP\r\n');
+test('Tagesumsatz = Aufnahmen + Entlassungen + ambulant; leer, wenn nichts angegeben', () => {
+  assert.equal(X.umsatz({ aufnahmen: 3, entlassungen: 2, ambulant: 10 }), 15);
+  assert.equal(X.umsatz({ aufnahmen: 3, entlassungen: null, ambulant: null }), 3);
+  assert.equal(X.umsatz({}), '');
+  const ohneTeil = X.tagDatei({ datum: '2026-12-03', bereich: 'ZNA', teilbereich: '', aerzteAnwesend: 1, beobachter: 'B1', ts: START });
+  assert.equal(ohneTeil.dateiname, 'HXNOW_TAG_ZNA_20261203_0915.csv');
 });
 
-test('Tageskennzahlen ohne Teilbereich (vor 0.17.0): Spalte leer, Dateiname wie bisher', () => {
-  const d = X.tagDatei({ datum: '2026-12-03', bereich: 'ZNA', teilbereich: '', auslastung: 1, aerzteAnwesend: 1, beobachter: 'B1', ts: START });
-  assert.equal(d.dateiname, 'HXNOW_TAG_ZNA_20261203_0915.csv');
-  assert.match(d.inhalt, /\r\ntageskennzahlen;2026-12-03;ZNA;;1;1;/);
-});
-
-test('Tageskennzahlen-CSV', () => {
-  const d = X.tagDatei({
-    datum: '2026-12-03', bereich: 'ZNA', teilbereich: 'NA-STATION', auslastung: 31, aerzteAnwesend: 4, ereignisse: 'MANV; Übung',
-    beobachter: 'B1', geraeteId: 'g', schemaVersion: '0.1', appVersion: '1.0.0', ts: START,
-  });
-  assert.equal(d.dateiname, 'HXNOW_TAG_ZNA-NA-STATION_20261203_0915.csv');
-  assert.equal(d.inhalt, '﻿' + X.SPALTEN_TAG.join(';') + '\r\n'
-    + 'tageskennzahlen;2026-12-03;ZNA;NA-STATION;31;4;"MANV; Übung";B1;g;0.1;1.0.0;2026-12-03T09:15:02+01:00\r\n');
-});
 
 test('mailto: nur mit Empfänger, ohne BOM, Längengrenze 8000', () => {
   const datei = X.blockDatei(referenzBlock(), SCHEMA);

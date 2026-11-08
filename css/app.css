@@ -63,6 +63,9 @@
 
 * { box-sizing: border-box; }
 
+/* `hidden` gilt immer, auch wenn eine Klasse display setzt (z. B. .feld) */
+[hidden] { display: none !important; }
+
 html { -webkit-text-size-adjust: 100%; }
 
 body {

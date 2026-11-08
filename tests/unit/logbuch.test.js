@@ -58,7 +58,7 @@ describe('Logbuch-Datei', () => {
     const d = daten();
     const datei = logbuchDatei(d, kopf);
     assert.equal(datei.dateiname, 'HXNOW_Logbuch_abcdef12.csv');
-    assert.ok(datei.inhalt.startsWith('﻿datensatz;export_ts;'));
+    assert.ok(datei.inhalt.startsWith('﻿datensatz;format_version;export_ts;'));
     const r = leseLogbuchDatei(datei.inhalt);
     assert.deepEqual(r.fehler, []);
     assert.equal(r.ok, true);
