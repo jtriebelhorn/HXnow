@@ -7,7 +7,7 @@
 
 // Muss APP_VERSION in js/version.js entsprechen (Unit-Test prüft das). Bei jeder Auslieferung erhöhen,
 // sonst bekommen installierte Geräte geänderte Dateien nicht.
-const CACHE_VERSION = '0.10.0';
+const CACHE_VERSION = '0.11.0';
 const CACHE_NAME = `hxnow-beobachtung-${CACHE_VERSION}`;
 
 // Alle ausgelieferten Dateien (Unit-Test prüft Vollständigkeit gegen das Repository).
@@ -42,12 +42,14 @@ const DATEIEN = [
   'js/sitzung.js',
   'js/studienstand.js',
   'js/ui/abschluss.js',
+  'js/ui/aendern.js',
   'js/ui/blockneu.js',
   'js/ui/dom.js',
   'js/ui/exportieren.js',
   'js/ui/fragebogen.js',
   'js/ui/info.js',
   'js/ui/kodierung.js',
+  'js/ui/logbuch.js',
   'js/ui/schemafehler.js',
   'js/ui/sicherung.js',
   'js/ui/start.js',

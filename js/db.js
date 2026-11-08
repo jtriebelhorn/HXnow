@@ -322,6 +322,18 @@ export function schreibeFb(db, { sitzung = null, antworten = [], logbuch = null 
   });
 }
 
+/**
+ * Änderungen im Logbuch (nur anfügen) zusammen mit dem geänderten Phasenplan bzw. Teilnehmer-Datensatz in einer
+ * Transaktion (PLAN_Logbuch_Datensicherheit 6).
+ */
+export function schreibeLogbuchAenderung(db, { aenderungen = [], phasenplan = null, teilnehmer = null }) {
+  return transaktion(db, [STORES.AENDERUNGEN, STORES.PHASENPLAN, STORES.TEILNEHMENDE], 'readwrite', (tx) => {
+    for (const a of aenderungen) tx.objectStore(STORES.AENDERUNGEN).add(a);
+    if (phasenplan) tx.objectStore(STORES.PHASENPLAN).put(phasenplan);
+    if (teilnehmer) tx.objectStore(STORES.TEILNEHMENDE).put(teilnehmer);
+  });
+}
+
 /** Stores der Logbuch-Datei (Teilnehmerliste, Phasenplan, Logbuch, Änderungen). */
 export async function holeLogbuchDaten(db) {
   const namen = [STORES.TEILNEHMENDE, STORES.PHASENPLAN, STORES.LOGBUCH, STORES.AENDERUNGEN];

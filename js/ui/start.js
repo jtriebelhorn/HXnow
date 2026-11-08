@@ -80,6 +80,7 @@ export async function zeigeStart(app) {
     el('header', { class: 'kopf-start' },
       el('h1', {}, 'HX Now Beobachtung'),
       el('div', { class: 'kopf-menue' },
+        el('button', { type: 'button', class: 'klein', 'data-test': 'menue-studie', onclick: () => app.zeige('studie') }, 'Studie'),
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-sicherung', onclick: () => app.zeige('sicherung') }, 'Sicherung'),
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-info', onclick: () => app.zeige('info') }, 'Info'))),
     updateHinweis(app),
@@ -108,7 +109,9 @@ export async function zeigeStart(app) {
       el('button', { type: 'button', class: 'gross', 'data-test': 'tageskennzahlen', onclick: () => app.zeige('tageskennzahlen') }, 'Tageskennzahlen'),
     ),
     el('div', { class: 'sicherung-zeile', 'data-test': 'sicherung-zeile' },
-      el('span', { 'data-test': 'letzte-sicherung' }, letzte ? `Letzte Sicherung: ${datumDe(letzte)} ${uhrzeit(letzte).slice(0, 5)}` : 'Noch keine Sicherung'),
+      el('span', {},
+        el('span', { 'data-test': 'letzte-sicherung' }, letzte ? `Letzte Sicherung: ${datumDe(letzte)} ${uhrzeit(letzte).slice(0, 5)}` : 'Noch keine Sicherung'),
+        app.meta?.exportordnerText ? el('span', { class: 'klein-text block', 'data-test': 'exportordner-hinweis' }, `Exportordner: ${app.meta.exportordnerText}`) : null),
       // synchron: die Logbuch-Datei liegt im Speicher (app.logbuchDaten)
       el('button', { type: 'button', class: 'klein', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app) }, 'Logbuch sichern')),
     laufendeFb.length === 0 ? null : el('section', { 'data-test': 'offene-fragebogen' },

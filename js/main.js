@@ -18,6 +18,7 @@ import { zeigeSicherung } from './ui/sicherung.js';
 import { starteOfflineBetrieb } from './ui/update.js';
 import { zeigeTabSperre } from './ui/tabsperre.js';
 import { zeigeFbNeu, zeigeFbUebergabe, zeigeFbAusfuellen, zeigeFbDanke, zeigeFbStatus } from './ui/fragebogen.js';
+import { zeigeStudie, zeigeProband, zeigeEintrag, zeigeTeilnehmende, zeigeStudienplan } from './ui/logbuch.js';
 import { ermittleUmgebung } from './umgebung.js';
 import { TESTVERSION } from './config.js';
 import { eintragAusBlock, eintragAusVersuch } from './logbuch.js';
@@ -39,6 +40,11 @@ const ANSICHTEN = {
   fbAusfuellen: zeigeFbAusfuellen,
   fbDanke: zeigeFbDanke,
   fbStatus: zeigeFbStatus,
+  studie: zeigeStudie,
+  proband: zeigeProband,
+  eintrag: zeigeEintrag,
+  teilnehmende: zeigeTeilnehmende,
+  studienplan: zeigeStudienplan,
 };
 
 /** Gemeinsamer App-Kontext für alle Ansichten. */

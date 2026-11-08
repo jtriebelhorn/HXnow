@@ -163,6 +163,7 @@ button[aria-pressed="true"] { background: var(--aktiv); border-color: var(--akti
 
 .sicherung-zeile {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
@@ -222,8 +223,9 @@ button.auswahl.links { text-align: left; }
 
 /* ---------- Startseite ---------- */
 
-.kopf-start { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.kopf-menue { display: flex; gap: 8px; }
+.kopf-start { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 8px 12px; }
+.kopf-start h1 { margin-bottom: 0; }
+.kopf-menue { display: flex; flex-wrap: wrap; gap: 8px; }
 .liste { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
 .liste li {
   display: flex; flex-direction: column; align-items: stretch; gap: 8px;
@@ -474,3 +476,60 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .knopfreihe > button { flex: 1 1 140px; }
 ul.bericht { margin: 0; padding-left: 20px; }
 ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
+
+/* Logbuch-Ansichten (L3) */
+.klickbar { cursor: pointer; }
+.klein-text { font-size: 0.8rem; color: var(--text-leise); font-weight: 400; }
+.block { display: block; }
+.liste-kurz { padding-left: 20px; margin: 0 0 var(--abstand); }
+.liste-kurz li { margin-bottom: 6px; }
+.liste-kurz li.zurueckgezogen { text-decoration: line-through; color: var(--text-leise); }
+.faellig li { font-weight: 600; }
+.tabelle-rahmen { overflow-x: auto; }
+.probanden { font-size: 0.85rem; }
+.probanden td, .probanden th { vertical-align: top; padding: 6px 3px; }
+.ampel-rot td:first-child { border-left: 6px solid var(--fehler); }
+.ampel-gelb td:first-child { border-left: 6px solid #d99a00; }
+.ampel-gruen td:first-child { border-left: 6px solid var(--phase-post); }
+.ampel-grau td:first-child { border-left: 6px solid var(--rand); }
+.ampel-zelle-rot { background: var(--fehler-flaeche); }
+.ampel-zelle-gelb { background: var(--warnung-flaeche); }
+.phasen-karte { border: 1px solid var(--rand); border-left-width: 6px; border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px; }
+.phasen-karte h3 { margin: 4px 0 8px; display: flex; gap: 8px; align-items: center; }
+.ampel-rand-rot { border-left-color: var(--fehler); }
+.ampel-rand-gelb { border-left-color: #d99a00; }
+.ampel-rand-gruen { border-left-color: var(--phase-post); }
+.ampel-rand-grau { border-left-color: var(--rand); }
+.marke { font-size: 0.75rem; background: var(--primaer); color: var(--primaer-text); border-radius: 999px; padding: 2px 8px; }
+.liste li.ungueltig { opacity: 0.6; }
+.feld-reihe { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 8px; }
+.verteilung { margin-bottom: var(--abstand); }
+.verteilung h3 { margin: 8px 0; }
+.balken-gruppe { margin-bottom: 8px; }
+.balken-titel { font-size: 0.85rem; color: var(--text-leise); margin-bottom: 2px; }
+.balken-zeile { display: grid; grid-template-columns: 9em 1fr 2.5em; gap: 6px; align-items: center; font-size: 0.9rem; }
+.balken-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.balken-spur { background: var(--flaeche); border-radius: 4px; height: 12px; overflow: hidden; }
+.balken-wert { display: block; height: 100%; background: var(--primaer); }
+.balken-zahl { text-align: right; font-variant-numeric: tabular-nums; }
+.breite-0 { width: 0%; }
+.breite-5 { width: 5%; }
+.breite-10 { width: 10%; }
+.breite-15 { width: 15%; }
+.breite-20 { width: 20%; }
+.breite-25 { width: 25%; }
+.breite-30 { width: 30%; }
+.breite-35 { width: 35%; }
+.breite-40 { width: 40%; }
+.breite-45 { width: 45%; }
+.breite-50 { width: 50%; }
+.breite-55 { width: 55%; }
+.breite-60 { width: 60%; }
+.breite-65 { width: 65%; }
+.breite-70 { width: 70%; }
+.breite-75 { width: 75%; }
+.breite-80 { width: 80%; }
+.breite-85 { width: 85%; }
+.breite-90 { width: 90%; }
+.breite-95 { width: 95%; }
+.breite-100 { width: 100%; }

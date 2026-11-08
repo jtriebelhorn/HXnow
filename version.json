@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.10.0",
+  "appVersion": "0.11.0",
   "datum": "2026-11-08",
-  "hinweis": "Sicherung laden mit Mehrfachauswahl (Erkennung am Inhalt, Prüfsummen, Bericht), Hinweis bei leerer Datenbank, Gerät stilllegen."
+  "hinweis": "Studienübersicht im Logbuch (Fällig-Liste, Probanden, Verteilung), Phasenplan mit Phasenvorschlag beim Blockstart, Teilnehmerliste mit CSV."
 }

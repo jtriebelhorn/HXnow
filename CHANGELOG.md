@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.11.0 – 08.11.2026
+Phase L3 – Phasenplan und Logbuch-Ansichten (PLAN_Logbuch_Datensicherheit 9); keine Datenbank-Migration:
+- Neuer Menüpunkt „Studie“: Studientag und Phase je Bereich, Fällig-Liste (offene Fragebögen, fehlende Blöcke,
+  nicht gesicherte Sitzungen), Probandentabelle mit Ampel, Verteilung der Blöcke nach Arbeitskontext, Dienst und
+  Tageszeit (nur über alle Probanden). Keine Inhalte je Person.
+- Detailansicht Proband mit Phasenkarten (geplant/tatsächlich, Blöcke von Ziel, Minuten, Pausen, Abbrüche,
+  Fragebogen) und Eintragsansicht.
+- Studienplan: Phasenplan je Bereich (Reihenfolge geprüft, Änderungen im Änderungsprotokoll), Ziel je Phase
+  (`zielBloeckeProPhase`, Standard 5), Exportordner-Hinweis (auch auf der Startseite).
+- Phasenvorschlag beim Blockstart und bei „nicht angetroffen“ aus dem Phasenplan; Bereich wird in der
+  Teilnehmerliste nachgetragen, wenn er beim Anlegen des Codes fehlte.
+- Teilnehmerliste: CSV-Export und Laden (ergänzt nur fehlende Codes, prüft Code und Bereich).
+- Startseite: Kopfzeile bricht auf schmalen Geräten um.
+
 ## 0.10.0 – 08.11.2026
 Phase L2 – Komplettsicherung und Wiederherstellen (PLAN_Logbuch_Datensicherheit 4.4–4.6); keine Datenbank-Migration:
 - Komplettsicherung Format 3 mit Anzahl je Store, Datenbank-Version und CRC32-Prüfsumme (Format 1 und 2 bleiben

@@ -5,9 +5,9 @@
 import { wirksamerStand } from './aenderungen.js';
 
 export const PHASEN = Object.freeze([
-  { id: 'baseline', name: 'Baseline', von: 'baselineStart', bis: 'einfuehrungStart', blockPhase: 'PRE', bogen: 'FB1' },
-  { id: 'einfuehrung', name: 'Einführung', von: 'einfuehrungStart', bis: 'regelbetriebStart', blockPhase: null, bogen: 'KB' },
-  { id: 'regelbetrieb', name: 'Regelbetrieb', von: 'regelbetriebStart', bis: 'ende', blockPhase: 'POST', bogen: 'FB2' },
+  { id: 'baseline', name: 'Baseline', kurz: 'Baseline', von: 'baselineStart', bis: 'einfuehrungStart', blockPhase: 'PRE', bogen: 'FB1' },
+  { id: 'einfuehrung', name: 'Einführung', kurz: 'Einf.', von: 'einfuehrungStart', bis: 'regelbetriebStart', blockPhase: null, bogen: 'KB' },
+  { id: 'regelbetrieb', name: 'Regelbetrieb', kurz: 'Regel', von: 'regelbetriebStart', bis: 'ende', blockPhase: 'POST', bogen: 'FB2' },
 ]);
 const TAG_MS = 86_400_000;
 

@@ -4,7 +4,7 @@
 // Jede Antwort wird sofort gespeichert; eine unterbrochene Sitzung wird an derselben Stelle fortgesetzt.
 import { el, ersetze, auswahlGruppe, bestaetige, meldung } from './dom.js';
 import * as db from '../db.js';
-import { codeAuswahl } from './blockneu.js';
+import { codeAuswahl, ergaenzeBereich } from './blockneu.js';
 import { FRAGEBOGEN_DEFINITION as DEF } from '../frageboegen.js';
 import { bogen as bogenNach, items } from '../fb/definition.js';
 import { berechneStand, seiten, offeneFragen, pruefhinweise, sichtbareOptionen, zusammenfassungStand } from '../fb/stand.js';
@@ -71,6 +71,7 @@ export async function zeigeFbNeu(app) {
       exportStatus: 'offen', exportiertTs: null, bestaetigtTs: null, testmodus: istTestPseudonym(app.schema, werte.pseudonym),
     };
     try { await speichereSitzung(app, sitzung); } catch (e) { meldung(`Speichern fehlgeschlagen: ${e.message}`, 'fehler'); start.disabled = false; return; }
+    await ergaenzeBereich(app, werte.pseudonym, werte.bereich);
     app.zeige(werte.modus === 'PAPIER' ? 'fbAusfuellen' : 'fbUebergabe', { sitzungId: sitzung.sitzungId });
   };
 

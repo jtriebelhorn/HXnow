@@ -4,6 +4,7 @@ import { el, ersetze, auswahlGruppe, komfort, meldung } from './dom.js';
 import * as B from '../block.js';
 import * as db from '../db.js';
 import { blockDauerOptionen } from '../schema.js';
+import { phaseAm, phasendaten } from '../studienstand.js';
 
 /**
  * Gemeinsame Felder für Block und Versuch. Liefert { knoten, werte, gueltig() }.
@@ -25,17 +26,31 @@ export function stammdatenFormular(app, beiAenderung, { art = 'versuch' } = {}) 
     arbeitskontext: null,
   };
 
-  const code = codeAuswahl(app, { art, werte, beiAenderung });
+  // Phasenvorschlag aus dem Phasenplan (PLAN_Logbuch_Datensicherheit 9.3), sobald ein Code gewählt ist
+  const phaseHinweis = el('p', { class: 'hinweis', 'aria-live': 'polite', 'data-test': 'phase-vorschlag' });
+  let phaseGruppe = null;
+  let letzterSchluessel = '';
+  const nachCode = () => {
+    if (`${werte.pseudonym}|${werte.bereich}` !== letzterSchluessel) {
+      letzterSchluessel = `${werte.pseudonym}|${werte.bereich}`;
+      const v = phasenVorschlag(app, werte.pseudonym, werte.bereich);
+      phaseHinweis.textContent = v.text;
+      if (v.phase && !werte.phase) phaseGruppe?.querySelector(`[data-test=phase-${v.phase}]`)?.click();
+    }
+    beiAenderung();
+  };
+  const code = codeAuswahl(app, { art, werte, beiAenderung: nachCode });
 
   const setze = (feld) => (code) => {
     werte[feld] = code;
     if (feld === 'beobachter' && code) komfort.schreiben('beobachter', code);
-    beiAenderung();
+    if (feld === 'bereich') nachCode(); else beiAenderung();
   };
 
   const knoten = [
     ...code.knoten,
-    auswahlGruppe({ name: 'phase', titel: 'Phase', eintraege: schema.phasen, wert: werte.phase, beiAuswahl: setze('phase'), spalten: 2, optional: optional('phase') }),
+    (phaseGruppe = auswahlGruppe({ name: 'phase', titel: 'Phase', eintraege: schema.phasen, wert: werte.phase, beiAuswahl: setze('phase'), spalten: 2, optional: optional('phase') })),
+    phaseHinweis,
     auswahlGruppe({ name: 'bereich', titel: 'Bereich', eintraege: schema.bereiche, wert: werte.bereich, beiAuswahl: setze('bereich'), spalten: 2, optional: optional('bereich') }),
     // Nur ein Beobachter im Kodierschema → Kürzel automatisch, keine Auswahl anzeigen
     schema.beobachter.length === 1 ? null : auswahlGruppe({ name: 'beobachter', titel: 'Beobachter', eintraege: schema.beobachter.map((b) => ({ code: b, label: b })), wert: werte.beobachter, beiAuswahl: setze('beobachter'), spalten: 4, optional: optional('beobachter') }),
@@ -43,6 +58,26 @@ export function stammdatenFormular(app, beiAenderung, { art = 'versuch' } = {}) 
     mitKontext ? kontextAuswahl(schema, (code) => { werte.arbeitskontext = code; beiAenderung(); }, optional('arbeitskontext')) : null,
   ];
   return { knoten, werte, gueltig: () => Object.keys(B.pruefeStammdaten(schema, werte, art)).length === 0 };
+}
+
+/** Bereich in der Teilnehmerliste nachtragen, wenn er beim Anlegen des Codes noch nicht gewählt war. */
+export async function ergaenzeBereich(app, pseudonym, bereich) {
+  const t = app.teilnehmende?.get(pseudonym);
+  if (!t || t.bereich || !bereich) return;
+  const neu = { ...t, bereich };
+  try { await db.speichere(app.db, db.STORES.TEILNEHMENDE, neu); app.teilnehmende.set(pseudonym, neu); } catch { /* nur Komfort */ }
+}
+
+/** Phase laut Phasenplan für einen Code heute: { phase (Code im Kodierschema) | null, text }. */
+export function phasenVorschlag(app, pseudonym, bereich = null, jetzt = Date.now()) {
+  const t = app.teilnehmende?.get(pseudonym);
+  const plan = app.logbuchDaten?.phasenplan ?? [];
+  if (!t || plan.length === 0 || !(t.bereich ?? bereich)) return { phase: null, text: '' };
+  const p = phaseAm(jetzt, phasendaten({ ...t, bereich: t.bereich ?? bereich }, plan));
+  if (!p) return { phase: null, text: 'Heute liegt außerhalb des Phasenplans – Phase bitte prüfen.' };
+  if (!p.blockPhase) return { phase: null, text: `Laut Phasenplan: ${p.name} – Blöcke sind in Baseline und Regelbetrieb vorgesehen.` };
+  const label = app.schema.phasen.find((x) => x.code === p.blockPhase)?.label ?? p.blockPhase;
+  return { phase: p.blockPhase, text: `Vorschlag laut Phasenplan: ${label} (${p.name}). Bitte prüfen.` };
 }
 
 /**
@@ -167,6 +202,7 @@ export function zeigeBlockNeu(app) {
         laeuft = false; starten.disabled = false;
         return;
       }
+      await ergaenzeBereich(app, form.werte.pseudonym, form.werte.bereich);
       app.neueSitzung(r.zustand);
       app.zeige('kodierung', { blockId: r.zustand.block.blockId });
     },
