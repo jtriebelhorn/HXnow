@@ -1,0 +1,20 @@
+// CSV lesen (Semikolon, RFC 4180, optional mit BOM) – für Wiederherstellen und Zusammenführen. DOM-frei.
+
+/** @returns {{ kopf: string[], zeilen: Record<string,string>[] }} */
+export function leseCsv(text) {
+  const t = String(text).replace(/^﻿/, '');
+  const saetze = [];
+  let feld = '';
+  let satz = [];
+  let inAnf = false;
+  for (let i = 0; i < t.length; i++) {
+    const z = t[i];
+    if (inAnf) {
+      if (z === '"' && t[i + 1] === '"') { feld += '"'; i++; } else if (z === '"') inAnf = false; else feld += z;
+    } else if (z === '"') inAnf = true;
+    else if (z === ';') { satz.push(feld); feld = ''; } else if (z === '\r' && t[i + 1] === '\n') { /* Zeilenende folgt */ } else if (z === '\n') { satz.push(feld); saetze.push(satz); satz = []; feld = ''; } else feld += z;
+  }
+  if (feld !== '' || satz.length) { satz.push(feld); saetze.push(satz); }
+  const [kopf = [], ...rest] = saetze.filter((s) => !(s.length === 1 && s[0] === ''));
+  return { kopf, zeilen: rest.map((s) => Object.fromEntries(kopf.map((k, i) => [k, s[i] ?? '']))) };
+}

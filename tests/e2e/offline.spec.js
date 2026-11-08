@@ -1,7 +1,8 @@
 // Phase 5: Offline-Betrieb und Update-Ablauf mit echtem Service Worker
 // (ersetzt die Lighthouse-PWA-Prüfung, ENTSCHEIDUNGEN Nr. 5).
 import { test, expect } from '@playwright/test';
-import { oeffne, starteBlock, tippe, leseDb , waehleCode } from './hilfen.js';
+import { oeffne, starteBlock, tippe, leseDb, waehleCode } from './hilfen.js';
+import { APP_VERSION } from '../../js/version.js';
 
 test.use({ serviceWorkers: 'allow' });
 
@@ -71,7 +72,7 @@ test('Neue Version während eines laufenden Blocks: kein Neuladen, kein Hinweis,
   await expect(page.locator('[data-test=countdown]')).toBeVisible();
   await expect(page.locator('[data-test=update-hinweis]')).toHaveCount(0);
   expect(await page.evaluate(() => navigator.serviceWorker.controller.state)).toBe('activated');
-  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.8.0');
+  expect(await cacheNamen(page)).toContain(`hxnow-beobachtung-${APP_VERSION}`);
   expect((await leseDb(page)).episoden.filter((e) => !e.geloescht)).toHaveLength(2);
 });
 

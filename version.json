@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.8.0",
+  "appVersion": "0.9.0",
   "datum": "2026-11-08",
-  "hinweis": "Fragebogen-Modus (FB1, Kurzbogen, FB2 als Entwurf), Studien-Code aus der Teilnehmerliste, Logbuch-Einträge für alle Erhebungen."
+  "hinweis": "Logbuch-Datei mit Prüfsumme wird bei jedem Export mitgeteilt; Anzeige „Letzte Sicherung“ und Knopf „Logbuch sichern“."
 }

@@ -57,13 +57,17 @@ test('ohne Teilen-Funktion: Download, Rückfrage „gespeichert?“, dann export
   await page.click('[data-test=exportieren]');
   await expect(page.locator('[data-test=dialog-exportwege]')).toBeVisible();
   await expect(page.locator('[data-test=weg-mail]')).toHaveCount(0); // kein Mail-Empfänger konfiguriert
+  const downloads = [];
+  page.on('download', (d) => downloads.push(d));
   const [download] = await Promise.all([page.waitForEvent('download'), page.click('[data-test=weg-download]')]);
   expect(download.suggestedFilename()).toMatch(/^HXNOW_BEOB_P017_.*\.csv$/);
+  await expect.poll(() => downloads.length).toBe(2); // Sitzungsdatei und Logbuch
+  expect(downloads[1].suggestedFilename()).toMatch(/^HXNOW_Logbuch_[0-9a-f]{8}\.csv$/);
   const pfad = await download.path();
   const { readFileSync } = await import('node:fs');
   const inhalt = readFileSync(pfad);
   expect([...inhalt.subarray(0, 3)]).toEqual([0xef, 0xbb, 0xbf]); // UTF-8-BOM
-  await expect(page.locator('[data-test=bestaetigung]')).toContainText('Datei gespeichert?');
+  await expect(page.locator('[data-test=bestaetigung]')).toContainText('Dateien gespeichert?');
   await page.click('[data-test=bestaetigen-nein]');
   expect((await leseDb(page)).bloecke[0].exportStatus).toBe('offen');
 

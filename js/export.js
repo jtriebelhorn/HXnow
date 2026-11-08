@@ -185,16 +185,20 @@ export const MAILTO_MAX = 8000;
 
 /**
  * Weg 1: Teilen-Menü. MUSS synchron aus einer Nutzergeste aufgerufen werden (kein `await` davor).
+ * `weitere` (z. B. die Logbuch-Datei) werden mitgeteilt, wenn das Gerät mehrere Dateien teilen kann; sonst nur `datei`.
  * @returns {Promise<'geteilt'|'abgebrochen'>|null} null, wenn Teilen von Dateien nicht möglich ist.
+ *   Das Promise trägt `anzahl` (Zahl der geteilten Dateien).
  */
-export function versucheTeilen(datei, nav = globalThis.navigator) {
+export function versucheTeilen(datei, nav = globalThis.navigator, weitere = []) {
   if (!nav || typeof nav.share !== 'function' || typeof nav.canShare !== 'function' || typeof File !== 'function') return null;
-  const file = new File([datei.inhalt], datei.dateiname, { type: datei.typ });
-  let moeglich = false;
-  try { moeglich = nav.canShare({ files: [file] }); } catch { moeglich = false; }
-  if (!moeglich) return null;
-  return nav.share({ files: [file], title: datei.dateiname })
+  const files = [datei, ...weitere].map((d) => new File([d.inhalt], d.dateiname, { type: d.typ }));
+  const geht = (f) => { try { return nav.canShare({ files: f }); } catch { return false; } };
+  const auswahl = files.length > 1 && geht(files) ? files : files.slice(0, 1);
+  if (auswahl.length === 1 && !geht(auswahl)) return null;
+  const p = nav.share({ files: auswahl, title: datei.dateiname })
     .then(() => 'geteilt', (e) => (e && e.name === 'AbortError' ? 'abgebrochen' : Promise.reject(e)));
+  p.anzahl = auswahl.length;
+  return p;
 }
 
 /** Weg 2: Download über Blob-URL und <a download>. */

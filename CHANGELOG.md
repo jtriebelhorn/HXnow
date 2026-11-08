@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.9.0 – 08.11.2026
+Phase L1 – Logbuch-Datei und Sitzungsexport (PLAN_Logbuch_Datensicherheit 4.1, 5); keine Datenbank-Migration:
+- Logbuch-Datei `HXNOW_Logbuch_<Gerät>.csv` (fester Name, ersetzt die vorige Fassung): Teilnehmerliste, Phasenplan,
+  Logbuch-Einträge und Änderungen, ohne Beobachtungs- oder Antwortinhalte; meta-Zeile mit Zeilenzahl und
+  CRC32-Prüfsumme.
+- Jeder Sitzungsexport (Block, Versuch, Fragebogen, Tageskennzahlen) teilt Sitzungsdatei und Logbuch in einem
+  Vorgang; kann das Gerät nur eine Datei teilen, folgt der Hinweis „Logbuch sichern“. Download lädt beide Dateien.
+- Startseite: „Letzte Sicherung …“, Knopf „Logbuch sichern“, gelbes Banner für nicht gesicherte Sitzungen
+  (rot nach 24 Stunden).
+- `npm run version -- <x.y.z> "Hinweis"` trägt eine neue Version in version.js, sw.js (inkl. Dateiliste) und
+  version.json ein.
+
 ## 0.8.0 – 08.11.2026
 Fragebogen-Modus (Phasen F1–F4) und Grundlage für Teilnehmerliste und Logbuch; keine Datenbank-Migration:
 - Knopf „Fragebogen“: Vorbereitung durch die Doktorandin, Übergabe, Ausfüllen mit Filtern und automatischen Werten,

@@ -151,6 +151,25 @@ button[aria-pressed="true"] { background: var(--aktiv); border-color: var(--akti
   text-align: center;
 }
 
+.banner-gelb {
+  background: var(--warnung-flaeche);
+  border: 2px solid var(--warnung);
+  color: var(--text, inherit);
+  font-weight: 700;
+  border-radius: var(--radius);
+  padding: 12px var(--abstand);
+  margin-bottom: var(--abstand);
+}
+
+.sicherung-zeile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: var(--abstand) 0;
+  color: var(--text-leise, inherit);
+}
+
 .banner-rot {
   background: var(--fehler);
   color: #ffffff;

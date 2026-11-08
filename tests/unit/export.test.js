@@ -227,3 +227,18 @@ test('Wechsel der Nebentätigkeit ist je Zeile nachvollziehbar; HX Now ohne Anga
     ['NT3+NT7', '0', '1', 'N3', 'H9', '840'],
   ]);
 });
+
+test('versucheTeilen mit Logbuch-Datei: beide, wenn möglich; sonst nur die Sitzungsdatei', async () => {
+  const datei = { dateiname: 'a.csv', inhalt: 'x', typ: 'text/csv' };
+  const lb = { dateiname: 'HXNOW_Logbuch_x.csv', inhalt: 'y', typ: 'text/csv' };
+  const geteilt = [];
+  const nav = (max) => ({ canShare: (d) => d.files.length <= max, share: async (d) => { geteilt.push(d.files.map((f) => f.name)); } });
+  const p = X.versucheTeilen(datei, nav(2), [lb]);
+  assert.equal(p.anzahl, 2);
+  assert.equal(await p, 'geteilt');
+  const q = X.versucheTeilen(datei, nav(1), [lb]);
+  assert.equal(q.anzahl, 1);
+  await q;
+  assert.deepEqual(geteilt, [['a.csv', 'HXNOW_Logbuch_x.csv'], ['a.csv']]);
+  assert.equal(X.versucheTeilen(datei, nav(0), [lb]), null);
+});

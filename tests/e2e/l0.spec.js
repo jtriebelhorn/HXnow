@@ -1,6 +1,7 @@
 // Phase L0: Update-Suche, Sperre bei offenem Fragebogen, Datenbank-Migration, Safari-Tab-Sperre, Testversion.
 import { test, expect } from '@playwright/test';
 import { oeffne, starteBlock, tippe, leseDb } from './hilfen.js';
+import { APP_VERSION } from '../../js/version.js';
 
 test.describe('mit Service Worker', () => {
   test.use({ serviceWorkers: 'allow' });
@@ -14,12 +15,12 @@ test.describe('mit Service Worker', () => {
   test('Nach Updates suchen: aktuell, neue Version (mit Hinweis), keine Verbindung', async ({ page, context }) => {
     await bereit(page);
     await page.click('[data-test=update-suchen-start]');
-    await expect(page.locator('[data-test=update-aktuell]')).toHaveText('Die App ist aktuell (0.8.0).');
+    await expect(page.locator('[data-test=update-aktuell]')).toHaveText(`Die App ist aktuell (${APP_VERSION}).`);
 
     await context.addCookies([{ name: 'sw-test-version', value: '9.9.9-test', url: page.url() }]);
     await page.click('[data-test=menue-info]');
     await page.click('[data-test=update-suchen]');
-    await expect(page.locator('[data-test=update-neu]')).toHaveText('Neue Version 9.9.9-test verfügbar (installiert: 0.8.0).', { timeout: 20_000 });
+    await expect(page.locator('[data-test=update-neu]')).toHaveText(`Neue Version 9.9.9-test verfügbar (installiert: ${APP_VERSION}).`, { timeout: 20_000 });
     await expect(page.locator('[data-test=update-jetzt]')).toBeVisible();
 
     await context.setOffline(true);

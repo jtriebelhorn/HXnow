@@ -4,6 +4,8 @@
 // Safari erlaubt navigator.share() nur unmittelbar aus einer Nutzergeste. Die Datei muss deshalb
 // bereits vor dem Klick (aus dem Zustand im Speicher) vorliegen bzw. synchron erzeugt werden.
 // Statusänderungen in der Datenbank erfolgen erst nach dem Teilen.
+// Sitzungsexporte (mit `ziel.store`) teilen die Logbuch-Datei mit (PLAN_Logbuch_Datensicherheit 4.1): Sie liegt im
+// Speicher vor (app.logbuchDateiFuer, synchron) und ersetzt im Exportordner die vorige Fassung.
 import { el, dialog, bestaetige, meldung } from './dom.js';
 import { versucheTeilen, ladeHerunter, mailtoUrl, kopiereInZwischenablage } from '../export.js';
 import * as db from '../db.js';
@@ -14,9 +16,10 @@ import * as db from '../db.js';
  * @param {{ store?: string, schluessel?: any, nachher?: () => void }} ziel Datensatz, dessen Status gesetzt wird
  */
 export function exportiere(app, datei, ziel = {}) {
+  const weitere = logbuchAnhang(app, ziel);
   let teilen = null;
   try {
-    teilen = versucheTeilen(datei); // synchron, kein await davor
+    teilen = versucheTeilen(datei, undefined, weitere); // synchron, kein await davor
   } catch {
     teilen = null;
   }
@@ -24,17 +27,31 @@ export function exportiere(app, datei, ziel = {}) {
     andereWege(app, datei, ziel);
     return;
   }
+  const mitLogbuch = teilen.anzahl > 1 || ziel.nurLogbuch;
   teilen.then(
     (ergebnis) => {
-      if (ergebnis === 'geteilt') markiereExportiert(app, datei, ziel);
-      else meldung('Teilen abgebrochen – der Eintrag bleibt „nicht exportiert“.');
+      if (ergebnis !== 'geteilt') { meldung(ziel.nurLogbuch ? 'Teilen abgebrochen – Logbuch nicht gesichert.' : 'Teilen abgebrochen – der Eintrag bleibt „nicht exportiert“.'); return; }
+      markiereExportiert(app, datei, ziel, mitLogbuch);
+      if (weitere.length && !mitLogbuch) meldung('Dieses Gerät teilt nur eine Datei. Bitte zusätzlich „Logbuch sichern“ tippen.', 'fehler');
     },
     () => andereWege(app, datei, ziel, 'Teilen ist nicht möglich. Bitte einen anderen Weg wählen.'),
   );
 }
 
+/** Logbuch-Datei als zweite Datei bei Sitzungsexporten. */
+function logbuchAnhang(app, ziel) {
+  if (!ziel.store || typeof app.logbuchDateiFuer !== 'function') return [];
+  try { return [app.logbuchDateiFuer(ziel.schluessel)]; } catch { return []; }
+}
+
+/** „Logbuch sichern“: nur die Logbuch-Datei teilen (synchron aus dem Klick). */
+export function sichereLogbuch(app) {
+  exportiere(app, app.logbuchDateiFuer(null), { nurLogbuch: true, nachher: () => app.zeige('start') });
+}
+
 /** Wege 2–4: Download, Mail, Zwischenablage. */
 export function andereWege(app, datei, ziel = {}, hinweis = null) {
+  const weitere = logbuchAnhang(app, ziel);
   const mail = mailtoUrl(datei, app.schema);
   dialog('Exportieren', (schliessen) => [
     hinweis ? el('p', { class: 'feldfehler' }, hinweis) : null,
@@ -44,10 +61,12 @@ export function andereWege(app, datei, ziel = {}, hinweis = null) {
         type: 'button', class: 'primaer', 'data-test': 'weg-download',
         onclick: () => {
           ladeHerunter(datei);
+          for (const w of weitere) ladeHerunter(w);
           schliessen();
-          frageNach(app, datei, ziel, 'Datei gespeichert?', 'Wurde die Datei gespeichert bzw. auf das Klinikumssystem übertragen?');
+          frageNach(app, datei, ziel, weitere.length ? 'Dateien gespeichert?' : 'Datei gespeichert?',
+            `Wurde${weitere.length ? 'n Sitzungsdatei und Logbuch' : ' die Datei'} gespeichert bzw. auf das Klinikumssystem übertragen?`, weitere.length > 0 || ziel.nurLogbuch);
         },
-      }, 'Datei herunterladen'),
+      }, weitere.length ? 'Dateien herunterladen (Sitzung und Logbuch)' : 'Datei herunterladen'),
       mail.grund === 'kein-empfaenger' ? null : el('button', {
         type: 'button', 'data-test': 'weg-mail', disabled: !mail.url,
         onclick: () => {
@@ -76,16 +95,25 @@ export function andereWege(app, datei, ziel = {}, hinweis = null) {
   ], { testId: 'dialog-exportwege' });
 }
 
-async function frageNach(app, datei, ziel, titel, text) {
-  if (await bestaetige(titel, text, { ja: 'Ja', nein: 'Nein' })) markiereExportiert(app, datei, ziel);
+async function frageNach(app, datei, ziel, titel, text, mitLogbuch = false) {
+  if (await bestaetige(titel, text, { ja: 'Ja', nein: 'Nein' })) markiereExportiert(app, datei, ziel, mitLogbuch);
   else meldung('Der Eintrag bleibt „nicht exportiert“.');
 }
 
-async function markiereExportiert(app, datei, { store, schluessel, nachher }) {
-  if (!store) { meldung('Exportiert.'); return; }
+async function markiereExportiert(app, datei, { store, schluessel, nachher }, mitLogbuch = false) {
+  if (mitLogbuch) {
+    const ts = Date.now();
+    if (app.meta) app.meta.letzteSicherungTs = ts;
+    await db.setzeMeta(app.db, 'letzteSicherungTs', ts).catch(() => {});
+  }
+  if (!store) {
+    meldung(mitLogbuch && !datei.dateiname.includes('Logbuch') ? 'Exportiert, Logbuch gesichert.' : mitLogbuch ? 'Logbuch gesichert.' : 'Exportiert.');
+    if (nachher) nachher();
+    return;
+  }
   try {
     await db.setzeExportStatus(app.db, store, schluessel, 'exportiert');
-    meldung(`Exportiert: ${datei.dateiname}`);
+    meldung(`Exportiert: ${datei.dateiname}${mitLogbuch ? ' (mit Logbuch)' : ''}`);
   } catch (e) {
     meldung(`Status konnte nicht gespeichert werden (${e.message}).`, 'fehler');
   }

@@ -211,7 +211,7 @@ export function speichere(db, store, wert) {
 /**
  * Legt beim ersten Start die Geräte-ID (zufällige UUID) und das Installationsdatum an
  * und merkt sich die aktuell genutzte Schema-Version.
- * @returns {Promise<{ geraeteId, installiertTs, schemaVersion, ersterStart, persistiert }>}
+ * @returns {Promise<{ geraeteId, installiertTs, schemaVersion, ersterStart, persistiert, …META_STANDARD }>}
  */
 export function initialisiereMeta(db, { schemaVersion, uuid, now }) {
   return transaktion(db, [STORES.META], 'readwrite', (tx) => {
@@ -228,11 +228,7 @@ export function initialisiereMeta(db, { schemaVersion, uuid, now }) {
         s.put({ schluessel: 'installiertTs', wert: werte.installiertTs });
       }
       s.put({ schluessel: 'schemaVersion', wert: schemaVersion });
-      Object.assign(meta, {
-        geraeteId: werte.geraeteId,
-        installiertTs: werte.installiertTs,
-        persistiert: werte.persistiert ?? null,
-      });
+      Object.assign(meta, { ...META_STANDARD, ...werte, persistiert: werte.persistiert ?? null, schemaVersion, ersterStart: meta.ersterStart });
     };
     return meta;
   });
@@ -324,6 +320,13 @@ export function schreibeFb(db, { sitzung = null, antworten = [], logbuch = null 
     for (const a of antworten) tx.objectStore(STORES.FB_ANTWORTEN).put(a);
     if (logbuch) tx.objectStore(STORES.LOGBUCH).put(logbuch);
   });
+}
+
+/** Stores der Logbuch-Datei (Teilnehmerliste, Phasenplan, Logbuch, Änderungen). */
+export async function holeLogbuchDaten(db) {
+  const namen = [STORES.TEILNEHMENDE, STORES.PHASENPLAN, STORES.LOGBUCH, STORES.AENDERUNGEN];
+  const r = await lesen(db, namen, (tx, merke) => { for (const n of namen) merke(n, tx.objectStore(n).getAll()); });
+  return { teilnehmende: r.teilnehmende, phasenplan: r.phasenplan, logbuch: r.logbuch, aenderungen: r.aenderungen };
 }
 
 /** Alle Datensätze aller gesicherten Stores (alles außer meta). */

@@ -71,6 +71,7 @@ export async function mockeTeilen(page, verhalten = 'erfolg') {
         window.__geteilt.push({
           datei: d.files[0],
           name: d.files[0].name,
+          dateien: [...d.files],
           titel: d.title,
           aktiv: navigator.userActivation ? navigator.userActivation.isActive : null,
         });
@@ -85,6 +86,7 @@ export function geteilt(page) {
   return page.evaluate(async () => Promise.all(window.__geteilt.map(async (g) => ({
     name: g.name, titel: g.titel, aktiv: g.aktiv,
     text: new TextDecoder('utf-8', { ignoreBOM: true }).decode(await g.datei.arrayBuffer()),
+    weitere: await Promise.all(g.dateien.slice(1).map(async (f) => ({ name: f.name, text: new TextDecoder('utf-8', { ignoreBOM: true }).decode(await f.arrayBuffer()) }))),
   }))));
 }
 

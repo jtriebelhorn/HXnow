@@ -5,7 +5,7 @@ import * as db from '../db.js';
 import { stelleWiederHer } from '../block.js';
 import { blockDatei, versuchDatei, tagDatei } from '../export.js';
 import { uhrzeit, datumLokal, formatiereCountdown } from '../zeit.js';
-import { exportiere, andereWege, bestaetigeEingang } from './exportieren.js';
+import { exportiere, andereWege, bestaetigeEingang, sichereLogbuch } from './exportieren.js';
 import { updateHinweis, updateSuche, aktualisiertHinweis } from './update.js';
 import { istTestPseudonym } from '../schema.js';
 import { fbExportDatei, brecheFbAb, BOGEN_NAME } from './fragebogen.js';
@@ -67,6 +67,11 @@ export async function zeigeStart(app) {
 
   const alt = eintraege.filter((e) => Date.now() - e.ts > TAG_MS);
 
+  // Sicherung (PLAN_Logbuch_Datensicherheit 4.1): Sitzungen ohne Export sind nicht gesichert.
+  const ungesichert = nichtGesichert(app);
+  const aeltesteUngesichert = Math.min(...ungesichert.map((l) => l.endTs ?? l.startTs));
+  const letzte = app.meta?.letzteSicherungTs ?? null;
+
   ersetze(app.wurzel,
     el('header', { class: 'kopf-start' },
       el('h1', {}, 'HX Now Beobachtung'),
@@ -75,6 +80,12 @@ export async function zeigeStart(app) {
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-info', onclick: () => app.zeige('info') }, 'Info'))),
     updateHinweis(app),
     aktualisiertHinweis(app),
+    ungesichert.length > 0
+      ? el('div', {
+        class: Date.now() - aeltesteUngesichert > TAG_MS ? 'banner-rot' : 'banner-gelb', role: 'alert', 'data-test': 'banner-nicht-gesichert',
+      }, `${ungesichert.length} ${ungesichert.length === 1 ? 'Sitzung ist' : 'Sitzungen sind'} nicht gesichert`
+        + `${Date.now() - aeltesteUngesichert > TAG_MS ? ' – seit über 24 Stunden' : ''}. Bitte exportieren.`)
+      : null,
     alt.length > 0
       ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'banner-24h' },
         `${alt.length} ${alt.length === 1 ? 'Eintrag ist' : 'Einträge sind'} seit über 24 Stunden nicht bestätigt. Bitte exportieren und Eingang bestätigen.`)
@@ -85,6 +96,10 @@ export async function zeigeStart(app) {
       el('button', { type: 'button', class: 'gross', 'data-test': 'nicht-angetroffen', onclick: () => app.zeige('versuch') }, 'Person nicht angetroffen'),
       el('button', { type: 'button', class: 'gross', 'data-test': 'tageskennzahlen', onclick: () => app.zeige('tageskennzahlen') }, 'Tageskennzahlen'),
     ),
+    el('div', { class: 'sicherung-zeile', 'data-test': 'sicherung-zeile' },
+      el('span', { 'data-test': 'letzte-sicherung' }, letzte ? `Letzte Sicherung: ${datumDe(letzte)} ${uhrzeit(letzte).slice(0, 5)}` : 'Noch keine Sicherung'),
+      // synchron: die Logbuch-Datei liegt im Speicher (app.logbuchDaten)
+      el('button', { type: 'button', class: 'klein', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app) }, 'Logbuch sichern')),
     laufendeFb.length === 0 ? null : el('section', { 'data-test': 'offene-fragebogen' },
       el('h2', {}, 'Nicht abgeschlossene Fragebögen'),
       el('ul', { class: 'liste' }, laufendeFb.map((s) => el('li', { 'data-test': 'eintrag-fb-offen' },
@@ -117,6 +132,14 @@ export async function zeigeStart(app) {
     updateSuche(app, { klein: true }),
   );
 }
+
+/** Abgeschlossene Sitzungen (außer Probeläufen), deren Datei noch nicht exportiert wurde. */
+export function nichtGesichert(app) {
+  const fertig = ['beendet', 'abgebrochen', 'nicht_angetroffen', 'abgeschlossen'];
+  return (app.logbuchDaten?.logbuch ?? []).filter((l) => !l.testmodus && l.exportStatus === 'offen' && fertig.includes(l.status));
+}
+
+const datumDe = (ts) => datumLokal(ts).split('-').reverse().join('.');
 
 function phase(schema, code) {
   return schema.phasen.find((p) => p.code === code)?.label ?? code;

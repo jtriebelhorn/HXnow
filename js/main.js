@@ -21,6 +21,8 @@ import { zeigeFbNeu, zeigeFbUebergabe, zeigeFbAusfuellen, zeigeFbDanke, zeigeFbS
 import { ermittleUmgebung } from './umgebung.js';
 import { TESTVERSION } from './config.js';
 import { eintragAusBlock, eintragAusVersuch } from './logbuch.js';
+import { logbuchDatei } from './logbuchdatei.js';
+import { FRAGEBOGEN_DEFINITION } from './frageboegen.js';
 
 const ANSICHTEN = {
   start: zeigeStart,
@@ -60,9 +62,31 @@ const app = {
       f();
     }
     window.scrollTo(0, 0);
+    // Logbuch-Daten vor jeder Ansicht neu lesen: Export-Knöpfe erzeugen die Logbuch-Datei synchron daraus.
+    if (app.db) await app.aktualisiereLogbuch().catch(() => {});
     if (app.gesperrt && !['tabSperre', 'sicherung', 'info'].includes(name)) name = 'tabSperre';
     const r = await ANSICHTEN[name](app, params);
     if (typeof r === 'function') app.aufraeumen = r;
+  },
+
+  logbuchDaten: null,
+
+  async aktualisiereLogbuch() {
+    app.logbuchDaten = await db.holeLogbuchDaten(app.db);
+  },
+
+  /**
+   * Logbuch-Datei aus dem Speicher (synchron, für das Teilen in der Nutzergeste). Der Eintrag `exportiertId`
+   * wird als „exportiert“ geführt, weil er im selben Vorgang geteilt wird.
+   */
+  logbuchDateiFuer(exportiertId) {
+    const d = app.logbuchDaten ?? { teilnehmende: [], phasenplan: [], logbuch: [], aenderungen: [] };
+    const logbuch = typeof exportiertId !== 'string' ? d.logbuch
+      : d.logbuch.map((l) => (l.eintragId === exportiertId && l.exportStatus !== 'bestaetigt' ? { ...l, exportStatus: 'exportiert' } : l));
+    return logbuchDatei({ ...d, logbuch }, {
+      geraeteId: app.meta.geraeteId, appVersion: APP_VERSION, dbVersion: db.DB_VERSION,
+      definitionVersion: FRAGEBOGEN_DEFINITION.definitionVersion, schemaVersion: app.schema.schemaVersion, now: Date.now(), test: TESTVERSION,
+    });
   },
 
   /** Neue Sitzung für einen Block-Zustand (speichert über db.js). */
