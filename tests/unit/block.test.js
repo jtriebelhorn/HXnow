@@ -91,8 +91,12 @@ describe('Block anlegen', () => {
     const f = (p) => B.pruefeBlockAngaben(SCHEMA, { ...ANGABEN_POST, pseudonym: p }).pseudonym;
     assert.equal(f('P017'), undefined);
     assert.equal(f(' P017 '), undefined);
-    assert.ok(f('P17'));
-    assert.ok(f('p017'));
+    assert.equal(f('NEPH-A'), undefined); // frei wählbar (Buchstaben, Ziffern, Bindestrich)
+    assert.ok(f('P'), 'zu kurz');
+    assert.ok(f('Dr Meier'), 'Leerzeichen');
+    assert.ok(f('neph-a'), 'nur Großbuchstaben (die Eingabe wandelt um)');
+    assert.ok(f('-AB'), 'nicht mit Bindestrich beginnen');
+    assert.ok(f('A'.repeat(21)), 'höchstens 20 Zeichen');
   });
 });
 

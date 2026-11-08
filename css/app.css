@@ -469,7 +469,10 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .uebergabe, .danke { margin: 40px 0; text-align: center; }
 .uebergabe h1, .danke h1 { font-size: 1.5rem; }
 .halten { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
-.code-treffer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.code-treffer { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-top: 6px; }
+.code-liste { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; width: 100%; max-height: 40vh; overflow-y: auto;
+  padding: 6px; border: 1px solid var(--rand); border-radius: var(--radius); background: var(--flaeche); }
+.code-liste button { text-align: left; }
 .optionen-reihe.lang { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .optionen-reihe.lang .option.klein { min-height: 52px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
 
@@ -545,3 +548,15 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .werkzeug { max-width: 900px; margin: 0 auto; padding: var(--abstand); }
 .pruefbericht { white-space: pre-wrap; background: var(--flaeche); padding: 12px; border-radius: var(--radius); font-size: 0.85rem; overflow-x: auto; }
 .knopf-link { display: inline-block; padding: 10px 16px; border-radius: var(--radius); background: var(--primaer); color: var(--primaer-text); text-decoration: none; font-weight: 600; }
+
+/* Studie: knappe Übersicht */
+.summen { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; margin: 0 0 8px; }
+.summe { background: var(--flaeche); border-radius: var(--radius); padding: 6px 2px; text-align: center; display: flex; flex-direction: column; }
+.summe strong { font-size: 1.15rem; }
+.summe span { font-size: 0.68rem; color: var(--text-leise); }
+.probanden td { white-space: nowrap; }
+.pfeil-zelle { color: var(--text-leise); width: 2em; }
+.marke-offen { display: inline-block; min-width: 1.6em; padding: 0 4px; border-radius: 999px; background: var(--fehler); color: #fff; font-weight: 700; text-align: center; }
+.legende { margin: 4px 0 12px; }
+.aufklapp { margin: 8px 0; padding: 4px 12px; border: 1px solid var(--rand); border-radius: var(--radius); }
+.aufklapp summary { font-weight: 700; min-height: 44px; display: flex; align-items: center; cursor: pointer; }

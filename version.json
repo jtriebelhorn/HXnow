@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.14.1",
+  "appVersion": "0.15.0",
   "datum": "2026-11-08",
-  "hinweis": "Darstellung auf normal großen iPhones: nichts ragt mehr über den Rand (Kodieransicht, Haltung, Fragebogen-Skalen)."
+  "hinweis": "Frei wählbare Probanden-Codes mit Auswahlliste und „Neuen Probanden anlegen“; knappere Studienübersicht."
 }

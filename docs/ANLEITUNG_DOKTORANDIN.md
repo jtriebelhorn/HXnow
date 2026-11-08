@@ -19,11 +19,15 @@ Gilt ab App-Version 0.14.0. Die App läuft auf dem Studien-iPhone als Symbol auf
    kennen sie.
 5. Für Übungen immer den Test-Code **P000** verwenden. Diese Dateien heißen `HXNOW_TEST_…` und werden nicht ausgewertet.
 
-## 2. Studien-Codes
+## 2. Probanden
 
-- Codes haben die Form `P` + drei Ziffern (z. B. P017). Niemals Namen eintragen.
-- Beim ersten Block oder Fragebogen eines neuen Probanden den Code eintippen und **Neuen Code anlegen** tippen.
-  Danach erscheint er als Vorschlag.
+- Jeder Proband bekommt einen **frei wählbaren Code** (2–20 Zeichen: Buchstaben, Ziffern, Bindestrich), z. B.
+  `NEPH-A` oder `OA3`. **Keine Klarnamen** und nichts, was auf die Person schließen lässt: Der Code steht in jeder
+  Exportdatei. Die Zuordnung Code ↔ Person bleibt auf Papier bei der Studienleitung.
+- Feld **Proband** antippen: Die Liste aller angelegten Probanden klappt auf. Beim Tippen wird sie gefiltert;
+  Antippen eines Codes wählt ihn.
+- Gibt es den Code noch nicht, erscheint **Neuen Probanden anlegen: …**. Antippen legt ihn mit Datum in der
+  Teilnehmerliste an (steht damit auch im Logbuch).
 - **Studie → Teilnehmerliste:** Liste exportieren (CSV) oder eine Liste laden. Beim Laden werden nur fehlende Codes
   ergänzt.
 - Pausierte, ausgeschiedene und widerrufene Codes lassen sich nicht mehr erfassen.
@@ -60,13 +64,16 @@ Gilt ab App-Version 0.14.0. Die App läuft auf dem Studien-iPhone als Symbol auf
 
 ## 5. Studie: Überblick und Fällig-Liste
 
-Menü **Studie** zeigt:
-- Studientag je Bereich.
-- **Fällig**: offene Fragebögen, fehlende Blöcke, nicht gesicherte Sitzungen; das Dringendste steht oben.
-- **Probanden**: Blöcke je Phase („3/5“) und Fragebögen („FB1 ✓“). Die Farbe am Zeilenanfang ist die Ampel:
-  grün = im Plan, gelb = knapp, rot = Ziel in der verbleibenden Zeit nicht mehr erreichbar oder Phase vorbei.
-- **Verteilung** der Blöcke über alle Probanden: Arbeitskontext, Dienst, Tageszeit. Damit sehen Sie, ob z. B.
-  Spätdienste fehlen.
+Menü **Studie** zeigt auf einen Blick:
+- Oben Summen: Probanden, Blöcke, beobachtete Stunden, Fragebögen, nicht angetroffen; darunter der Studientag je
+  Bereich.
+- Eine Zeile je Proband: „3/5 ✓“ = 3 von 5 Blöcken, Fragebogen der Phase ausgefüllt („–“ = noch offen). Die Farbe am
+  Zeilenanfang ist die Ampel: grün = im Plan, gelb = knapp, rot = Ziel nicht mehr erreichbar oder Phase vorbei. Eine
+  rote Zahl rechts = Sitzungen noch nicht exportiert.
+- Antippen eines Probanden öffnet die Detailansicht mit allen Beobachtungen (Datum, Uhrzeit, Dauer, Pausen),
+  Fragebögen und Phasen.
+- Zum Aufklappen: **Fällig** (offene Fragebögen, fehlende Blöcke, nicht Gesichertes) und **Verteilung** der Blöcke
+  über alle Probanden (Arbeitskontext, Dienst, Tageszeit).
 
 Das Logbuch zeigt bewusst keine Tätigkeiten und keine Antworten einzelner Personen.
 

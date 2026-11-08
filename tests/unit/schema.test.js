@@ -146,7 +146,7 @@ test('Pausen, Arbeitskontext, Gerät dabei, neue Pflichtfelder', () => {
 test('ungültiges Pseudonym-Muster und unpassendes Beispiel', () => {
   let s = original(); s.pseudonym.muster = '^P(\\d{3}$';
   erwarteFehler(s, 'kein gültiger regulärer Ausdruck');
-  s = original(); s.pseudonym.beispiel = 'X17';
+  s = original(); s.pseudonym.beispiel = 'x 17';
   erwarteFehler(s, 'passt nicht zum Muster');
 });
 
@@ -178,7 +178,7 @@ test('ladeSchema: gültige Datei', async () => {
 test('Test-Code und beendenGrund werden geprüft', () => {
   const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s); };
   assert.deepEqual(mit(() => {}), []);
-  assert.match(mit((s) => { s.pseudonym.testCode = 'TEST'; }).join(' '), /Test-Code „TEST“ passt nicht/);
+  assert.match(mit((s) => { s.pseudonym.testCode = 'T 1'; }).join(' '), /Test-Code „T 1“ passt nicht/);
   assert.match(mit((s) => { s.pseudonym.testCode = 'P017'; }).join(' '), /testCode/);
   assert.match(mit((s) => { s.pflichtangaben.beendenGrund = 'ja'; }).join(' '), /beendenGrund/);
   assert.equal(istTestPseudonym(original(), ' p000 '), true);

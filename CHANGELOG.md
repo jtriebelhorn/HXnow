@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.15.0 – 08.11.2026
+Probandenverwaltung und Studienübersicht; keine Datenbank-Migration, Kodierschema-Feld `pseudonym.muster` geändert:
+- Probanden-Codes frei wählbar (2–20 Zeichen: Buchstaben, Ziffern, Bindestrich; keine Klarnamen), statt nur
+  `P` + 3 Ziffern. Vorhandene Codes bleiben gültig, Test-Code weiter P000.
+- Feld „Proband“: Antippen öffnet die Liste aller angelegten Probanden, Tippen filtert, Antippen wählt; ein unbekannter
+  Code wird über „Neuen Probanden anlegen: …“ aufgenommen (Teilnehmerliste mit Anlagedatum, damit im Logbuch).
+- Studie: oben Summen (Probanden, Blöcke, Stunden, Fragebögen, nicht angetroffen), darunter eine knappe Zeile je
+  Proband mit Ampel; Fällig und Verteilung zum Aufklappen. Detailansicht unverändert.
+
 ## 0.14.1 – 08.11.2026
 Darstellung auf normal großen iPhones (375–393 px Breite); keine Datenbank-Migration:
 - Raster (Orte, Tätigkeiten, Nutzung/Haltung, Fragebogen-Optionen) werden nie breiter als der Bildschirm

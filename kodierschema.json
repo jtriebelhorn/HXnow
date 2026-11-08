@@ -15,7 +15,7 @@
     "geraetDabeiVorExport": false,
     "beendenGrund": true
   },
-  "pseudonym": { "muster": "^P\\d{3}$", "beispiel": "P017", "testCode": "P000", "pruefziffer": false },
+  "pseudonym": { "muster": "^[A-Z0-9][A-Z0-9-]{1,19}$", "beispiel": "P017", "testCode": "P000", "pruefziffer": false },
   "beobachter": ["B1"],
   "bereiche": [
     { "code": "NEPH", "label": "Nephrologie" },

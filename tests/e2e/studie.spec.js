@@ -48,7 +48,7 @@ test('Phasenplan → Phasenvorschlag beim Blockstart → Übersicht, Proband, Ei
   await expect(page.locator('[data-test=faellig]')).toContainText('P017: 1 von 5 Blöcken (Baseline), noch 11 Tage');
   const zeile = page.locator('[data-test=proband-P017]');
   await expect(zeile).toContainText('1/5');
-  await expect(zeile).toContainText('FB1 –');
+  await expect(zeile).toContainText('1/5 –'); // Blöcke von Ziel, FB1 offen
   await expect(page.locator('[data-test=verteilung-PRE]')).toContainText('Visite');
   await expect(page.locator('[data-test=verteilung-PRE] .balken-zahl').first()).toHaveText('1');
   const text = await page.locator('#app').innerText();
@@ -70,8 +70,8 @@ test('Teilnehmerliste: laden ergänzt fehlende Codes, Export als CSV, ungültige
   await oeffne(page);
   await page.click('[data-test=menue-studie]');
   await page.click('[data-test=zu-teilnehmenden]');
-  await page.setInputFiles('[data-test=teilnehmende-datei]', { name: 't.csv', mimeType: 'text/csv', buffer: Buffer.from('pseudonym;bereich;status\r\nP001;NEPH;aktiv\r\nX9;NEPH;aktiv\r\n') });
-  await expect(page.locator('#meldung')).toContainText('Zeile 3: X9 ist kein gültiger Studien-Code');
+  await page.setInputFiles('[data-test=teilnehmende-datei]', { name: 't.csv', mimeType: 'text/csv', buffer: Buffer.from('pseudonym;bereich;status\r\nP001;NEPH;aktiv\r\nX 9;NEPH;aktiv\r\n') });
+  await expect(page.locator('#meldung')).toContainText('Zeile 3: X 9 ist kein gültiger Studien-Code');
   await page.setInputFiles('[data-test=teilnehmende-datei]', { name: 't.csv', mimeType: 'text/csv', buffer: Buffer.from('﻿pseudonym;bereich;status\r\nP001;NEPH;aktiv\r\nP002;ZNA;pausiert\r\n') });
   await expect(page.locator('#meldung')).toHaveText('Teilnehmerliste: 2 neu, 0 bereits vorhanden.');
   await expect(page.locator('[data-test=tn-P002]')).toContainText('pausiert');

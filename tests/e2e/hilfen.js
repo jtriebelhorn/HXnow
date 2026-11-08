@@ -118,7 +118,7 @@ export async function pauseUndWeiter(page, { grund = null, notiz = null } = {}) 
   await expect(page.locator('[data-test=pause-status]')).toHaveCount(0);
 }
 
-/** Studien-Code eintippen; ist er noch nicht in der Teilnehmerliste, „Neuen Code anlegen“ tippen. */
+/** Studien-Code eintippen; ist er noch nicht in der Teilnehmerliste, „Neuen Probanden anlegen“ tippen. */
 export async function waehleCode(page, code) {
   await page.fill('[data-test=pseudonym]', code);
   const anlegen = page.locator('[data-test=code-anlegen]');

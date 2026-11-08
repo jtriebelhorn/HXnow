@@ -73,4 +73,5 @@ Startseite zum Aktualisieren an.
   (SemVer; 1.0.0 erst nach dem Pretest) und `npm run codebuch` ausführen. Ändert sich ein gepaartes Item, schlägt der
   Schnappschuss-Test an (`npm run codebuch -- --snapshot` nur nach bewusster Prüfung).
 - Ein Bogen mit `status: 'entwurf'` ist nur mit dem Test-Code möglich.
-- Studien-Codes: nur Pseudonyme (`P` + 3 Ziffern), Test-Code `P000`; die Zuordnung zu Personen liegt nur auf Papier.
+- Studien-Codes: frei wählbare Pseudonyme (2–20 Zeichen A–Z, 0–9, Bindestrich), keine Klarnamen; Test-Code `P000`;
+  die Zuordnung zu Personen liegt nur auf Papier.

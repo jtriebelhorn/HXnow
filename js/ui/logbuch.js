@@ -46,50 +46,64 @@ export function zeigeStudie(app) {
   const vert = verteilung(d.logbuch, d.aenderungen);
   const stand = bereichsStand(d.phasenplan, jetzt);
 
+  const echt = d.logbuch.filter((l) => !l.testmodus).map((l) => wirksamerStand(l, d.aenderungen)).filter((e) => e.gueltig);
+  const summe = {
+    probanden: uebersicht.filter((u) => u.t.status !== 'widerrufen').length,
+    bloecke: echt.filter((e) => e.art === 'BLOCK' && ['beendet', 'abgebrochen'].includes(e.status)).length,
+    stunden: echt.filter((e) => e.art === 'BLOCK').reduce((x, e) => x + (e.beobachtetSek ?? 0), 0) / 3600,
+    boegen: echt.filter((e) => ['FB1', 'KB', 'FB2'].includes(e.art) && e.status === 'abgeschlossen').length,
+    versuche: echt.filter((e) => e.art === 'VERSUCH').length,
+  };
+  const marke = (x) => (x.bogen ? '✓' : '–');
+
   ersetze(app.wurzel,
     el('h1', {}, 'Studie'),
-    el('p', { class: 'hinweis' }, 'Umfang und Vollständigkeit der Erhebung – keine Inhalte je Person.'),
+    el('div', { class: 'summen', 'data-test': 'summen' },
+      [[summe.probanden, 'Probanden'], [summe.bloecke, 'Blöcke'], [summe.stunden.toFixed(1).replace('.', ','), 'Stunden'], [summe.boegen, 'Fragebögen'], [summe.versuche, 'nicht angetr.']]
+        .map(([z, t]) => el('div', { class: 'summe' }, el('strong', {}, String(z)), el('span', {}, t)))),
     stand.length === 0
-      ? el('p', { class: 'warnkasten', 'data-test': 'kein-phasenplan' }, 'Noch kein Phasenplan – unter „Studienplan“ eintragen.')
-      : el('ul', { class: 'liste-kurz', 'data-test': 'bereichsstand' }, stand.map((s) => el('li', {}, el('strong', {}, bereichName(app, s.bereich)), `: ${s.text}`))),
+      ? el('p', { class: 'hinweis', 'data-test': 'kein-phasenplan' }, 'Noch kein Phasenplan – unter „Studienplan“ eintragen.')
+      : el('p', { class: 'hinweis', 'data-test': 'bereichsstand' }, stand.map((x) => `${bereichName(app, x.bereich)}: ${x.text}`).join(' · ')),
 
-    el('h2', {}, 'Fällig'),
-    faellig.length === 0
-      ? el('p', { class: 'hinweis', 'data-test': 'nichts-faellig' }, 'Nichts fällig.')
-      : el('ul', { class: 'liste-kurz faellig', 'data-test': 'faellig' }, faellig.map((f) => el('li', {
-        class: f.pseudonym ? 'klickbar' : null, onclick: f.pseudonym ? () => app.zeige('proband', { pseudonym: f.pseudonym }) : null,
-      }, f.text))),
+    uebersicht.length === 0 ? el('p', { class: 'hinweis' }, 'Noch keine Probanden. Sie werden beim ersten Block oder Fragebogen angelegt.')
+      : el('table', { class: 'tabelle probanden', 'data-test': 'probanden' },
+        el('thead', {}, el('tr', {}, el('th', {}, 'Proband'), el('th', {}, 'Base­line'), el('th', {}, 'Einf.'), el('th', {}, 'Regel'), el('th', { class: 'zahl' }, ''))),
+        el('tbody', {}, uebersicht.map((u) => {
+          const [ba, ei, re] = PHASEN.map((p) => u.phasen[p.id]);
+          return el('tr', {
+            class: `klickbar ampel-${u.t.status === 'aktiv' ? u.ampel : 'grau'}`, 'data-test': `proband-${u.t.pseudonym}`,
+            onclick: () => app.zeige('proband', { pseudonym: u.t.pseudonym }),
+          },
+          el('td', {}, el('strong', {}, u.t.pseudonym), u.t.status !== 'aktiv' ? el('span', { class: 'klein-text block' }, u.t.status) : null),
+          el('td', { class: `ampel-zelle-${ba.ampel}` }, `${ba.bloecke}/${ba.ziel} ${marke(ba)}`),
+          el('td', { class: `ampel-zelle-${ei.ampel}` }, marke(ei)),
+          el('td', { class: `ampel-zelle-${re.ampel}` }, `${re.bloecke}/${re.ziel} ${marke(re)}`),
+          el('td', { class: 'zahl pfeil-zelle' }, u.offeneExporte ? el('span', { class: 'marke-offen', title: 'nicht exportiert' }, String(u.offeneExporte)) : '›'));
+        }))),
+    uebersicht.length ? el('p', { class: 'klein-text legende' }, `Zahl = gültige Blöcke von ${ziel(app.schema)} · ✓ = Fragebogen der Phase ausgefüllt (FB1, KB, FB2) · rote Zahl = Sitzungen nicht exportiert · Antippen für Details`) : null,
 
-    el('h2', {}, `Probanden (${uebersicht.length})`),
-    uebersicht.length === 0 ? el('p', { class: 'hinweis' }, 'Noch keine Probanden in der Teilnehmerliste.') : el('div', { class: 'tabelle-rahmen' },
-      el('table', { class: 'tabelle probanden', 'data-test': 'probanden' },
-        el('thead', {}, el('tr', {}, el('th', {}, 'Code'), ...PHASEN.map((p) => el('th', {}, p.kurz)), el('th', { class: 'zahl', title: 'nicht exportierte Sitzungen' }, 'Exp.'))),
-        el('tbody', {}, uebersicht.map((u) => el('tr', {
-          class: `klickbar ampel-${u.t.status === 'aktiv' ? u.ampel : 'grau'}`, 'data-test': `proband-${u.t.pseudonym}`,
-          onclick: () => app.zeige('proband', { pseudonym: u.t.pseudonym }),
-        },
-        el('td', {}, el('strong', {}, u.t.pseudonym), u.t.status !== 'aktiv' ? el('div', { class: 'klein-text' }, u.t.status) : null),
-        ...PHASEN.map((p) => {
-          const x = u.phasen[p.id];
-          return el('td', { class: `ampel-zelle-${x.ampel}` },
-            x.ziel ? `${x.bloecke}/${x.ziel}` : '', x.ziel ? el('br') : null,
-            el('span', { class: 'klein-text' }, `${p.bogen} ${x.bogen ? '✓' : '–'}`));
-        }),
-        el('td', { class: 'zahl' }, u.offeneExporte ? String(u.offeneExporte) : '✓')))))),
+    el('details', { class: 'aufklapp', 'data-test': 'faellig-box', open: faellig.length > 0 && faellig.length <= 3 },
+      el('summary', {}, `Fällig (${faellig.length})`),
+      faellig.length === 0
+        ? el('p', { class: 'hinweis', 'data-test': 'nichts-faellig' }, 'Nichts fällig.')
+        : el('ul', { class: 'liste-kurz faellig', 'data-test': 'faellig' }, faellig.map((f) => el('li', {
+          class: f.pseudonym ? 'klickbar' : null, onclick: f.pseudonym ? () => app.zeige('proband', { pseudonym: f.pseudonym }) : null,
+        }, f.text)))),
 
-    el('h2', {}, 'Verteilung der Blöcke'),
-    el('p', { class: 'hinweis' }, 'Über alle Probanden, gültige Blöcke ohne Probeläufe.'),
-    ['PRE', 'POST'].map((ph) => el('section', { class: 'verteilung', 'data-test': `verteilung-${ph}` },
-      el('h3', {}, `${app.schema.phasen.find((p) => p.code === ph)?.label ?? ph} (${vert[ph].anzahl})`),
-      balken('Arbeitskontext', vert[ph].kontext, vert[ph].anzahl, (k) => app.schema.arbeitskontext.find((x) => x.code === k)?.label ?? k),
-      balken('Dienst', vert[ph].dienst, vert[ph].anzahl, (k) => app.schema.dienste.find((x) => x.code === k)?.label ?? k),
-      balken('Tageszeit', vert[ph].tageszeit, vert[ph].anzahl, (k) => k))),
+    el('details', { class: 'aufklapp', 'data-test': 'verteilung-box' },
+      el('summary', {}, 'Verteilung der Blöcke'),
+      el('p', { class: 'hinweis' }, 'Über alle Probanden, gültige Blöcke ohne Probeläufe.'),
+      ['PRE', 'POST'].map((ph) => el('section', { class: 'verteilung', 'data-test': `verteilung-${ph}` },
+        el('h3', {}, `${app.schema.phasen.find((p) => p.code === ph)?.label ?? ph} (${vert[ph].anzahl})`),
+        balken('Arbeitskontext', vert[ph].kontext, vert[ph].anzahl, (k) => app.schema.arbeitskontext.find((x) => x.code === k)?.label ?? k),
+        balken('Dienst', vert[ph].dienst, vert[ph].anzahl, (k) => app.schema.dienste.find((x) => x.code === k)?.label ?? k),
+        balken('Tageszeit', vert[ph].tageszeit, vert[ph].anzahl, (k) => k)))),
 
-    el('div', { class: 'stapel abstand-oben' },
-      el('button', { type: 'button', class: 'gross', 'data-test': 'zu-teilnehmenden', onclick: () => app.zeige('teilnehmende') }, 'Teilnehmerliste'),
-      el('button', { type: 'button', class: 'gross', 'data-test': 'zu-studienplan', onclick: () => app.zeige('studienplan') }, 'Studienplan (Phasen, Exportordner)'),
-      el('button', { type: 'button', class: 'gross', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app, () => app.zeige('studie')) }, 'Logbuch sichern')),
-    zurueck(app));
+    el('div', { class: 'knopfraster abstand-oben' },
+      el('button', { type: 'button', 'data-test': 'zu-teilnehmenden', onclick: () => app.zeige('teilnehmende') }, 'Teilnehmerliste'),
+      el('button', { type: 'button', 'data-test': 'zu-studienplan', onclick: () => app.zeige('studienplan') }, 'Studienplan'),
+      el('button', { type: 'button', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app, () => app.zeige('studie')) }, 'Logbuch sichern'),
+      el('button', { type: 'button', 'data-test': 'zurueck', onclick: () => app.zeige('start') }, 'Zurück')));
 }
 
 function balken(titel, werte, gesamt, label) {

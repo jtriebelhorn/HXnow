@@ -81,19 +81,27 @@ export function phasenVorschlag(app, pseudonym, bereich = null, jetzt = Date.now
 }
 
 /**
- * Studien-Code aus der Teilnehmerliste (Fragebogenplan 2a): Suchfeld, Treffer zum Antippen; ein neuer Code wird nur
- * über „Neuen Code anlegen“ aufgenommen. Widerrufen/ausgeschieden: keine neue Erfassung. Der Test-Code ist immer erlaubt.
+ * Proband (Studien-Code) aus der Teilnehmerliste: Beim Antippen klappt die Liste aller Probanden auf, Tippen filtert
+ * sie. Ein noch unbekannter Code wird nur über „Neuen Probanden anlegen“ aufgenommen (Teilnehmerliste mit
+ * Anlagedatum → Logbuch). Pausiert/ausgeschieden/widerrufen: keine neue Erfassung. Der Test-Code ist immer erlaubt.
  * Setzt `werte.pseudonym` nur bei zulässigem Code (sonst leer).
  */
 export function codeAuswahl(app, { art = 'block', werte, beiAenderung }) {
   const { schema } = app;
   const codeFehler = el('span', { class: 'feldfehler', 'aria-live': 'polite', 'data-test': 'pseudonym-fehler' });
   const treffer = el('div', { class: 'code-treffer', 'data-test': 'code-treffer' });
+  let listeOffen = false;
   const codeFeld = el('input', {
     type: 'text', inputmode: 'text', autocapitalize: 'characters', autocomplete: 'off', autocorrect: 'off', spellcheck: 'false',
-    placeholder: schema.pseudonym.beispiel ?? '', 'data-test': 'pseudonym', maxlength: 20,
-    oninput: () => pruefeCode(),
+    placeholder: 'Code eintippen oder auswählen', 'data-test': 'pseudonym', maxlength: 20,
+    oninput: () => { listeOffen = true; pruefeCode(); },
+    onfocus: () => { listeOffen = true; pruefeCode(); },
   });
+  function waehle(code) {
+    codeFeld.value = code;
+    listeOffen = false;
+    pruefeCode();
+  }
   function pruefeCode() {
     const eingabe = codeFeld.value.trim().toUpperCase();
     const liste = app.teilnehmende ?? new Map();
@@ -107,23 +115,29 @@ export function codeAuswahl(app, { art = 'block', werte, beiAenderung }) {
     else if (eingabe && !muster && !istTest) codeFehler.textContent = B.pruefeStammdaten(schema, { ...werte, pseudonym: eingabe }, art).pseudonym ?? '';
     else if (muster && !t && !istTest) {
       knoepfe.push(el('button', {
-        type: 'button', class: 'klein', 'data-test': 'code-anlegen',
+        type: 'button', class: 'klein primaer', 'data-test': 'code-anlegen',
         onclick: async () => {
           const satz = { pseudonym: eingabe, bereich: werte.bereich, registriertTs: Date.now(), status: 'aktiv', statusTs: Date.now(), notiz: '', phasenAbweichung: null };
           try { await db.speichere(app.db, db.STORES.TEILNEHMENDE, satz); } catch (e) { meldung(`Speichern fehlgeschlagen: ${e.message}`, 'fehler'); return; }
           liste.set(eingabe, satz);
           app.teilnehmende = liste;
-          meldung(`${eingabe} in die Teilnehmerliste aufgenommen.`);
+          meldung(`${eingabe} als neuer Proband angelegt.`);
+          listeOffen = false;
           pruefeCode();
         },
-      }, `Neuen Code anlegen: ${eingabe}`));
+      }, `Neuen Probanden anlegen: ${eingabe}`));
     }
-    if (eingabe && !t) {
-      for (const p of [...liste.values()].filter((x) => x.pseudonym.startsWith(eingabe) && x.pseudonym !== eingabe).slice(0, 6)) {
-        knoepfe.push(el('button', {
-          type: 'button', class: 'klein', 'data-test': `code-${p.pseudonym}`, disabled: p.status !== 'aktiv',
-          onclick: () => { codeFeld.value = p.pseudonym; pruefeCode(); },
-        }, p.status === 'aktiv' ? p.pseudonym : `${p.pseudonym} (${p.status})`));
+    // Liste der vorhandenen Probanden (offen beim Antippen und Tippen, zu nach der Auswahl)
+    if (listeOffen && !werte.pseudonym) {
+      const passend = [...liste.values()].filter((x) => !eingabe || x.pseudonym.includes(eingabe))
+        .sort((x, y) => (x.status === 'aktiv' ? 0 : 1) - (y.status === 'aktiv' ? 0 : 1) || x.pseudonym.localeCompare(y.pseudonym, 'de', { numeric: true }));
+      if (passend.length) {
+        knoepfe.push(el('div', { class: 'code-liste', 'data-test': 'code-liste' }, passend.map((x) => el('button', {
+          type: 'button', class: 'klein', 'data-test': `code-${x.pseudonym}`, disabled: x.status !== 'aktiv',
+          onclick: () => waehle(x.pseudonym),
+        }, x.pseudonym, el('span', { class: 'leise' }, ` ${x.status === 'aktiv' ? x.bereich ?? '' : x.status}`)))));
+      } else if (liste.size === 0 && !eingabe) {
+        knoepfe.push(el('span', { class: 'hinweis' }, 'Noch keine Probanden – Code eintippen und neu anlegen.'));
       }
     }
     if (werte.pseudonym && t) knoepfe.push(el('span', { class: 'hinweis', 'data-test': 'code-gewaehlt' }, `✓ ${t.pseudonym} aus der Teilnehmerliste${t.bereich ? ` (${t.bereich})` : ''}`));
@@ -135,16 +149,17 @@ export function codeAuswahl(app, { art = 'block', werte, beiAenderung }) {
   const testCode = schema.pseudonym.testCode;
   const testKnopf = testCode ? el('button', {
     type: 'button', class: 'klein', 'data-test': 'probelauf-code',
-    onclick: () => { codeFeld.value = testCode; codeFeld.dispatchEvent(new Event('input')); },
+    onclick: () => waehle(testCode),
   }, `Probelauf (${testCode})`) : null;
 
   return {
     knoten: [
       el('label', { class: 'feld' },
-        el('span', { class: 'feldname' }, 'Studien-Code'),
-        codeFeld, codeFehler, treffer,
-        el('span', { class: 'hinweis' }, 'Nur Pseudonym, keine Namen.',
-          testCode ? ` Für Tests und Schulung ${testCode} verwenden – wird nicht ausgewertet.` : '')),
+        el('span', { class: 'feldname' }, 'Proband (Studien-Code)'),
+        codeFeld, codeFehler),
+      treffer,
+      el('span', { class: 'hinweis' }, 'Frei wählbarer Code (Buchstaben, Ziffern, Bindestrich) – kein Klarname.',
+        testCode ? ` Für Tests und Schulung ${testCode} verwenden – wird nicht ausgewertet.` : ''),
       testKnopf,
     ],
   };

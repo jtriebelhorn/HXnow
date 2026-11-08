@@ -36,7 +36,7 @@ export const ENDE_ART = Object.freeze({
 // Stammdaten: Feld → Prüfung (liefert Fehlermeldung oder null). Leere Werte prüft pruefeStammdaten.
 const STAMMDATEN = {
   pseudonym: (schema, w) => (new RegExp(schema.pseudonym.muster).test(w)
-    ? null : `Studien-Code ungültig (Beispiel: ${schema.pseudonym.beispiel ?? schema.pseudonym.muster}).`),
+    ? null : 'Code ungültig: 2–20 Zeichen, nur Buchstaben A–Z, Ziffern und Bindestrich (keine Leerzeichen, keine Klarnamen).'),
   beobachter: (schema, w) => (schema.beobachter.includes(w) ? null : 'Unbekanntes Beobachter-Kürzel.'),
   bereich: (schema, w) => (finde(schema.bereiche, w) ? null : 'Unbekannter Bereich.'),
   dienst: (schema, w) => (finde(schema.dienste, w) ? null : 'Unbekannter Dienst.'),
