@@ -220,7 +220,8 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     const datei = dateiZu.get(id) ?? '';
     const erwartet = e ? exportDateiname(e) : null;
     let pruefung = '';
-    if (e && erwartet && !datei && e.status !== 'laufend') { pruefung = e.exportStatus === 'offen' ? 'nicht exportiert' : 'Datei fehlt'; if (pruefung === 'Datei fehlt') fehlendeDateien.push(erwartet); }
+    if (e?.geloescht && !datei) pruefung = 'gelöscht';
+    else if (e && erwartet && !datei && e.status !== 'laufend') { pruefung = e.exportStatus === 'offen' ? 'nicht exportiert' : 'Datei fehlt'; if (pruefung === 'Datei fehlt') fehlendeDateien.push(erwartet); }
     if (!e) { pruefung = 'nicht im Logbuch'; ohneLogbuch.push(datei); }
     return [id, e?.art ?? '', e?.pseudonym ?? '', e ? iso(e.startTs) : '', e ? 1 : 0, datei, erwartet ?? '', pruefung];
   });

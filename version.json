@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.17.0",
+  "appVersion": "0.18.0",
   "datum": "2026-11-08",
-  "hinweis": "Tageskennzahlen je Teilbereich (Nephrologie: Normalstation, Dialyse, Ambulanz, Konsile; Notaufnahme: Notaufnahme, Notaufnahmestation)."
+  "hinweis": "Nicht abgeschlossene Exporte lassen sich mit × löschen (nach Rückfrage)."
 }

@@ -139,7 +139,7 @@ export function zeigeProband(app, { pseudonym }) {
     u.eintraege.length === 0 ? el('p', { class: 'hinweis' }, 'Noch keine Einträge.') : el('ul', { class: 'liste', 'data-test': 'proband-eintraege' },
       u.eintraege.map((e) => el('li', { class: `klickbar${e.gueltig ? '' : ' ungueltig'}`, 'data-test': `eintrag-${e.eintragId}`, onclick: () => app.zeige('eintrag', { eintragId: e.eintragId }) },
         el('div', { class: 'liste-text' },
-          el('span', { class: 'liste-art' }, `${ART_NAME[e.art] ?? e.art}${e.phase ? ` · ${e.phase}` : ''}${e.gueltig ? '' : ' · ungültig'}${e.wiederhergestellt ? ' · wiederhergestellt' : ''}`),
+          el('span', { class: 'liste-art' }, `${ART_NAME[e.art] ?? e.art}${e.phase ? ` · ${e.phase}` : ''}${e.geloescht ? ' · gelöscht' : e.gueltig ? '' : ' · ungültig'}${e.wiederhergestellt ? ' · wiederhergestellt' : ''}`),
           el('span', { class: 'liste-titel' }, zeitDe(e.startTs)),
           el('span', { class: 'liste-details' }, [STATUS_NAME[e.status] ?? e.status, EXPORT_NAME[e.exportStatus], e.kommentare.some((k) => !k.zurueckgezogen) ? 'Kommentar' : null].filter(Boolean).join(' · ')))))),
     pv.verlauf.length ? verlaufListe(pv.verlauf) : null,
@@ -180,6 +180,7 @@ const VERLAUF_TEXT = {
   UNGUELTIG_AUFGEHOBEN: (a) => `Ungültig aufgehoben${a.text ? ` – ${a.text}` : ''}`,
   ZUORDNUNG: (a) => `Proband ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`, PHASE: (a) => `Phase ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`,
   STATUS: (a) => `Status ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`, PHASENDATEN: (a) => `${a.feld}: ${a.alt || '–'} → ${a.neu || '–'}${a.text ? ` – ${a.text}` : ''}`,
+  GELOESCHT: () => 'Gelöscht (nicht abgeschlossener Export)',
   WIDERRUF_LOESCHUNG: (a) => `Widerruf – Daten gelöscht${a.text ? ` (${a.text})` : ''}`,
 };
 
@@ -198,7 +199,7 @@ export function zeigeEintrag(app, { eintragId }) {
   const e = wirksamerStand(roh, d.aenderungen);
   ersetze(app.wurzel,
     el('h1', {}, ART_NAME[e.art] ?? e.art),
-    e.gueltig ? null : el('div', { class: 'banner-rot', 'data-test': 'eintrag-ungueltig' },
+    e.gueltig ? null : el('div', { class: 'banner-rot', 'data-test': 'eintrag-ungueltig' }, e.geloescht ? 'Gelöscht – die Daten sind nicht mehr auf dem Gerät und zählen nicht.' :
       `Ungültig: ${UNGUELTIG_GRUENDE.find((g) => g.code === e.ungueltigGrund)?.label ?? e.ungueltigGrund}${e.ungueltigText ? ` – ${e.ungueltigText}` : ''}`),
     e.konflikt ? el('p', { class: 'warnkasten' }, 'Änderungen von mehreren Geräten – es gilt die zeitlich letzte.') : null,
     el('dl', { class: 'eckdaten', 'data-test': 'eintrag-eckdaten' },
@@ -220,7 +221,7 @@ export function zeigeEintrag(app, { eintragId }) {
       el('dt', {}, 'Gerät'), el('dd', {}, String(e.geraeteId ?? '').slice(0, 8)),
       e.testmodus ? el('dt', {}, 'Probelauf') : null, e.testmodus ? el('dd', {}, 'ja – wird nicht ausgewertet') : null),
     el('p', { class: 'hinweis' }, 'Die erfassten Daten bleiben unverändert; Korrekturen werden als Änderung gespeichert.'),
-    eintragKnoepfe(app, roh, e),
+    e.geloescht ? null : eintragKnoepfe(app, roh, e),
     kommentarListe(e.kommentare),
     e.verlauf.length ? verlaufListe(e.verlauf) : null,
     zurueck(app, 'proband', { pseudonym: e.pseudonym }));

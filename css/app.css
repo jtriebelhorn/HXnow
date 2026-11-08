@@ -561,3 +561,10 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .aufklapp { margin: 8px 0; padding: 4px 12px; border: 1px solid var(--rand); border-radius: var(--radius); }
 .aufklapp summary { font-weight: 700; min-height: 44px; display: flex; align-items: center; cursor: pointer; }
 .hinweis-frage { margin: 0 0 8px; padding: 6px 10px; border-left: 4px solid var(--primaer); background: var(--hintergrund); border-radius: 6px; font-size: 0.9rem; }
+
+/* × zum Löschen eines Eintrags (Startseite) – sichtbar klein, Tippfläche 48 px */
+.liste li.mit-x { position: relative; }
+.liste li.mit-x .liste-text { padding-right: 36px; }
+.x-knopf { position: absolute; top: 0; right: 0; width: 48px; height: 48px; padding: 0; border: 0; background: transparent;
+  color: var(--text-leise); font-size: 1.5rem; line-height: 1; display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px 10px 0 0; }
+.x-knopf:active { color: var(--fehler); }

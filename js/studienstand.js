@@ -77,7 +77,7 @@ export function probandenUebersicht({ teilnehmende, phasenplan, logbuch, aenderu
         versuche: versuche.length, bogen: boegen[0] ?? null, ampel,
       }];
     }));
-    const offeneExporte = eigene.filter((e) => e.exportStatus !== 'bestaetigt' && e.status !== 'laufend' && e.status !== 'verworfen').length;
+    const offeneExporte = eigene.filter((e) => e.exportStatus !== 'bestaetigt' && !e.geloescht && e.status !== 'laufend' && e.status !== 'verworfen').length;
     const ampel = Object.values(phasen).some((x) => x.ampel === 'rot') ? 'rot' : Object.values(phasen).some((x) => x.ampel === 'gelb') ? 'gelb' : 'gruen';
     return { t, daten, phasen, offeneExporte, ampel, eintraege: eigene.sort((a, b) => a.startTs - b.startTs) };
   });

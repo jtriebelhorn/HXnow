@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.18.0 – 08.11.2026
+Löschen nicht abgeschlossener Exporte; keine Datenbank-Migration:
+- Startseite, „Nicht abgeschlossene Exporte“: kleines × oben rechts an jedem Eintrag, Rückfrage „Wirklich löschen?“.
+- Studiensitzungen (Block, nicht angetroffen, Fragebogen): Daten werden gelöscht, der Logbuch-Eintrag bleibt mit der
+  Änderung `GELOESCHT` (zählt nicht, kein Hinweis „nicht gesichert“ mehr). Probeläufe und Tageskennzahlen werden ganz
+  entfernt.
+
 ## 0.17.0 – 08.11.2026
 Tageskennzahlen je Teilbereich; **Datenbank-Migration 3 → 4** (automatisch beim ersten Start, alle Daten bleiben):
 - Nephrologie: Normalstation, Dialyse, Ambulanz, Konsile; Notaufnahme: Notaufnahme, Notaufnahmestation (Kodierschema

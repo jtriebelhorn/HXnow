@@ -393,6 +393,24 @@ export function widerrufe(db, { pseudonym, ids, behalten, aenderungIds, aenderun
   });
 }
 
+/**
+ * Löscht eine nicht abgeschlossene Sitzung aus der Exportliste in einer Transaktion: Block mit Episoden und Pausen,
+ * Versuch, Fragebogen mit Antworten oder Tageskennzahlen. Mit `aenderung` (Studiensitzung) bleibt der Logbuch-Eintrag
+ * als Vermerk stehen; mit `logbuchLoeschen` (Probelauf) verschwindet auch er.
+ */
+export function loescheSitzung(db, { store, schluessel, aenderung = null, logbuchLoeschen = false }) {
+  const kinder = { [STORES.BLOECKE]: [STORES.EPISODEN, STORES.PAUSEN], [STORES.FB_SITZUNGEN]: [STORES.FB_ANTWORTEN] }[store] ?? [];
+  const index = store === STORES.BLOECKE ? 'blockId' : 'sitzungId';
+  return transaktion(db, [store, ...kinder, STORES.LOGBUCH, STORES.AENDERUNGEN], 'readwrite', (tx) => {
+    tx.objectStore(store).delete(schluessel);
+    for (const k of kinder) {
+      tx.objectStore(k).index(index).getAllKeys(schluessel).onsuccess = (ev) => { for (const id of ev.target.result) tx.objectStore(k).delete(id); };
+    }
+    if (logbuchLoeschen && typeof schluessel === 'string') tx.objectStore(STORES.LOGBUCH).delete(schluessel);
+    if (aenderung) tx.objectStore(STORES.AENDERUNGEN).add(aenderung);
+  });
+}
+
 /** Stores der Logbuch-Datei (Teilnehmerliste, Phasenplan, Logbuch, Änderungen). */
 export async function holeLogbuchDaten(db) {
   const namen = [STORES.TEILNEHMENDE, STORES.PHASENPLAN, STORES.LOGBUCH, STORES.AENDERUNGEN];

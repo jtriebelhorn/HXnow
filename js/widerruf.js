@@ -32,7 +32,8 @@ export function widerrufUmfang(pseudonym, { logbuch, aenderungen }) {
   return {
     eintraege,
     aenderungen: aend,
-    dateien: eintraege.map(exportDateiname).filter(Boolean).sort(),
+    // ohne nicht exportierte, gelöschte Sitzungen (von denen gibt es keine Datei)
+    dateien: eintraege.filter((l) => !(l.exportStatus === 'offen' && wirksamerStand(l, aenderungen).geloescht)).map(exportDateiname).filter(Boolean).sort(),
     anzahl: {
       bloecke: zaehle((l) => l.art === 'BLOCK'), versuche: zaehle((l) => l.art === 'VERSUCH'),
       frageboegen: zaehle((l) => ['FB1', 'KB', 'FB2'].includes(l.art)),

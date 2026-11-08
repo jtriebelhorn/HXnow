@@ -4,6 +4,7 @@
 export const ART = Object.freeze({
   KOMMENTAR: 'KOMMENTAR', KOMMENTAR_ZURUECK: 'KOMMENTAR_ZURUECK', UNGUELTIG: 'UNGUELTIG', UNGUELTIG_AUFGEHOBEN: 'UNGUELTIG_AUFGEHOBEN',
   ZUORDNUNG: 'ZUORDNUNG', PHASE: 'PHASE', STATUS: 'STATUS', PHASENDATEN: 'PHASENDATEN', WIDERRUF_LOESCHUNG: 'WIDERRUF_LOESCHUNG',
+  GELOESCHT: 'GELOESCHT', // nicht exportierte Sitzung gelöscht (Daten weg, Logbuch-Eintrag bleibt als Vermerk)
 });
 
 export const UNGUELTIG_GRUENDE = Object.freeze([
@@ -35,12 +36,13 @@ function kommentare(zielId, alle) {
 export function wirksamerStand(eintrag, aenderungen) {
   const eigene = aenderungen.filter((a) => a.zielId === eintrag.eintragId).sort(nachZeit);
   const st = {
-    ...eintrag, gueltig: true, ungueltigGrund: null, ungueltigText: '', pseudonymOriginal: null, phaseOriginal: null,
+    ...eintrag, gueltig: true, geloescht: false, ungueltigGrund: null, ungueltigText: '', pseudonymOriginal: null, phaseOriginal: null,
     kommentare: kommentare(eintrag.eintragId, aenderungen), verlauf: eigene,
     konflikt: new Set(eigene.map((a) => a.geraeteId)).size > 1,
   };
   for (const a of eigene) {
-    if (a.art === ART.UNGUELTIG) Object.assign(st, { gueltig: false, ungueltigGrund: a.grund, ungueltigText: a.text });
+    if (a.art === ART.GELOESCHT) Object.assign(st, { gueltig: false, geloescht: true, ungueltigGrund: 'GELOESCHT', ungueltigText: a.text });
+    else if (a.art === ART.UNGUELTIG) Object.assign(st, { gueltig: false, ungueltigGrund: a.grund, ungueltigText: a.text });
     else if (a.art === ART.UNGUELTIG_AUFGEHOBEN) Object.assign(st, { gueltig: true, ungueltigGrund: null, ungueltigText: '' });
     else if (a.art === ART.ZUORDNUNG) { st.pseudonymOriginal ??= eintrag.pseudonym; st.pseudonym = a.neu; } else if (a.art === ART.PHASE) { st.phaseOriginal ??= eintrag.phase; st.phase = a.neu; }
   }

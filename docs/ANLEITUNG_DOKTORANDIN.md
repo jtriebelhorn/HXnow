@@ -64,6 +64,9 @@ jede Sitzung.
   - **Mail** oder **Zwischenablage:** überträgt nur die Sitzungsdatei; das Logbuch danach mit **Logbuch sichern**.
 - Die Startseite zeigt **Letzte Sicherung: …**. Ein gelber Hinweis heißt, dass Sitzungen noch nicht gesichert sind.
   Nach 24 Stunden wird er rot.
+- Einen Eintrag, der nicht exportiert werden soll (z. B. versehentlich angelegt), mit dem **×** oben rechts löschen
+  („Wirklich löschen?“). Die Daten sind dann endgültig weg; bei Studiensitzungen bleibt im Logbuch ein Vermerk
+  „gelöscht“, Probeläufe und Tageskennzahlen verschwinden ganz.
 - Ist eine Datei sicher auf dem Klinik-System, **Eingang bestätigt** tippen. Bestätigte Einträge können unter
   **Sicherung → Bestätigte Einträge löschen** vom iPhone entfernt werden. Das Logbuch bleibt dabei erhalten.
 - **Komplettsicherung** (Sicherung → Komplettsicherung erstellen): vor jedem Update, am Ende jeder Phase und vor

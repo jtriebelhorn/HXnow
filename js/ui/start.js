@@ -1,6 +1,8 @@
 // Startseite (Spezifikation 7.1): Neuer Block, Person nicht angetroffen, Tageskennzahlen,
 // Liste nicht abgeschlossener Exporte mit Exportieren / Eingang bestätigt und Warnbanner (> 24 h nicht bestätigt).
-import { el, ersetze, bestaetige } from './dom.js';
+import { el, ersetze, bestaetige, meldung } from './dom.js';
+import { neueAenderung, ART } from '../aenderungen.js';
+import { aenderungsKontext } from './aendern.js';
 import * as db from '../db.js';
 import { stelleWiederHer } from '../block.js';
 import { blockDatei, versuchDatei, tagDatei } from '../export.js';
@@ -32,7 +34,7 @@ export async function zeigeStart(app) {
   // Exportdateien werden hier vorbereitet, damit der Klick auf „Exportieren“ synchron teilen kann.
   const eintraege = [
     ...daten.bloecke.filter((b) => offen(b) && (b.status === 'beendet' || b.status === 'abgebrochen')).map((b) => ({
-      art: istTestPseudonym(schema, b.pseudonym) ? 'Block · Probelauf' : 'Block', ts: b.endTs ?? b.startTs, test: 'eintrag-block',
+      art: istTestPseudonym(schema, b.pseudonym) ? 'Block · Probelauf' : 'Block', ts: b.endTs ?? b.startTs, test: 'eintrag-block', probelauf: istTestPseudonym(schema, b.pseudonym),
       titel: `${b.pseudonym} · ${phase(schema, b.phase)} · ${datumLokal(b.startTs)} ${uhrzeit(b.startTs).slice(0, 5)}`,
       details: `${STATUS_TEXT[b.status]}${b.abbruchCode ? ` (${b.abbruchCode})` : ''}, ${formatiereCountdown((b.endTs ?? b.startTs) - b.startTs)} min`,
       exportStatus: b.exportStatus,
@@ -41,14 +43,14 @@ export async function zeigeStart(app) {
       oeffnen: () => app.zeige('abschluss', { blockId: b.blockId }),
     })),
     ...daten.versuche.filter(offen).map((v) => ({
-      art: istTestPseudonym(schema, v.pseudonym) ? 'Nicht angetroffen · Probelauf' : 'Nicht angetroffen', ts: v.ts, test: 'eintrag-versuch',
+      art: istTestPseudonym(schema, v.pseudonym) ? 'Nicht angetroffen · Probelauf' : 'Nicht angetroffen', ts: v.ts, test: 'eintrag-versuch', probelauf: istTestPseudonym(schema, v.pseudonym),
       titel: `${v.pseudonym} · ${phase(schema, v.phase)} · ${datumLokal(v.ts)} ${uhrzeit(v.ts).slice(0, 5)}`,
       details: '', exportStatus: v.exportStatus,
       datei: versuchDatei(v, schema),
       ziel: { store: db.STORES.VERSUCHE, schluessel: v.versuchId, nachher: neuZeichnen },
     })),
     ...daten.fb_sitzungen.filter((s) => offen(s) && s.status === 'abgeschlossen').map((s) => ({
-      art: s.testmodus ? 'Fragebogen · Probelauf' : 'Fragebogen', ts: s.endTs ?? s.angelegtTs, test: 'eintrag-fb',
+      art: s.testmodus ? 'Fragebogen · Probelauf' : 'Fragebogen', ts: s.endTs ?? s.angelegtTs, test: 'eintrag-fb', probelauf: Boolean(s.testmodus),
       titel: `${s.pseudonym} · ${BOGEN_NAME[s.bogen]} · ${datumLokal(s.angelegtTs)} ${uhrzeit(s.angelegtTs).slice(0, 5)}`,
       details: s.erhebungsmodus === 'PAPIER' ? 'Papier' : '', exportStatus: s.exportStatus,
       datei: fbExportDatei(app, s, Object.fromEntries((antwortenJe.get(s.sitzungId) ?? []).map((a) => [a.itemId, a]))),
@@ -56,7 +58,7 @@ export async function zeigeStart(app) {
       oeffnen: () => app.zeige('fbStatus', { sitzungId: s.sitzungId }),
     })),
     ...daten.tageskennzahlen.filter(offen).map((k) => ({
-      art: 'Tageskennzahlen', ts: k.ts, test: 'eintrag-tag',
+      art: 'Tageskennzahlen', ts: k.ts, test: 'eintrag-tag', probelauf: false,
       titel: `${k.datum} · ${bereich(schema, k.bereich)}${k.teilbereich ? ` · ${teilbereichLabel(schema, k.bereich, k.teilbereich)}` : ''}`,
       details: '', exportStatus: k.exportStatus,
       datei: tagDatei(k),
@@ -129,7 +131,8 @@ export async function zeigeStart(app) {
     eintraege.length === 0
       ? el('p', { class: 'hinweis', 'data-test': 'keine-offenen' }, 'Keine offenen Einträge.')
       : el('ul', { class: 'liste', 'data-test': 'offene-liste' }, eintraege.map((e) =>
-        el('li', { 'data-test': e.test, 'data-export': e.exportStatus },
+        el('li', { class: 'mit-x', 'data-test': e.test, 'data-export': e.exportStatus },
+          el('button', { type: 'button', class: 'x-knopf', 'aria-label': `${e.art} löschen`, title: 'Löschen', 'data-test': 'loeschen', onclick: () => loescheEintrag(app, e) }, '×'),
           el('div', { class: 'liste-text' },
             el('span', { class: 'liste-art' }, e.art),
             el('span', { class: 'liste-titel' }, e.titel),
@@ -149,6 +152,29 @@ export async function zeigeStart(app) {
   );
 }
 
+/**
+ * Eintrag aus „Nicht abgeschlossene Exporte“ löschen (Rückfrage „Wirklich löschen?“). Daten werden endgültig vom Gerät
+ * entfernt. Studiensitzungen behalten im Logbuch einen Vermerk (Änderung GELOESCHT), Probeläufe und Tageskennzahlen nicht.
+ */
+async function loescheEintrag(app, e) {
+  if (!(await bestaetige('Wirklich löschen?', `${e.art}: ${e.titel}. Die Daten werden endgültig von diesem Gerät gelöscht und können nicht mehr exportiert werden.`,
+    { ja: 'Löschen', nein: 'Abbrechen', gefahr: true }))) return;
+  const { store, schluessel } = e.ziel;
+  const studie = !e.probelauf && store !== db.STORES.TAGESKENNZAHLEN;
+  try {
+    await db.loescheSitzung(app.db, {
+      store, schluessel, logbuchLoeschen: e.probelauf,
+      aenderung: studie ? neueAenderung({ art: ART.GELOESCHT, zielTyp: 'eintrag', zielId: schluessel, alt: e.exportStatus, text: 'aus „Nicht abgeschlossene Exporte“ gelöscht' }, aenderungsKontext(app)) : null,
+    });
+  } catch (err) {
+    meldung(`Löschen fehlgeschlagen (${err.message}).`, 'fehler');
+    return;
+  }
+  if (app.sitzung?.zustand?.block.blockId === schluessel) app.sitzung = null;
+  meldung('Gelöscht.');
+  app.zeige('start');
+}
+
 /** „Neu beginnen“ trotz leerer Datenbank: doppelte Rückfrage, damit niemand versehentlich ohne Sicherung weitermacht. */
 async function neuBeginnen(app) {
   if (!(await bestaetige('Ohne Sicherung beginnen?', 'Wenn auf diesem Gerät schon Studiendaten erfasst wurden, zuerst die letzte Sicherung laden.', { ja: 'Weiter', nein: 'Zurück' }))) return;
@@ -162,7 +188,8 @@ async function neuBeginnen(app) {
 /** Abgeschlossene Sitzungen (außer Probeläufen), deren Datei noch nicht exportiert wurde. */
 export function nichtGesichert(app) {
   const fertig = ['beendet', 'abgebrochen', 'nicht_angetroffen', 'abgeschlossen'];
-  return (app.logbuchDaten?.logbuch ?? []).filter((l) => !l.testmodus && l.exportStatus === 'offen' && fertig.includes(l.status));
+  const geloescht = new Set((app.logbuchDaten?.aenderungen ?? []).filter((a) => a.art === 'GELOESCHT').map((a) => a.zielId));
+  return (app.logbuchDaten?.logbuch ?? []).filter((l) => !l.testmodus && l.exportStatus === 'offen' && fertig.includes(l.status) && !geloescht.has(l.eintragId));
 }
 
 const datumDe = (ts) => datumLokal(ts).split('-').reverse().join('.');

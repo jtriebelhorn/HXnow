@@ -176,7 +176,7 @@ Beobachtungs- oder Antwortinhalte. Die Datei nicht in Excel speichern (Prüfsumm
 
 Änderungsarten: `KOMMENTAR`, `KOMMENTAR_ZURUECK` (ziel = Kommentar), `UNGUELTIG` (`grund` U1 Testeintrag, U2 falscher
 Proband, U3 Fehlbedienung, U4 doppelt, U9 Sonstiges), `UNGUELTIG_AUFGEHOBEN`, `ZUORDNUNG` (Code), `PHASE`, `STATUS`,
-`PHASENDATEN` (`feld` = Datumsfeld), `WIDERRUF_LOESCHUNG`. Der wirksame Stand ergibt sich, indem die Änderungen eines
+`PHASENDATEN` (`feld` = Datumsfeld), `WIDERRUF_LOESCHUNG`, `GELOESCHT` (nicht abgeschlossener Export gelöscht; `alt` = Exportstatus davor; der Eintrag zählt nicht, es gibt keine Datei). Der wirksame Stand ergibt sich, indem die Änderungen eines
 Ziels nach `ts` angewendet werden; die Einträge selbst bleiben unverändert.
 
 ## Komplettsicherung (`HXNOW_Komplettsicherung_…json`)
@@ -207,7 +207,7 @@ Codes, die im Exportordner zu löschen sind.
 | `prae_post.csv` | je Code und Paar-ID: FB1-Wert, FB2-Wert und `fb2_wert_wie_fb1` (FB2 auf FB1-Codes umkodiert, z. B. W6c) |
 | `scores.csv` | ATI (Mittelwert, C3/C6/C8 umgepolt), TAM_PU, TAM_PEOU, TAM_BI (Mittelwerte), SUS (0–100); nur bei vollständigen gültigen Items, auf 4 Stellen gerundet |
 | `logbuch_gesamt.csv` | alle Logbuch-Einträge aller Geräte mit wirksamem Stand, Kommentaranzahl und Dateiname |
-| `alle_eintraege.csv` | Abgleich Logbuch ↔ Dateien (`pruefung`: Datei fehlt · nicht exportiert · nicht im Logbuch) |
+| `alle_eintraege.csv` | Abgleich Logbuch ↔ Dateien (`pruefung`: Datei fehlt · nicht exportiert · gelöscht · nicht im Logbuch) |
 | `phasen.csv` | je Code und Phase: geplant, tatsächlich, Blöcke (gültig/ungültig, Ziel), Minuten, nicht angetroffen, Fragebogen |
 | `aenderungen.csv` | alle Änderungen (ohne widerrufene Codes) |
 | `HXNOW_CODEBUCH_FB_<version>.csv` | Codebuch der Fragebogen-Zellen |
