@@ -37,3 +37,16 @@ Beobachtungsdaten liegen ohnehin nur auf dem Gerät. Bei jeder Auslieferung `APP
 `CACHE_VERSION` (`sw.js`) gemeinsam erhöhen; neue Dateien in die Liste `DATEIEN` in `sw.js` aufnehmen
 (`npm test` prüft beides). Geräte erhalten die neue Version, sobald sie online sind, und bieten sie auf der
 Startseite zum Aktualisieren an.
+
+## Veröffentlichen (Studienbetrieb)
+
+1. Veröffentlichen darf nur die Studienleitung (Schreibrecht auf `main`); GitHub Pages liefert `main` unter der festen
+   Adresse https://jtriebelhorn.github.io/HXnow/ aus. Adresse, Repository-Name und Account nie ändern (iOS bindet den
+   Speicher an die Adresse).
+2. Jede Version: `js/version.js`, `CACHE_VERSION` in `sw.js` und `version.json` (Version, Datum, Hinweistext) gleich
+   erhöhen (Unit-Test prüft das) und einen Eintrag in `CHANGELOG.md` schreiben: was sich ändert, ob eine
+   Datenbank-Migration nötig ist, ob Fragebogen oder Kodierschema betroffen sind.
+3. Updates möglichst zwischen den Studienphasen, nicht während eines Beobachtungstags.
+4. Datenbank-Migrationen nur ergänzend (neue Stores, Indizes, Felder mit Standardwert), nie löschen oder Schlüssel ändern;
+   jede Migration mit Test (`tests/e2e/l0.spec.js`).
+5. Testversionen nur mit `TESTVERSION = true` in `js/config.js` (eigene Datenbank, gelbes Band).

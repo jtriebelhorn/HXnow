@@ -22,9 +22,26 @@ test('CACHE_VERSION in sw.js entspricht APP_VERSION', () => {
   assert.equal(SW.match(/const CACHE_VERSION = '([^']+)'/)[1], APP_VERSION);
 });
 
+test('version.json: gleiche Version wie App und Service Worker, mit Datum und Hinweistext', () => {
+  const v = JSON.parse(readFileSync(new URL('version.json', WURZEL), 'utf8'));
+  assert.equal(v.appVersion, APP_VERSION);
+  assert.match(v.datum, /^\d{4}-\d{2}-\d{2}$/);
+  assert.ok(v.hinweis.length > 0);
+});
+
+test('Ausgelieferte Dateien ohne Test-Schalter', () => {
+  assert.match(readFileSync(new URL('js/umgebung.js', WURZEL), 'utf8'), /const TEST_INSTALLIERT = false;/);
+});
+
+test('Studienversion: kein Testmodus, fester Datenbankname', async () => {
+  const c = await import('../../js/config.js');
+  assert.equal(c.TESTVERSION, false);
+  assert.equal(c.DB_NAME, 'hxnow-beobachtung');
+});
+
 test('Cache-Liste enthält genau alle ausgelieferten Dateien', () => {
   const erwartet = [
-    './', 'index.html', 'manifest.webmanifest', 'kodierschema.json',
+    './', 'index.html', 'manifest.webmanifest', 'kodierschema.json', 'version.json',
     ...dateienIn('css/'), ...dateienIn('icons/'), ...dateienIn('js/'),
   ].sort();
   assert.deepEqual([...cacheListe()].sort(), erwartet);

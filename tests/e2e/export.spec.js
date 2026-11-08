@@ -160,7 +160,7 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
   await expect(page.locator('[data-test=anzahl-episoden]')).toHaveText('2');
   await page.click('[data-test=json-export]');
   const sicherung = (await geteilt(page)).at(-1);
-  expect(sicherung.name).toBe('HXNOW_SICHERUNG_20261203_0932.json');
+  expect(sicherung.name).toMatch(/^HXNOW_Komplettsicherung_[0-9a-f]{8}_20261203_0932\.json$/);
   const vorher = await leseDb(page);
 
   // Erneuter Import derselben Sicherung → nichts doppelt

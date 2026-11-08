@@ -16,6 +16,9 @@ import { zeigeTageskennzahlen } from './ui/tageskennzahlen.js';
 import { zeigeInfo } from './ui/info.js';
 import { zeigeSicherung } from './ui/sicherung.js';
 import { starteOfflineBetrieb } from './ui/update.js';
+import { zeigeTabSperre } from './ui/tabsperre.js';
+import { ermittleUmgebung } from './umgebung.js';
+import { TESTVERSION } from './config.js';
 
 const ANSICHTEN = {
   start: zeigeStart,
@@ -26,6 +29,7 @@ const ANSICHTEN = {
   tageskennzahlen: zeigeTageskennzahlen,
   info: zeigeInfo,
   sicherung: zeigeSicherung,
+  tabSperre: zeigeTabSperre,
 };
 
 /** Gemeinsamer App-Kontext für alle Ansichten. */
@@ -38,6 +42,8 @@ const app = {
   sitzung: null,
   uuid,
   aufraeumen: null,
+  gesperrt: false,          // Safari-Tab auf iPhone/iPad: nur Sperrhinweis und Datensicherung
+  aktualisiertVon: null,    // vorherige App-Version, wenn gerade aktualisiert wurde
 
   /** Wechselt die Ansicht; die vorherige räumt Timer, Wake Lock usw. auf. */
   async zeige(name, params = {}) {
@@ -47,6 +53,7 @@ const app = {
       f();
     }
     window.scrollTo(0, 0);
+    if (app.gesperrt && !['tabSperre', 'sicherung', 'info'].includes(name)) name = 'tabSperre';
     const r = await ANSICHTEN[name](app, params);
     if (typeof r === 'function') app.aufraeumen = r;
   },
@@ -86,7 +93,25 @@ async function fordereDauerhaftenSpeicher() {
   } catch { /* nicht unterstützt */ }
 }
 
+/** Merkt sich die App-Version; war sie anders, wurde gerade aktualisiert (Hinweis auf der Startseite). */
+async function merkeVersion() {
+  const vorher = (await db.hole(app.db, db.STORES.META, 'appVersion'))?.wert ?? null;
+  if (vorher && vorher !== APP_VERSION) app.aktualisiertVon = vorher;
+  if (vorher !== APP_VERSION) await db.setzeMeta(app.db, 'appVersion', APP_VERSION);
+}
+
+/** Dauerhafte Bänder über allen Ansichten: Testversion bzw. Browser-Tab am Desktop. */
+function zeigeBaender() {
+  if (TESTVERSION) {
+    document.body.prepend(el('div', { class: 'band band-testversion', 'data-test': 'band-testversion' }, 'TESTVERSION – keine Studiendaten'));
+  }
+  if (ermittleUmgebung() === 'browser-tab') {
+    document.body.prepend(el('div', { class: 'band band-browser', 'data-test': 'band-browser' }, 'Browser-Tab – nur für Test und Reserve'));
+  }
+}
+
 async function starte() {
+  zeigeBaender();
   const { schema, fehler } = await ladeSchema((url, opt) => fetch(url, opt));
   if (fehler.length > 0) {
     zeigeSchemaFehler(app.wurzel, fehler, APP_VERSION);
@@ -103,6 +128,13 @@ async function starte() {
     return;
   }
   if (app.meta.ersterStart || app.meta.persistiert !== true) await fordereDauerhaftenSpeicher();
+  await merkeVersion();
+
+  if (ermittleUmgebung() === 'ios-tab') {
+    app.gesperrt = true;
+    await app.zeige('tabSperre');
+    return;
+  }
 
   // Läuft oder pausiert noch ein Block, direkt in die Kodieransicht (bzw. Abschluss, falls inzwischen abgelaufen).
   const laufend = (await db.laufendeBloecke(app.db)).sort((a, b) => a.startTs - b.startTs);

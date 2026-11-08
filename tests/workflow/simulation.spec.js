@@ -89,7 +89,8 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
 
   const versuchErwartet = [];
   async function versuch(phase, bereich) {
-    const pseudonym = `P${String(r.ganz(100, 199)).padStart(3, '0')}`;
+    let pseudonym;
+    do pseudonym = `P${String(r.ganz(100, 199)).padStart(3, '0')}`; while (versuchErwartet.some((v) => v.pseudonym === pseudonym));
     await tippe('nicht-angetroffen');
     await page.locator('[data-test=pseudonym]').fill(pseudonym);
     await tippe(`phase-${phase}`);

@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.7.0 – 08.11.2026
+Phase L0 – Updates und Migration (PLAN_Logbuch_Datensicherheit), Datenbank-Migration nötig (2 → 3, automatisch):
+- „Nach Updates suchen“ in Info und auf der Startseite: neue Version (mit Hinweistext), aktuell oder keine Verbindung;
+  stille Prüfung beim Öffnen und Zurückkehren (höchstens stündlich); `version.json`.
+- Update nur ohne laufenden Block und ohne offenen Fragebogen; vorher Angebot einer Komplettsicherung und Hinweis auf
+  nicht exportierte Einträge; nach dem Neustart „Aktualisiert auf …“.
+- Datenbank Version 3 mit allen Stores für Fragebögen, Teilnehmende, Logbuch, Änderungen und Phasenplan.
+- Testversionen mit eigenem Datenbanknamen und gelbem Band (`js/config.js`).
+- Safari-Tab auf iPhone/iPad: Erfassen gesperrt mit Anleitung zum Home-Bildschirm; Desktop-Tab mit Hinweisband.
+- JSON-Datensicherung heißt jetzt Komplettsicherung (mit Geräte-ID im Namen, alle Stores).
+
 ## 0.6.0 – 08.11.2026
 Fragebogen-Modus, Phase F0 (Definition; noch keine Oberfläche):
 - `js/frageboegen.js`: FB1 (Baseline), KB (Kurzbogen Gewöhnung) und FB2 (Ende Regelbetrieb) nach den Spezifikationen

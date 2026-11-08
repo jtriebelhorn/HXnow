@@ -6,7 +6,7 @@ import { stelleWiederHer } from '../block.js';
 import { blockDatei, versuchDatei, tagDatei } from '../export.js';
 import { uhrzeit, datumLokal, formatiereCountdown } from '../zeit.js';
 import { exportiere, andereWege, bestaetigeEingang } from './exportieren.js';
-import { updateHinweis } from './update.js';
+import { updateHinweis, updateSuche, aktualisiertHinweis } from './update.js';
 import { istTestPseudonym } from '../schema.js';
 
 const TAG_MS = 24 * 3600 * 1000;
@@ -63,6 +63,7 @@ export async function zeigeStart(app) {
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-sicherung', onclick: () => app.zeige('sicherung') }, 'Sicherung'),
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-info', onclick: () => app.zeige('info') }, 'Info'))),
     updateHinweis(app),
+    aktualisiertHinweis(app),
     alt.length > 0
       ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'banner-24h' },
         `${alt.length} ${alt.length === 1 ? 'Eintrag ist' : 'Einträge sind'} seit über 24 Stunden nicht bestätigt. Bitte exportieren und Eingang bestätigen.`)
@@ -92,6 +93,7 @@ export async function zeigeStart(app) {
             e.oeffnen ? el('button', { type: 'button', 'data-test': 'oeffnen', onclick: e.oeffnen }, 'Öffnen') : null)))),
     el('p', { class: 'info', 'data-test': 'info' },
       `${schema.studie} · App-Version ${app.appVersion} · Schema-Version ${schema.schemaVersion}`),
+    updateSuche(app, { klein: true }),
   );
 }
 

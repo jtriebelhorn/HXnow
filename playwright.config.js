@@ -10,6 +10,8 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}/`,
     locale: 'de-DE',
     timezoneId: 'Europe/Berlin',
+    // Wie die App vom Home-Bildschirm (sonst greift im iPhone-Profil die Safari-Tab-Sperre, tests/server.js)
+    storageState: { cookies: [{ name: 'hx-installiert', value: '1', domain: 'localhost', path: '/', expires: -1, httpOnly: false, secure: false, sameSite: 'Lax' }], origins: [] },
     // Service Worker nur in tests/e2e/offline.spec.js aktiv, damit page.route() sonst alle Anfragen sieht
     serviceWorkers: 'block',
   },

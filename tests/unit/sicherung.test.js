@@ -16,10 +16,12 @@ const daten = {
 test('Sicherung erstellen und wieder einlesen', () => {
   const s = erstelleSicherung({ daten, geraeteId: 'g', appVersion: '1', schemaVersion: '0.1', now: START });
   const d = sicherungsDatei(s);
-  assert.equal(d.dateiname, 'HXNOW_SICHERUNG_20261203_0915.json');
+  assert.equal(d.dateiname, 'HXNOW_Komplettsicherung_g_20261203_0915.json');
   const r = pruefeSicherung(d.inhalt);
   assert.deepEqual(r.fehler, []);
-  assert.deepEqual(r.sicherung.stores, daten);
+  const leer = { fb_sitzungen: [], fb_antworten: [], teilnehmende: [], logbuch: [], aenderungen: [], phasenplan: [] };
+  assert.deepEqual(r.sicherung.stores, { ...daten, ...leer });
+  assert.equal(r.sicherung.formatVersion, 2);
   assert.equal(r.sicherung.erstellt, '2026-12-03T09:15:02+01:00');
 });
 
@@ -40,4 +42,11 @@ test('fremde oder kaputte Dateien werden abgelehnt', () => {
   const f = pruefeSicherung(JSON.stringify(s)).fehler;
   assert.ok(f.some((x) => x.includes('„versuche“ fehlt')));
   assert.ok(f.some((x) => x.includes('„episoden“, Eintrag 2')));
+});
+
+test('Sicherung von vor 0.7.0 (Format 1, ohne neue Stores) bleibt ladbar', () => {
+  const alt = { format: 'hxnow-beobachtung-sicherung', formatVersion: 1, stores: { bloecke: [{ blockId: 'b1' }], episoden: [], pausen: [], versuche: [], tageskennzahlen: [] } };
+  const r = pruefeSicherung(JSON.stringify(alt));
+  assert.deepEqual(r.fehler, []);
+  assert.deepEqual(r.sicherung.stores.logbuch, []);
 });

@@ -2,9 +2,14 @@
 // Schreibende Funktionen lösen erst auf, wenn die Transaktion abgeschlossen ist (oncomplete),
 // damit die Oberfläche nie etwas bestätigt, das noch nicht gespeichert ist.
 
-export const DB_NAME = 'hxnow-beobachtung';
+import { DB_NAME } from './config.js';
+
+export { DB_NAME };
 // Version 2: Store `pausen` (Spezifikation v2). Die Aktualisierung von Version 1 legt nur den neuen Store an.
-export const DB_VERSION = 2;
+// Version 3 (App 0.7.0, ENTSCHEIDUNGEN Nr. 34): alle Stores für Fragebögen, Teilnehmende, Logbuch, Änderungen und
+// Phasenplan auf einmal, dazu Meta-Standardwerte. Migrationen legen nur an und ergänzen fehlende Werte; sie löschen
+// nie Stores, ändern keine Schlüssel und lassen vorhandene Daten unverändert (PLAN_Logbuch_Datensicherheit 2.4).
+export const DB_VERSION = 3;
 
 export const STORES = Object.freeze({
   BLOECKE: 'bloecke',
@@ -13,6 +18,32 @@ export const STORES = Object.freeze({
   VERSUCHE: 'versuche',
   TAGESKENNZAHLEN: 'tageskennzahlen',
   META: 'meta',
+  FB_SITZUNGEN: 'fb_sitzungen',
+  FB_ANTWORTEN: 'fb_antworten',
+  TEILNEHMENDE: 'teilnehmende',
+  LOGBUCH: 'logbuch',
+  AENDERUNGEN: 'aenderungen',
+  PHASENPLAN: 'phasenplan',
+});
+
+/** Stores ab Version 3: Schlüssel und Indizes. */
+const STORES_V3 = Object.freeze([
+  [STORES.FB_SITZUNGEN, { keyPath: 'sitzungId' }, ['status', 'pseudonym', 'exportStatus']],
+  [STORES.FB_ANTWORTEN, { keyPath: ['sitzungId', 'itemId'] }, ['sitzungId']],
+  [STORES.TEILNEHMENDE, { keyPath: 'pseudonym' }, ['status', 'bereich']],
+  [STORES.LOGBUCH, { keyPath: 'eintragId' }, ['pseudonym', 'art']],
+  [STORES.AENDERUNGEN, { keyPath: 'aenderungId' }, ['zielId', 'ts']],
+  [STORES.PHASENPLAN, { keyPath: 'bereich' }, []],
+]);
+
+/** Meta-Felder mit Standardwert (Version 3); vorhandene Werte bleiben. */
+export const META_STANDARD = Object.freeze({
+  letzteSicherungTs: null,
+  letzteKomplettsicherungTs: null,
+  pinHash: null,
+  pinSalz: null,
+  exportordnerText: '',
+  stillgelegt: false,
 });
 
 /** Öffnet (und legt bei Bedarf an) die Datenbank. */
@@ -49,6 +80,18 @@ export function oeffneDb(idb = globalThis.indexedDB) {
       if (!db.objectStoreNames.contains(STORES.META)) {
         db.createObjectStore(STORES.META, { keyPath: 'schluessel' });
       }
+      // Version 3
+      for (const [name, opt, indizes] of STORES_V3) {
+        if (db.objectStoreNames.contains(name)) continue;
+        const s = db.createObjectStore(name, opt);
+        for (const i of indizes) s.createIndex(i, i);
+      }
+      const meta = anfrage.transaction.objectStore(STORES.META);
+      for (const [schluessel, wert] of Object.entries(META_STANDARD)) {
+        const r = meta.get(schluessel);
+        r.onsuccess = () => { if (r.result === undefined) meta.put({ schluessel, wert }); };
+      }
+      meta.put({ schluessel: 'dbVersion', wert: DB_VERSION });
     };
     anfrage.onsuccess = () => {
       const db = anfrage.result;
@@ -232,9 +275,15 @@ export function setzeExportStatus(db, store, schluessel, status, ts = Date.now()
   }).then((box) => box.satz);
 }
 
-/** Alle Datensätze aller gesicherten Stores. */
+/** Fragebogen-Sitzungen, die noch ausgefüllt werden (sperren Updates). */
+export async function offeneFbSitzungen(db) {
+  const r = await lesen(db, [STORES.FB_SITZUNGEN], (tx, merke) => merke('s', tx.objectStore(STORES.FB_SITZUNGEN).index('status').getAll('laufend')));
+  return r.s;
+}
+
+/** Alle Datensätze aller gesicherten Stores (alles außer meta). */
 export async function holeAlleDaten(db) {
-  const namen = [STORES.BLOECKE, STORES.EPISODEN, STORES.PAUSEN, STORES.VERSUCHE, STORES.TAGESKENNZAHLEN];
+  const namen = Object.values(STORES).filter((n) => n !== STORES.META);
   return lesen(db, namen, (tx, merke) => { for (const n of namen) merke(n, tx.objectStore(n).getAll()); });
 }
 

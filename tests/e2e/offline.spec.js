@@ -71,7 +71,7 @@ test('Neue Version während eines laufenden Blocks: kein Neuladen, kein Hinweis,
   await expect(page.locator('[data-test=countdown]')).toBeVisible();
   await expect(page.locator('[data-test=update-hinweis]')).toHaveCount(0);
   expect(await page.evaluate(() => navigator.serviceWorker.controller.state)).toBe('activated');
-  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.6.0');
+  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.7.0');
   expect((await leseDb(page)).episoden.filter((e) => !e.geloescht)).toHaveLength(2);
 });
 
@@ -89,7 +89,9 @@ test('Neue Version auf der Startseite: Hinweis, „Jetzt aktualisieren“ lädt 
   await stelleNeueVersionBereit(page);
   await expect(page.locator('[data-test=update-hinweis]')).toBeVisible();
 
-  await Promise.all([page.waitForEvent('load'), page.click('[data-test=update-jetzt]')]);
+  await page.click('[data-test=update-jetzt]');
+  await expect(page.locator('[data-test=dialog-update]')).toContainText('Komplettsicherung');
+  await Promise.all([page.waitForEvent('load'), page.click('[data-test=update-installieren]')]);
   await expect.poll(() => cacheNamen(page), { timeout: 10_000 }).toEqual([`hxnow-beobachtung-${NEUE_VERSION}`]);
   await expect(page.locator('[data-test=neuer-block]')).toBeVisible();
   await expect(page.locator('[data-test=update-hinweis]')).toHaveCount(0);

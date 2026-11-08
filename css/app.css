@@ -400,3 +400,12 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .pause-box .gruppe { gap: 6px; }
 .pause-box button.auswahl { text-align: left; min-height: 48px; padding: 6px 10px; font-size: 0.95rem; }
 .frage { margin: var(--abstand) 0; }
+
+/* Bänder und Sperre (PLAN_Logbuch_Datensicherheit 2.5 und 3) */
+.band { padding: 4px 12px; text-align: center; font-size: 0.8rem; font-weight: 700; }
+.band-testversion { background: #f6d34a; color: #111418; }
+.band-browser { background: var(--flaeche-stark); color: var(--text-leise); font-weight: 600; }
+.sperre { margin: 24px 0; padding: 16px; border-radius: var(--radius); background: var(--fehler-flaeche); border: 3px solid var(--fehler); }
+.sperre h1 { color: var(--fehler); font-size: 1.4rem; }
+.update-suche.klein { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.update-ergebnis p { margin: 6px 0; }

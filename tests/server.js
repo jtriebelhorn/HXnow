@@ -33,6 +33,17 @@ createServer(async (req, res) => {
     if (testVersion && pfad === '/sw.js') {
       inhalt = inhalt.toString('utf8').replace(/const CACHE_VERSION = '[^']+'/, `const CACHE_VERSION = '${testVersion}'`);
     }
+    if (testVersion && pfad === '/version.json') {
+      inhalt = inhalt.toString('utf8').replace(/"appVersion": "[^"]+"/, `"appVersion": "${testVersion}"`);
+    }
+    // Cookie „hx-installiert=1“ (Standard in den Playwright-Konfigurationen): App verhält sich wie vom Home-Bildschirm
+    if (/(?:^|;\s*)hx-installiert=1/.test(req.headers.cookie ?? '') && pfad === '/js/umgebung.js') {
+      inhalt = inhalt.toString('utf8').replace('const TEST_INSTALLIERT = false;', 'const TEST_INSTALLIERT = true;');
+    }
+    // Cookie „testversion=1“ liefert die App als Testversion aus (eigener Datenbankname, gelbes Band)
+    if (/(?:^|;\s*)testversion=1/.test(req.headers.cookie ?? '') && pfad === '/js/config.js') {
+      inhalt = inhalt.toString('utf8').replace('export const TESTVERSION = false;', 'export const TESTVERSION = true;');
+    }
     res.writeHead(200, { 'Content-Type': TYPEN[extname(datei)] ?? 'application/octet-stream', 'Cache-Control': 'no-cache' });
     res.end(inhalt);
   } catch {

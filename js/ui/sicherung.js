@@ -1,4 +1,4 @@
-// Datensicherung (Spezifikation 7.5): JSON-Export aller Daten, JSON-Import ohne Überschreiben,
+// Datensicherung (PLAN_Logbuch_Datensicherheit 4.4): Komplettsicherung aller Daten, Import ohne Überschreiben,
 // Löschen bestätigter Einträge (nur mit Sicherheitsabfrage, nie automatisch).
 import { el, ersetze, bestaetige, meldung } from './dom.js';
 import * as db from '../db.js';
@@ -45,19 +45,19 @@ export async function zeigeSicherung(app) {
         el('td', {}, NAMEN[n]), el('td', { class: 'zahl', 'data-test': `anzahl-${n}` }, daten[n].length))))),
 
     el('h2', {}, 'Sichern'),
-    el('p', { class: 'hinweis' }, 'Vollständiger Abzug aller Daten als eine Datei – z. B. vor einem iOS-Update. Die Datei enthält Studiendaten: nur auf Klinikumssystemen ablegen.'),
+    el('p', { class: 'hinweis' }, 'Vollständiger Abzug aller Daten als eine Datei – vor jedem Update, am Ende jeder Studienphase und vor einem Gerätewechsel. Die Datei enthält Studiendaten: nur auf Klinikumssystemen ablegen.'),
     el('button', {
       type: 'button', class: 'primaer gross', 'data-test': 'json-export',
       // Datei synchron aus den bereits geladenen Daten erzeugen (Teilen erfordert direkte Nutzergeste).
       onclick: () => exportiere(app, sicherungsDatei(erstelleSicherung({
         daten, geraeteId: app.meta.geraeteId, appVersion: app.appVersion, schemaVersion: app.schema.schemaVersion, now: Date.now(),
       }))),
-    }, 'Alle Daten exportieren (JSON)'),
+    }, 'Komplettsicherung erstellen'),
 
     el('h2', {}, 'Wiederherstellen'),
     el('p', { class: 'hinweis' }, 'Liest eine Sicherung ein. Vorhandene Einträge werden nicht überschrieben, doppelte werden übersprungen.'),
     dateiFeld,
-    el('button', { type: 'button', class: 'gross', 'data-test': 'json-import', onclick: () => dateiFeld.click() }, 'JSON importieren'),
+    el('button', { type: 'button', class: 'gross', 'data-test': 'json-import', onclick: () => dateiFeld.click() }, 'Sicherung laden'),
 
     el('h2', {}, 'Löschen'),
     el('button', {

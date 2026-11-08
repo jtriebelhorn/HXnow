@@ -11,6 +11,8 @@ export default defineConfig({
     baseURL: `http://localhost:${PORT}/`,
     locale: 'de-DE',
     timezoneId: 'Europe/Berlin',
+    // Wie die App vom Home-Bildschirm (sonst greift im iPhone-Profil die Safari-Tab-Sperre, tests/server.js)
+    storageState: { cookies: [{ name: 'hx-installiert', value: '1', domain: 'localhost', path: '/', expires: -1, httpOnly: false, secure: false, sameSite: 'Lax' }], origins: [] },
     serviceWorkers: 'block',
     // Jede Bedienaktion muss zügig möglich sein; sonst sofort mit Fehlerstelle abbrechen
     actionTimeout: 10_000,

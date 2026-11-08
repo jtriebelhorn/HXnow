@@ -7,7 +7,7 @@
 
 // Muss APP_VERSION in js/version.js entsprechen (Unit-Test prüft das). Bei jeder Auslieferung erhöhen,
 // sonst bekommen installierte Geräte geänderte Dateien nicht.
-const CACHE_VERSION = '0.6.0';
+const CACHE_VERSION = '0.7.0';
 const CACHE_NAME = `hxnow-beobachtung-${CACHE_VERSION}`;
 
 // Alle ausgelieferten Dateien (Unit-Test prüft Vollständigkeit gegen das Repository).
@@ -20,6 +20,8 @@ const DATEIEN = [
   'icons/icon-180.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
+  'version.json',
+  'js/config.js',
   'js/block.js',
   'js/db.js',
   'js/export.js',
@@ -30,6 +32,8 @@ const DATEIEN = [
   'js/schema.js',
   'js/sicherung.js',
   'js/sitzung.js',
+  'js/umgebung.js',
+  'js/updatepruefung.js',
   'js/uuid.js',
   'js/version.js',
   'js/zeit.js',
@@ -42,6 +46,7 @@ const DATEIEN = [
   'js/ui/schemafehler.js',
   'js/ui/sicherung.js',
   'js/ui/start.js',
+  'js/ui/tabsperre.js',
   'js/ui/tageskennzahlen.js',
   'js/ui/update.js',
   'js/ui/versuch.js',
@@ -67,12 +72,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
-  if (event.data === 'aktivieren') self.skipWaiting();
+  if (event.data === 'aktivieren' || event.data?.typ === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {
   const anfrage = event.request;
   if (anfrage.method !== 'GET' || new URL(anfrage.url).origin !== self.location.origin) return;
+  // version.json: zuerst vom Server (Update-Suche), ohne Netz aus dem Cache
+  if (new URL(anfrage.url).pathname.endsWith('/version.json')) {
+    event.respondWith(fetch(anfrage).catch(() => caches.open(CACHE_NAME).then((c) => c.match('version.json'))));
+    return;
+  }
   event.respondWith((async () => {
     const cache = await caches.open(CACHE_NAME);
     const treffer = await cache.match(anfrage, { ignoreSearch: true })
