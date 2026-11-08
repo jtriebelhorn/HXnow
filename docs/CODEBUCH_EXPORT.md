@@ -1,6 +1,6 @@
 # Codebuch der Exportdateien
 
-Gilt ab App-Version 0.5.5 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+Gilt ab App-Version 0.5.6 (Kodierschema 0.3). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`
 (Version in der Spalte `schema_version`).
 

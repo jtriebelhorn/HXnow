@@ -873,3 +873,19 @@ describe('Haltung bei HX Now als Nebentätigkeit (ENTSCHEIDUNGEN Nr. 25)', () =>
     assert.equal(B.nebenText(SCHEMA, aktuell(z)), 'NT3 (N1, H9), NT6');
   });
 });
+
+describe('„Gehen“ setzt den Ort auf unterwegs (ENTSCHEIDUNGEN Nr. 27)', () => {
+  test('Tipp auf T9 am Flur → O6; vor der ersten Episode genügt der Tipp auf T9', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T6', 'O4']);
+    z = ok(B.tippeTaetigkeit(z, 'T9', ctx.bei(20))).zustand;
+    assert.deepEqual([aktuell(z).ort, aktuell(z).taetigkeit, aktive(z).length], ['O6', 'T9', 2]);
+    // angekommen: erst Ort, dann wieder „Gehen“ → zurück nach unterwegs
+    z = ok(B.tippeOrt(z, 'O1', ctx.bei(40))).zustand;
+    z = ok(B.tippeTaetigkeit(z, 'T9', ctx.bei(45))).zustand;
+    assert.deepEqual([aktuell(z).ort, aktuell(z).taetigkeit, aktive(z).length], ['O6', 'T9', 4]);
+    const leer = ok(B.erzeugeBlock(ANGABEN_POST, ctx.bei(0))).zustand;
+    const r = ok(B.tippeTaetigkeit(leer, 'T9', ctx));
+    assert.deepEqual([r.neueEpisode, aktuell(r.zustand).ort], [true, 'O6']);
+  });
+});

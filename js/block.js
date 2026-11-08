@@ -415,6 +415,7 @@ export function tippeOrt(zustand, code, ctx) {
  * (auch zwischen Geräten) setzt sie zurück. Gleichzeitige Tätigkeiten laufen weiter.
  * Unterwegs (ENTSCHEIDUNGEN Nr. 20): Ortswechsel nach „unterwegs“ während einer ortsfesten Tätigkeit (PC, Visitenwagen)
  * → „Gehen“; eine ortsfeste Tätigkeit unterwegs wird abgelehnt (erst den Ort wählen).
+ * Ein Tipp auf „Gehen“ setzt den Ort auf „unterwegs“ (ENTSCHEIDUNGEN Nr. 27).
  */
 export function wechsle(zustand, ziel, ctx) {
   const sperre = eingabeSperre(zustand, ctx);
@@ -423,7 +424,7 @@ export function wechsle(zustand, ziel, ctx) {
   const akt = aktuelleEpisode(zustand);
   const basis = akt ?? zustand.auswahl;
   let t = ziel.taetigkeit ?? basis.taetigkeit;
-  const o = ziel.ort ?? basis.ort;
+  let o = ziel.ort ?? basis.ort;
 
   const fehlerT = ziel.taetigkeit !== undefined ? pruefeTaetigkeit(zustand, schema, ziel.taetigkeit) : null;
   if (fehlerT) return fehlerT;
@@ -431,6 +432,9 @@ export function wechsle(zustand, ziel, ctx) {
     return abgelehnt(zustand, 'CODE_UNBEKANNT', `Unbekannter Ort „${ziel.ort}“.`);
   }
   if (ziel.taetigkeit === undefined && istOrtsfestUnterwegs(schema, t, o)) t = gehenCode(schema);
+  if (ziel.taetigkeit !== undefined && finde(schema.taetigkeiten, t)?.nurGehen && !finde(schema.orte, o)?.unterwegs) {
+    o = unterwegsCode(schema) ?? o;
+  }
   if (istOrtsfestUnterwegs(schema, t, o)) {
     return abgelehnt(zustand, 'ORTSFEST',
       `${finde(schema.taetigkeiten, t).label} ist unterwegs nicht möglich – bitte zuerst den Ort wählen.`);
@@ -939,6 +943,10 @@ function sortiereNeben(schema, neben, t) {
 
 function istOrtsfestUnterwegs(schema, t, o) {
   return Boolean(t && o && finde(schema.taetigkeiten, t)?.ortsfest && finde(schema.orte, o)?.unterwegs);
+}
+
+function unterwegsCode(schema) {
+  return schema.orte.find((x) => x.unterwegs)?.code ?? null;
 }
 
 function gehenCode(schema) {

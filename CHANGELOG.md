@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.6 – 08.11.2026
+Nach zwei Testläufen (P000):
+- „Gehen“ setzt den Ort automatisch auf „Unterwegs“; O4 heißt „Flur (Aufenthalt)“ (ENTSCHEIDUNGEN Nr. 27).
+- Rückgängig fragt nach, wenn die letzte Episode älter als 10 s ist, und nennt, wohin die Zeit geht (Nr. 28).
+
 ## 0.5.5 – 04.11.2026
 - Nebentätigkeiten sind nachvollziehbar: Die Abschlussseite zeigt den Ablauf aufgeklappt mit Spalte NT und die
   Anteile je Nebentätigkeit; die CSV hat die lesbare Spalte `nebentaetigkeiten`.

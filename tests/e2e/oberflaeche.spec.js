@@ -506,3 +506,38 @@ test('Unterwegs und Gehen: Telefon und HX Now als gleichzeitig kodierbar', async
   await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('Neben: NT3 (N1, H1), NT7');
   await expect(page.locator('[data-test=geraet-dabei]')).toHaveAttribute('aria-pressed', 'true');
 });
+
+test('Rückgängig: nach mehr als 10 s Rückfrage mit Hinweis, wohin die Zeit geht; direkt danach ohne Rückfrage', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page);
+  await tippe(page, 'o-O1');
+  await tippe(page, 't-T1');
+  await page.clock.fastForward('00:30');
+  await tippe(page, 't-T7');
+  await page.clock.fastForward('00:45');
+  await page.click('[data-test=rueckgaengig]');
+  await expect(page.locator('.dialog, [role=dialog]').first()).toContainText('läuft seit 45 s');
+  await expect(page.locator('.dialog, [role=dialog]').first()).toContainText('Episode 1 (PC stationär, Arztzimmer)');
+  await page.click('[data-test=bestaetigen-nein]');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#2');
+  await page.click('[data-test=rueckgaengig]');
+  await page.click('[data-test=bestaetigen-ja]');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#1');
+  // Vertipper direkt danach: ohne Rückfrage
+  await tippe(page, 't-T5');
+  await page.clock.fastForward('00:02');
+  await page.click('[data-test=rueckgaengig]');
+  await expect(page.locator('[data-test=aktuelle-episode]')).toContainText('#1');
+  expect((await leseDb(page)).episoden.filter((e) => e.geloescht)).toHaveLength(2);
+});
+
+test('Gehen setzt den Ort auf Unterwegs', async ({ page }) => {
+  await oeffne(page);
+  await starteBlock(page);
+  await tippe(page, 'o-O4');
+  await tippe(page, 't-T6');
+  await page.clock.fastForward('00:20');
+  await tippe(page, 't-T9');
+  await expect(page.locator('[data-test=o-O6]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-test=o-O4]')).toContainText('Flur (Aufenthalt)');
+});

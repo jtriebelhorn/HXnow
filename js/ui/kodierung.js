@@ -7,6 +7,7 @@ import { formatiereCountdown } from '../zeit.js';
 import { pflichtangaben, istTestPseudonym, nebentaetigkeiten, ntCode } from '../schema.js';
 
 const TAKT_MS = 250;
+const RUECKGAENGIG_FRAGEN_MS = 10_000;
 
 export async function zeigeKodierung(app, { blockId }) {
   const { schema } = app;
@@ -41,8 +42,22 @@ export async function zeigeKodierung(app, { blockId }) {
     return r;
   }
 
+  /**
+   * Rückgängig löscht die letzte Episode; ihre Zeit geht an die Episode davor. Ist die letzte Episode älter als
+   * RUECKGAENGIG_FRAGEN_MS, wird vorher nachgefragt (ENTSCHEIDUNGEN Nr. 28) – ein Vertipper direkt danach nicht.
+   */
   async function rueckgaengig() {
     const vorher = B.aktuelleEpisode(z());
+    const aktiv = B.aktiveEpisoden(z());
+    const davor = aktiv.length >= 2 ? aktiv[aktiv.length - 2] : null;
+    const alterMs = vorher ? Date.now() - vorher.startTs : 0;
+    if (vorher && davor && !pausiert() && alterMs > RUECKGAENGIG_FRAGEN_MS) {
+      const name = (e) => `${e.nr} (${label('taetigkeiten', e.taetigkeit)}, ${label('orte', e.ort)})`;
+      const ja = await bestaetige('Episode löschen?',
+        `Episode ${name(vorher)} läuft seit ${Math.floor(alterMs / 1000)} s. Beim Löschen wird diese Zeit Episode ${name(davor)} zugeschlagen.`,
+        { ja: 'Löschen', nein: 'Behalten', gefahr: true });
+      if (!ja) return;
+    }
     const r = await ausfuehren(B.rueckgaengig);
     if (r?.ok) meldung(`Episode ${vorher.nr} (${vorher.taetigkeit}/${vorher.ort}) rückgängig gemacht.`);
   }

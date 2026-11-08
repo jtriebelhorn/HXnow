@@ -60,7 +60,7 @@ test('Zeitstempel konsistent: ende − start = dauer_sek in jeder Zeile, auch be
   let z = ok(B.erzeugeBlock(ANGABEN_PRE, ctx)); // Start mit 700 ms Anteil
   z = ok(B.tippeOrt(z, 'O1', ctx));
   z = ok(B.tippeTaetigkeit(z, 'T5', ctx));
-  for (const [sek, t] of [[24.9, 'T4'], [29.2, 'T9'], [49.4, 'T1'], [50.6, 'T7'], [57.1, 'T1']]) {
+  for (const [sek, t] of [[24.9, 'T4'], [29.2, 'T8'], [49.4, 'T1'], [50.6, 'T7'], [57.1, 'T1']]) {
     z = ok(B.tippeTaetigkeit(z, t, ctx.bei(sek)));
   }
   z = ok(B.pausiere(z, ctx.bei(80.5)));

@@ -107,15 +107,19 @@ export class SollBlock {
   tippeT(ts, t) {
     this.log(ts, `Tätigkeit ${t} getippt`);
     const a = this.akt;
-    const o = a ? a.o : this.wahl.o;
+    let o = a ? a.o : this.wahl.o;
     if (o && this.unmoeglich(t, o)) { this.log(ts, '→ abgelehnt: unterwegs nicht möglich'); return false; }
+    // „Gehen“ heißt unterwegs: der Ort wechselt mit
+    const unterwegs = this.schema.orte.find((x) => x.unterwegs).code;
+    if (this.t(t).nurGehen && o !== unterwegs) { o = unterwegs; this.log(ts, `→ Ort ${unterwegs}`); }
     if (!a) {
       this.wahl.t = t;
+      if (o !== this.wahl.o) this.wahl.o = o;
       if (this.wahl.o) this.neueEpisode(ts, t, this.wahl.o, false, []);
       return true;
     }
-    if (a.t === t) return false;
-    this.neueEpisode(ts, t, a.o, false);
+    if (a.t === t && a.o === o) return false;
+    this.neueEpisode(ts, t, o, a.t === t);
     return true;
   }
 
