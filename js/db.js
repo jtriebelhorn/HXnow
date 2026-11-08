@@ -334,6 +334,49 @@ export function schreibeLogbuchAenderung(db, { aenderungen = [], phasenplan = nu
   });
 }
 
+/**
+ * Widerruf (PLAN_Logbuch_Datensicherheit 6.4) in einer Transaktion: löscht Blöcke (mit Episoden und Pausen),
+ * Versuche, Fragebögen (mit Antworten), Logbuch-Einträge und Änderungen des Codes; schreibt die Zeile der
+ * Teilnehmerliste (Status widerrufen) und die Änderung WIDERRUF_LOESCHUNG.
+ * Gelöscht wird, was im Logbuch dem Code zugeordnet ist (`ids`), und Rohdaten mit diesem Code ohne Logbuch-Eintrag;
+ * Einträge, die einem anderen Code zugeordnet wurden (`behalten`), bleiben.
+ */
+export function widerrufe(db, { pseudonym, ids, behalten, aenderungIds, aenderung, teilnehmer }) {
+  const namen = [STORES.BLOECKE, STORES.EPISODEN, STORES.PAUSEN, STORES.VERSUCHE, STORES.FB_SITZUNGEN, STORES.FB_ANTWORTEN,
+    STORES.LOGBUCH, STORES.AENDERUNGEN, STORES.TEILNEHMENDE];
+  const idSet = new Set(ids);
+  const behaltenSet = new Set(behalten);
+  const weg = (id, p) => idSet.has(id) || (p === pseudonym && !behaltenSet.has(id));
+  return transaktion(db, namen, 'readwrite', (tx) => {
+    const n = { bloecke: 0, versuche: 0, fb_sitzungen: 0 };
+    const st = (x) => tx.objectStore(x);
+    st(STORES.BLOECKE).getAll().onsuccess = (ev) => {
+      for (const b of ev.target.result.filter((x) => weg(x.blockId, x.pseudonym))) {
+        st(STORES.BLOECKE).delete(b.blockId); n.bloecke += 1;
+        for (const s of [STORES.EPISODEN, STORES.PAUSEN]) {
+          st(s).index('blockId').getAllKeys(b.blockId).onsuccess = (e2) => { for (const k of e2.target.result) st(s).delete(k); };
+        }
+      }
+    };
+    st(STORES.VERSUCHE).getAll().onsuccess = (ev) => {
+      for (const v of ev.target.result.filter((x) => weg(x.versuchId, x.pseudonym))) { st(STORES.VERSUCHE).delete(v.versuchId); n.versuche += 1; }
+    };
+    st(STORES.FB_SITZUNGEN).getAll().onsuccess = (ev) => {
+      for (const f of ev.target.result.filter((x) => weg(x.sitzungId, x.pseudonym))) {
+        st(STORES.FB_SITZUNGEN).delete(f.sitzungId); n.fb_sitzungen += 1;
+        st(STORES.FB_ANTWORTEN).index('sitzungId').getAllKeys(f.sitzungId).onsuccess = (e2) => { for (const k of e2.target.result) st(STORES.FB_ANTWORTEN).delete(k); };
+      }
+    };
+    st(STORES.LOGBUCH).getAll().onsuccess = (ev) => {
+      for (const l of ev.target.result.filter((x) => weg(x.eintragId, x.pseudonym))) st(STORES.LOGBUCH).delete(l.eintragId);
+    };
+    for (const id of aenderungIds) st(STORES.AENDERUNGEN).delete(id);
+    st(STORES.AENDERUNGEN).add(aenderung);
+    st(STORES.TEILNEHMENDE).put(teilnehmer);
+    return n;
+  });
+}
+
 /** Stores der Logbuch-Datei (Teilnehmerliste, Phasenplan, Logbuch, Änderungen). */
 export async function holeLogbuchDaten(db) {
   const namen = [STORES.TEILNEHMENDE, STORES.PHASENPLAN, STORES.LOGBUCH, STORES.AENDERUNGEN];

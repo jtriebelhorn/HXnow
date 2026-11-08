@@ -1,2 +1,2 @@
 // App-Version. Bei jeder Auslieferung erhöhen und in sw.js (CACHE_VERSION) sowie CHANGELOG.md nachziehen.
-export const APP_VERSION = '0.12.0';
+export const APP_VERSION = '0.13.0';

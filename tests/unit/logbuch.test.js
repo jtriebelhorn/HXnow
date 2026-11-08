@@ -191,3 +191,28 @@ describe('PIN', async () => {
     assert.equal(ok.z.fehlversuche, 0);
   });
 });
+
+describe('Widerruf', async () => {
+  const { widerrufUmfang, widerrufProtokoll, exportDateiname, dateinameWiderruf } = await import('../../js/widerruf.js');
+  test('Umfang: eigene und zugeordnete Einträge, Änderungen, Dateinamen wie beim Export', () => {
+    const d = daten();
+    d.logbuch.push(block('b9', 'P002', 'PRE', '2026-11-27T10:00:00+01:00'));
+    const aend = [...d.aenderungen,
+      { aenderungId: 'z', ts: 9, art: 'ZUORDNUNG', zielTyp: 'eintrag', zielId: 'b9', alt: 'P002', neu: 'P001' },
+      { aenderungId: 'k', ts: 10, art: 'KOMMENTAR', zielTyp: 'proband', zielId: 'P001', text: 'x' },
+      { aenderungId: 'k2', ts: 11, art: 'KOMMENTAR_ZURUECK', zielTyp: 'aenderung', zielId: 'k' },
+      { aenderungId: 'o', ts: 12, art: 'KOMMENTAR', zielTyp: 'eintrag', zielId: 'b3', text: 'bleibt' }];
+    const u = widerrufUmfang('P001', { logbuch: d.logbuch, aenderungen: aend });
+    assert.deepEqual(u.eintraege.map((e) => e.eintragId).sort(), ['b1', 'b2', 'b9', 'f1']);
+    assert.deepEqual(u.aenderungen.map((a) => a.aenderungId).sort(), ['a1', 'k', 'k2', 'z']);
+    assert.deepEqual(u.anzahl, { bloecke: 3, versuche: 0, frageboegen: 1 });
+    assert.ok(u.dateien.includes('HXNOW_BEOB_P002_20261127_1000_b9.csv'), 'Datei trägt den ursprünglichen Code');
+    assert.ok(u.dateien.includes('HXNOW_FB_FB1_P001_20261127_0900_f1.csv'));
+    assert.equal(exportDateiname({ ...block('b', 'P1', 'PRE', '2026-11-27T10:00:00+01:00'), status: 'laufend' }), null);
+    const text = widerrufProtokoll('P001', u, { ts: T('2026-12-03T10:00:00+01:00'), geraeteId: 'abcdef1234', appVersion: '0.13.0' });
+    assert.match(text, /3 Blöcke, 0 Versuche, 1 Fragebögen gelöscht/);
+    assert.match(text, /  - HXNOW_BEOB_P001_20261124_0800_b1\.csv/);
+    assert.ok(!text.includes('Visite verlängert'), 'keine Inhalte');
+    assert.equal(dateinameWiderruf('P001', T('2026-12-03T10:00:00+01:00')), 'HXNOW_Widerruf_P001_20261203.txt');
+  });
+});

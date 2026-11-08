@@ -2,11 +2,12 @@
 // bzw. aufheben, Proband (Zuordnung), Phase, Status des Probanden, individuelle Phasendaten. Jede Änderung wird nur
 // angefügt (Store `aenderungen`); die erfassten Daten bleiben unverändert. Danach wird angeboten, das Logbuch zu
 // sichern.
-import { el, dialog, meldung } from './dom.js';
+import { el, dialog, meldung, ersetze } from './dom.js';
 import * as db from '../db.js';
 import { neueAenderung, ART, UNGUELTIG_GRUENDE } from '../aenderungen.js';
 import { pinFormatOk, neuesSalz, pinHash, pruefePin, GUELTIG_MS } from '../pin.js';
-import { sichereLogbuch } from './exportieren.js';
+import { sichereLogbuch, exportiere } from './exportieren.js';
+import { widerrufUmfang, widerrufKurz, widerrufProtokoll, dateinameWiderruf } from '../widerruf.js';
 
 const STATUS_PROBAND = [
   { code: 'aktiv', label: 'aktiv' }, { code: 'pausiert', label: 'pausiert (z. B. Urlaub, Krankheit)' }, { code: 'ausgeschieden', label: 'ausgeschieden' },
@@ -283,6 +284,67 @@ async function phasendaten(app, t, zurueck) {
   speichere(app, aenderungen, { teilnehmer: { ...t, phasenAbweichung: leer ? null : r.neu }, zurueck });
 }
 
-// Widerruf: Phase L5
-function widerrufKnopf() { return null; }
+// ============================================================================ Widerruf (L5)
+function widerrufKnopf(app, t) {
+  if (t.status === 'widerrufen') return null;
+  return el('button', { type: 'button', class: 'gefahr', 'data-test': 'widerruf', onclick: () => schuetze(app, `Widerruf von ${t.pseudonym}`, () => widerruf(app, t)) }, 'Widerruf');
+}
+
+async function widerruf(app, t) {
+  const laeuft = (await db.laufendeBloecke(app.db)).some((b) => b.pseudonym === t.pseudonym)
+    || (await db.offeneFbSitzungen(app.db)).some((s) => s.pseudonym === t.pseudonym);
+  if (laeuft) { meldung(`Für ${t.pseudonym} läuft noch ein Block oder Fragebogen. Bitte zuerst beenden oder abbrechen.`, 'fehler'); return; }
+  const u = widerrufUmfang(t.pseudonym, app.logbuchDaten);
+  const code = el('input', { type: 'text', autocapitalize: 'characters', autocomplete: 'off', 'data-test': 'widerruf-code' });
+  const r = await formular(`Widerruf ${t.pseudonym}`, {
+    felder: [
+      el('p', {}, `Alle Daten von ${t.pseudonym} werden endgültig von diesem Gerät gelöscht: ${widerrufKurz(u)}. `
+        + 'Erhalten bleiben nur die Zeile der Teilnehmerliste (Status „widerrufen“) und der Vorgang im Änderungsprotokoll.'),
+      el('p', {}, `Danach entsteht ein Protokoll mit ${u.dateien.length} ${u.dateien.length === 1 ? 'Datei' : 'Dateien'}, die im Exportordner zu löschen sind.`),
+      el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'Zum Bestätigen den Studien-Code eintippen'), code),
+    ],
+    lesen: () => (code.value.trim().toUpperCase() === t.pseudonym ? {} : 'Der Code stimmt nicht.'),
+    ok: 'Endgültig löschen', gefahr: true, test: 'dialog-widerruf',
+  });
+  if (!r) return;
+  const c = ctx(app);
+  const aenderung = neueAenderung({ art: ART.WIDERRUF_LOESCHUNG, zielTyp: 'proband', zielId: t.pseudonym, feld: 'status', alt: t.status, neu: 'widerrufen', text: widerrufKurz(u) }, c);
+  const ids = new Set(u.eintraege.map((e) => e.eintragId));
+  const teilnehmer = { ...t, status: 'widerrufen', statusTs: aenderung.ts, notiz: '', phasenAbweichung: null };
+  try {
+    await db.widerrufe(app.db, {
+      pseudonym: t.pseudonym, ids: [...ids], behalten: app.logbuchDaten.logbuch.filter((l) => !ids.has(l.eintragId)).map((l) => l.eintragId),
+      aenderungIds: u.aenderungen.map((a) => a.aenderungId), aenderung, teilnehmer,
+    });
+  } catch (e) {
+    meldung(`Widerruf fehlgeschlagen (${e.message}). Es wurde nichts gelöscht.`, 'fehler');
+    return;
+  }
+  app.teilnehmende?.set(t.pseudonym, teilnehmer);
+  const offen = [...new Set([...(app.meta.widerrufOffen ?? []), t.pseudonym])];
+  await db.setzeMeta(app.db, 'widerrufOffen', offen);
+  app.meta.widerrufOffen = offen;
+  const protokoll = {
+    dateiname: dateinameWiderruf(t.pseudonym, aenderung.ts),
+    inhalt: widerrufProtokoll(t.pseudonym, u, { ts: aenderung.ts, geraeteId: app.meta.geraeteId, appVersion: app.appVersion }),
+    typ: 'text/plain',
+  };
+  app.zeige('widerrufFertig', { pseudonym: t.pseudonym, protokoll, dateien: u.dateien });
+}
+
+/** Nach dem Widerruf: Protokoll und Logbuch teilen (Pflicht, Startseite mahnt bis dahin). */
+export function zeigeWiderrufFertig(app, { pseudonym, protokoll, dateien }) {
+  ersetze(app.wurzel,
+    el('h1', {}, `Widerruf ${pseudonym}`),
+    el('p', { 'data-test': 'widerruf-fertig' }, 'Die Daten sind von diesem Gerät gelöscht.'),
+    el('h2', {}, 'Im Exportordner löschen'),
+    dateien.length ? el('ul', { class: 'liste-kurz', 'data-test': 'widerruf-dateien' }, dateien.map((d) => el('li', {}, d))) : el('p', { class: 'hinweis' }, 'Keine exportierten Dateien.'),
+    el('p', { class: 'hinweis' }, 'Jetzt Protokoll und Logbuch teilen und im Exportordner speichern. Das Logbuch ersetzt die vorige Fassung.'),
+    el('div', { class: 'stapel' },
+      el('button', {
+        type: 'button', class: 'primaer gross', 'data-test': 'widerruf-teilen',
+        onclick: () => exportiere(app, protokoll, { mitLogbuch: true, nachher: () => app.zeige('proband', { pseudonym }) }),
+      }, 'Protokoll und Logbuch teilen'),
+      el('button', { type: 'button', class: 'gross', 'data-test': 'zurueck', onclick: () => app.zeige('studie') }, 'Später')));
+}
 

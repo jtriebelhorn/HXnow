@@ -111,6 +111,7 @@ export function zeigeProband(app, { pseudonym }) {
   const pv = probandVerlauf(pseudonym, d.aenderungen);
   ersetze(app.wurzel,
     el('h1', { 'data-test': 'proband-code' }, t.pseudonym),
+    t.status === 'widerrufen' ? el('div', { class: 'banner-rot', 'data-test': 'proband-widerrufen' }, 'Widerrufen – alle Daten gelöscht. Neue Erfassungen mit diesem Code sind nicht möglich.') : null,
     el('dl', { class: 'eckdaten', 'data-test': 'proband-eckdaten' },
       el('dt', {}, 'Bereich'), el('dd', {}, bereichName(app, t.bereich)),
       el('dt', {}, 'Status'), el('dd', { 'data-test': 'proband-status' }, `${t.status}${t.statusTs ? ` (seit ${datumDe(t.statusTs)})` : ''}`),

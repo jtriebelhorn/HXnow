@@ -85,6 +85,8 @@ export async function zeigeStart(app) {
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-info', onclick: () => app.zeige('info') }, 'Info'))),
     updateHinweis(app),
     aktualisiertHinweis(app),
+    app.meta?.widerrufOffen?.length ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'banner-widerruf' },
+      `Widerruf ${app.meta.widerrufOffen.join(', ')}: Logbuch noch nicht gesichert. Bitte „Logbuch sichern“ tippen.`) : null,
     stillgelegt ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'banner-stillgelegt' },
       'Dieses Gerät ist stillgelegt – keine neuen Erhebungen. Daten bleiben exportierbar (Aufheben unter „Sicherung“).') : null,
     leer ? el('div', { class: 'banner-info', 'data-test': 'banner-leer' },

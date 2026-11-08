@@ -40,8 +40,8 @@ export function exportiere(app, datei, ziel = {}) {
 
 /** Logbuch-Datei als zweite Datei bei Sitzungsexporten. */
 function logbuchAnhang(app, ziel) {
-  if (!ziel.store || typeof app.logbuchDateiFuer !== 'function') return [];
-  try { return [app.logbuchDateiFuer(ziel.schluessel)]; } catch { return []; }
+  if (!(ziel.store || ziel.mitLogbuch) || typeof app.logbuchDateiFuer !== 'function') return [];
+  try { return [app.logbuchDateiFuer(ziel.store ? ziel.schluessel : null)]; } catch { return []; }
 }
 
 /** „Logbuch sichern“: nur die Logbuch-Datei teilen (synchron aus dem Klick). */
@@ -103,11 +103,12 @@ async function frageNach(app, datei, ziel, titel, text, mitLogbuch = false) {
 async function markiereExportiert(app, datei, { store, schluessel, nachher }, mitLogbuch = false) {
   if (mitLogbuch) {
     const ts = Date.now();
-    if (app.meta) app.meta.letzteSicherungTs = ts;
+    if (app.meta) Object.assign(app.meta, { letzteSicherungTs: ts, widerrufOffen: [] });
     await db.setzeMeta(app.db, 'letzteSicherungTs', ts).catch(() => {});
+    await db.setzeMeta(app.db, 'widerrufOffen', []).catch(() => {}); // Logbuch nach Widerruf gesichert
   }
   if (!store) {
-    meldung(mitLogbuch && !datei.dateiname.includes('Logbuch') ? 'Exportiert, Logbuch gesichert.' : mitLogbuch ? 'Logbuch gesichert.' : 'Exportiert.');
+    meldung(mitLogbuch && !datei.dateiname.includes('Logbuch') ? 'Geteilt, Logbuch gesichert.' : mitLogbuch ? 'Logbuch gesichert.' : 'Exportiert.');
     if (nachher) nachher();
     return;
   }

@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.12.0",
+  "appVersion": "0.13.0",
   "datum": "2026-11-08",
-  "hinweis": "Korrekturen im Logbuch mit PIN (ungültig, anderer Proband, Phase, Status, eigene Phasendaten), Kommentare, Verlauf."
+  "hinweis": "Widerruf: alle Daten eines Codes löschen, Protokoll mit Dateiliste, Logbuch-Sicherung; alte Dateien werden beim Laden abgewiesen."
 }

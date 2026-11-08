@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.13.0 – 08.11.2026
+Phase L5 – Widerruf (PLAN_Logbuch_Datensicherheit 6.4); keine Datenbank-Migration:
+- „Widerruf“ in der Probandenansicht (PIN, Code zur Bestätigung eintippen): löscht in einer Transaktion Blöcke mit
+  Episoden und Pausen, Versuche, Fragebögen mit Antworten, Logbuch-Einträge und Änderungen des Codes (auch
+  zugeordnete Einträge). Es bleiben die Zeile der Teilnehmerliste (Status „widerrufen“) und die Änderung
+  WIDERRUF_LOESCHUNG.
+- Protokoll `HXNOW_Widerruf_<Code>_<Datum>.txt` mit den Namen aller exportierten Dateien des Codes; wird mit dem
+  Logbuch geteilt. Bis das Logbuch gesichert ist, mahnt die Startseite (rotes Banner).
+- Gesperrt, solange für den Code ein Block oder Fragebogen läuft. Daten widerrufener Codes werden beim Laden von
+  Sicherungen abgewiesen; der Code ist nicht mehr wählbar.
+
 ## 0.12.0 – 08.11.2026
 Phase L4 – Änderungen und PIN (PLAN_Logbuch_Datensicherheit 6); keine Datenbank-Migration:
 - Eintrag: Kommentar und Zurückziehen (ohne PIN); mit PIN: als ungültig markieren (U1–U4, U9 mit Pflichttext) und
