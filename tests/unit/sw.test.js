@@ -42,7 +42,7 @@ test('Studienversion: kein Testmodus, fester Datenbankname', async () => {
 test('Cache-Liste enthält genau alle ausgelieferten Dateien', () => {
   const erwartet = [
     './', 'index.html', 'manifest.webmanifest', 'kodierschema.json', 'version.json',
-    ...dateienIn('css/'), ...dateienIn('icons/'), ...dateienIn('js/'),
+    ...dateienIn('css/'), ...dateienIn('icons/'), ...dateienIn('js/').filter((d) => !d.startsWith('js/auswertung/')), // Auswertung: nur am Rechner
   ].sort();
   assert.deepEqual([...cacheListe()].sort(), erwartet);
 });

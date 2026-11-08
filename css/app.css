@@ -538,3 +538,8 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .knopfraster { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: var(--abstand); }
 .knopfraster button { font-size: 0.95rem; }
 .dialog select, .dialog textarea, .dialog input { width: 100%; box-sizing: border-box; }
+
+/* Zusammenführungstool (werkzeuge/) */
+.werkzeug { max-width: 900px; margin: 0 auto; padding: var(--abstand); }
+.pruefbericht { white-space: pre-wrap; background: var(--flaeche); padding: 12px; border-radius: var(--radius); font-size: 0.85rem; overflow-x: auto; }
+.knopf-link { display: inline-block; padding: 10px 16px; border-radius: var(--radius); background: var(--primaer); color: var(--primaer-text); text-decoration: none; font-weight: 600; }

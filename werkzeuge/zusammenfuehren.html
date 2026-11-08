@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <!-- Läuft vollständig im Browser: keine Anfragen an fremde Server, die Dateien verlassen den Rechner nicht -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>HX Now – Zusammenführen</title>
+  <link rel="stylesheet" href="../css/app.css">
+  <script type="module" src="../js/auswertung/seite.js"></script>
+</head>
+<body>
+  <main id="app" class="werkzeug">
+    <h1>HX Now – Zusammenführen</h1>
+    <p class="hinweis">Liest alle Dateien aus dem Exportordner (Beobachtung, Versuche, Tageskennzahlen, Fragebögen, Logbuch-Dateien aller Geräte),
+      wendet die Korrekturen aus dem Logbuch an und erzeugt die Auswertungsdateien mit Prüfbericht. Alles geschieht in diesem Browser;
+      keine Datei wird hochgeladen.</p>
+    <noscript>Bitte JavaScript erlauben.</noscript>
+  </main>
+</body>
+</html>

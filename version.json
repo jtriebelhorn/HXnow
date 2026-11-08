@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.13.0",
+  "appVersion": "0.14.0",
   "datum": "2026-11-08",
-  "hinweis": "Widerruf: alle Daten eines Codes löschen, Protokoll mit Dateiliste, Logbuch-Sicherung; alte Dateien werden beim Laden abgewiesen."
+  "hinweis": "Zusammenführungstool für den Rechner (werkzeuge/zusammenfuehren.html)."
 }

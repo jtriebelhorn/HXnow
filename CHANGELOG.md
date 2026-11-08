@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0 – 08.11.2026
+Phasen F5 und L6 – Zusammenführungstool (`werkzeuge/zusammenfuehren.html`, `js/auswertung/`); App unverändert:
+- Liest den ganzen Exportordner (Ordner- oder Dateiauswahl) im Browser, ohne Upload: Beobachtung, Versuche,
+  Tageskennzahlen, Fragebögen und die Logbuch-Dateien aller Geräte (je Gerät die neueste, Prüfsumme geprüft).
+- Wendet die Änderungen an (`gueltig`, `ungueltig_grund`, wirksamer Code und Phase mit `pseudonym_original`,
+  `phase_original`), verwirft Daten widerrufener Codes und Probeläufe, erkennt doppelte Dateien.
+- Ausgabe als ZIP: beobachtung, versuche, tageskennzahlen, fb_long, fb1/kb/fb2_wide, prae_post (FB2 auf FB1-Codes
+  umkodiert), scores (ATI, TAM_PU/PEOU/BI, SUS; Regeln aus HXNow-Fragebogen), logbuch_gesamt, alle_eintraege (Abgleich
+  Logbuch ↔ Dateien), phasen, aenderungen, Codebuch und pruefbericht.txt.
+
 ## 0.13.0 – 08.11.2026
 Phase L5 – Widerruf (PLAN_Logbuch_Datensicherheit 6.4); keine Datenbank-Migration:
 - „Widerruf“ in der Probandenansicht (PIN, Code zur Bestätigung eintippen): löscht in einer Transaktion Blöcke mit
