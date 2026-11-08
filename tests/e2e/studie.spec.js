@@ -17,6 +17,10 @@ async function phasenplan(page) {
   await setze('abschlussStart', '2027-02-01');
   await setze('ende', '2027-02-07');
   await page.click('[data-test=plan-NEPH-speichern]');
+  // Phasenplan ist geschützt (L4): beim ersten Mal PIN festlegen
+  await page.fill('[data-test=pin-neu]', '2468');
+  await page.fill('[data-test=pin-wiederholen]', '2468');
+  await page.click('[data-test=pin-speichern]');
   await expect(page.locator('#meldung')).toHaveText('Phasenplan gespeichert.');
   await page.click('[data-test=zurueck]');
   await expect(page.locator('[data-test=bereichsstand]')).toHaveText('Nephrologie: Baseline, Tag 4 von 14');

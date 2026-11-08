@@ -254,8 +254,11 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
         const werte = [];
         for (let w = it.min; w <= it.max; w++) werte.push([w, String(w)]);
         koerper = [
-          el('div', { class: `skala anzahl-${werte.length + (it.zusatz?.length ?? 0)}` },
-            [...werte, ...(it.zusatz ?? [])].map(([c, l]) => optionKnopf(haupt.zelle, c, l, { weiter: true, klein: true }))),
+          el('div', { class: `skala anzahl-${werte.length}` },
+            werte.map(([c, l]) => optionKnopf(haupt.zelle, c, l, { weiter: true, klein: true }))),
+          // Zusatzantworten (z. B. „nicht genutzt“) in eigener Zeile: auf schmalen Geräten sonst zu eng
+          it.zusatz?.length ? el('div', { class: 'skala-zusatz' },
+            it.zusatz.map(([c, l]) => optionKnopf(haupt.zelle, c, l, { weiter: true, klein: true }))) : null,
           el('p', { class: 'anker' }, Object.entries(it.anker ?? {}).map(([w, l]) => `${w} = ${l}`).join(' · ')),
         ];
         break;

@@ -211,9 +211,9 @@ textarea { resize: vertical; }
 
 .gruppe { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
 .gruppe legend { margin-bottom: 6px; padding: 0; }
-.spalten-2 { grid-template-columns: repeat(2, 1fr); }
-.spalten-3 { grid-template-columns: repeat(3, 1fr); }
-.spalten-4 { grid-template-columns: repeat(4, 1fr); }
+.spalten-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.spalten-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.spalten-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 button.auswahl { padding: 8px; }
 button.auswahl.links { text-align: left; }
 
@@ -235,7 +235,7 @@ button.auswahl.links { text-align: left; }
 .liste-art { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-leise); }
 .liste-titel { font-weight: 600; }
 .liste-details { font-size: 0.9rem; color: var(--text-leise); }
-.liste-knoepfe { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
+.liste-knoepfe { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .liste-knoepfe button { font-size: 0.9rem; padding: 6px 8px; }
 .export-offen { color: var(--fehler); font-weight: 600; }
 .export-exportiert { color: var(--warnung); font-weight: 600; }
@@ -302,13 +302,13 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 .taste .kurz { font-size: 1rem; }
 .taste .code { font-size: 0.75rem; font-weight: 500; opacity: 0.8; }
 
-.raster-t { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.raster-t { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .raster-t .taste { min-height: 52px; }
 
-.raster-o { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.raster-o { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .raster-o .taste { min-height: 52px; }
 .raster-o .taste { padding: 2px 1px; }
-.raster-o .taste .kurz { font-size: 0.68rem; font-weight: 600; overflow-wrap: break-word; max-width: 100%; }
+.raster-o .taste .kurz { font-size: clamp(0.66rem, 3.1vw, 0.8rem); font-weight: 600; overflow-wrap: break-word; max-width: 100%; }
 .bereich-o.hervor .raster-o { outline: 2px solid var(--warnung); outline-offset: 4px; border-radius: var(--radius); }
 /* Bereiche der Kodieransicht: Ort (türkis), Tätigkeit (blau), Gleichzeitig (violett) */
 .bereich {
@@ -348,25 +348,25 @@ button.schalter:disabled { opacity: 1; cursor: default; }
 
 .zusatz {
   margin-top: 6px; padding: 4px; border-radius: var(--radius); background: var(--flaeche);
-  display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 4px;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px;
 }
 .zusatz.offen { outline: 2px solid var(--warnung); background: var(--warnung-flaeche); }
-.zusatz-titel { font-size: 0.72rem; font-weight: 700; overflow-wrap: anywhere; padding-left: 2px; }
-.zusatz-tasten { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
-.zusatz-tasten.anzahl-4 { grid-template-columns: repeat(4, 1fr); }
-.zusatz-tasten.anzahl-3 { grid-template-columns: repeat(3, 1fr); }
-.zusatz-tasten.anzahl-6 { grid-template-columns: repeat(3, 1fr); }
+.zusatz-titel { font-size: 0.72rem; font-weight: 700; padding-left: 2px; }
+.zusatz-tasten { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.zusatz-tasten.anzahl-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.zusatz-tasten.anzahl-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.zusatz-tasten.anzahl-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .zusatz.optional { outline: 1px dashed var(--rand); }
-.zusatz .taste { padding: 2px; }
-.zusatz .taste .kurz { font-size: 0.7rem; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; max-width: 100%; }
+.zusatz .taste { padding: 2px 1px; min-height: 48px; }
+.zusatz .taste .kurz { font-size: clamp(0.68rem, 3.3vw, 0.85rem); font-weight: 600; hyphens: manual; -webkit-hyphens: manual; overflow-wrap: normal; max-width: 100%; }
 
 .fuss-kodierung {
   position: fixed; left: 0; right: 0; bottom: 0;
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
   padding: 8px max(var(--abstand), env(safe-area-inset-left)) max(8px, env(safe-area-inset-bottom));
   background: var(--hintergrund); border-top: 1px solid var(--rand);
 }
-.fuss-kodierung button { font-size: 0.9rem; padding: 6px 4px; }
+.fuss-kodierung button { font-size: clamp(0.75rem, 3.6vw, 0.95rem); padding: 6px 2px; white-space: nowrap; }
 @media (min-width: 672px) {
   .fuss-kodierung { left: 50%; transform: translateX(-50%); width: 640px; }
 }
@@ -445,12 +445,14 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .optionen { display: flex; flex-direction: column; gap: 6px; }
 .option { text-align: left; min-height: 48px; }
 .option.klein { text-align: center; padding: 4px 2px; font-size: 0.85rem; }
-.skala, .optionen-reihe { display: grid; gap: 4px; grid-template-columns: repeat(5, 1fr); }
-.skala.anzahl-6, .optionen-reihe.anzahl-6 { grid-template-columns: repeat(6, 1fr); }
-.skala.anzahl-7 { grid-template-columns: repeat(7, 1fr); }
-.skala.anzahl-11 { grid-template-columns: repeat(6, 1fr); }
-.optionen-reihe.anzahl-3 { grid-template-columns: repeat(3, 1fr); }
-.optionen-reihe.anzahl-4 { grid-template-columns: repeat(4, 1fr); }
+.skala, .optionen-reihe { display: grid; gap: 4px; grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.skala.anzahl-6, .optionen-reihe.anzahl-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.skala.anzahl-7 { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.skala.anzahl-11 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.optionen-reihe.anzahl-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.optionen-reihe.anzahl-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.skala-zusatz { display: grid; grid-template-columns: minmax(0, 1fr); margin-top: 4px; }
+.skala-zusatz .option.klein { min-height: 40px; }
 .anker { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-leise); }
 .matrix-karte { margin: 8px 0; padding: 10px; border-radius: var(--radius); background: var(--hintergrund); border: 1px solid var(--rand); }
 .matrix-zeile { margin: 0 0 6px; font-weight: 600; }
@@ -468,8 +470,8 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .uebergabe h1, .danke h1 { font-size: 1.5rem; }
 .halten { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
 .code-treffer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
-.optionen-reihe.lang { grid-template-columns: repeat(3, 1fr); }
-.optionen-reihe.lang .option.klein { min-height: 52px; hyphens: auto; -webkit-hyphens: auto; }
+.optionen-reihe.lang { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.optionen-reihe.lang .option.klein { min-height: 52px; hyphens: auto; -webkit-hyphens: auto; overflow-wrap: break-word; }
 
 /* Wiederherstellen und Hinweise mit Knöpfen (L2) */
 .knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -535,7 +537,7 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .breite-100 { width: 100%; }
 
 /* Änderungen (L4) */
-.knopfraster { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: var(--abstand); }
+.knopfraster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: var(--abstand); }
 .knopfraster button { font-size: 0.95rem; }
 .dialog select, .dialog textarea, .dialog input { width: 100%; box-sizing: border-box; }
 

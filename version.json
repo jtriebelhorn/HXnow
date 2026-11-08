@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.14.0",
+  "appVersion": "0.14.1",
   "datum": "2026-11-08",
-  "hinweis": "Zusammenführungstool für den Rechner (werkzeuge/zusammenfuehren.html)."
+  "hinweis": "Darstellung auf normal großen iPhones: nichts ragt mehr über den Rand (Kodieransicht, Haltung, Fragebogen-Skalen)."
 }
