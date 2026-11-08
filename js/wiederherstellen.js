@@ -80,7 +80,7 @@ export function erkenneDatei(name, text) {
   if (kopf[0] === 'datensatz' && kopf[1] === 'datum' && z.datensatz === 'tageskennzahlen') {
     return {
       name, typ: 'tag', fehler: [],
-      satz: { datum: z.datum, bereich: z.bereich, auslastung: zahl(z.auslastung), aerzteAnwesend: zahl(z.aerzte_anwesend), ereignisse: z.ereignisse,
+      satz: { datum: z.datum, bereich: z.bereich, teilbereich: z.teilbereich ?? '', auslastung: zahl(z.auslastung), aerzteAnwesend: zahl(z.aerzte_anwesend), ereignisse: z.ereignisse,
         beobachter: z.beobachter, geraeteId: z.geraete_id, schemaVersion: z.schema_version, appVersion: z.app_version, ts: ms(z.erfasst), exportStatus: 'bestaetigt' },
     };
   }

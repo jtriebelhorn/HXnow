@@ -71,6 +71,8 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
   async function tageskennzahlen(bereich) {
     await tippe('tageskennzahlen');
     await tippe(`tag-bereich-${bereich}`);
+    const teil = r.wahl(SCHEMA.bereiche.find((b) => b.code === bereich).teilbereiche).code;
+    await tippe(`tag-teilbereich-${teil}`);
     const auslastung = r.ganz(14, 32);
     const aerzte = r.ganz(2, 6);
     const ereignis = r.wahl(['Personalausfall Pflege; 2 Betten gesperrt', 'Systemstörung KIS 10–11 Uhr', '"Massenanfall" geübt', '']);
@@ -80,8 +82,8 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     const ts = await jetzt();
     await tippe('tag-speichern');
     await expect(page.locator('[data-test=eintrag-tag]').first()).toBeVisible();
-    tagErwartet.push({ bereich, datum: isoBerlin(ts).slice(0, 10), werte: {
-      datensatz: 'tageskennzahlen', datum: isoBerlin(ts).slice(0, 10), bereich, auslastung: String(auslastung),
+    tagErwartet.push({ bereich, teil, datum: isoBerlin(ts).slice(0, 10), werte: {
+      datensatz: 'tageskennzahlen', datum: isoBerlin(ts).slice(0, 10), bereich, teilbereich: teil, auslastung: String(auslastung),
       aerzte_anwesend: String(aerzte), ereignisse: ereignis, beobachter: SCHEMA.beobachter[0],
       schema_version: SCHEMA.schemaVersion, app_version: APP_VERSION, erfasst: isoBerlin(ts),
     } });
@@ -495,7 +497,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
   }
   const alleDateien = await geteilt(page);
   for (const t of tagErwartet) {
-    const f = alleDateien.find((d) => d.name.startsWith(`HXNOW_TAG_${t.bereich}_${t.datum.replace(/-/g, '')}`));
+    const f = alleDateien.find((d) => d.name.startsWith(`HXNOW_TAG_${t.bereich}-${t.teil}_${t.datum.replace(/-/g, '')}`));
     if (!f) { gesamt(`Tageskennzahlen ${t.bereich} ${t.datum} exportiert`, false, 'keine Datei'); continue; }
     speichereDatei(f.name, f.text);
     for (const x of pruefeEinzelCsv(`Tageskennzahlen ${t.bereich} ${t.datum}`, f.text, t.werte).pruefungen) gesamt(x.name, x.ok, x.detail);

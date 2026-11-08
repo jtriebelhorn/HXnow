@@ -19,7 +19,7 @@ exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhand
 | --- | --- |
 | Beobachtungsblock | `HXNOW_BEOB_<pseudonym>_<JJJJMMTT>_<HHMM>_<block-id, 8 Zeichen>.csv` |
 | Person nicht angetroffen | `HXNOW_VERSUCH_<pseudonym>_<JJJJMMTT>_<HHMM>_<id, 8 Zeichen>.csv` |
-| Tageskennzahlen | `HXNOW_TAG_<bereich>_<JJJJMMTT>_<HHMM>.csv` |
+| Tageskennzahlen | `HXNOW_TAG_<bereich>-<teilbereich>_<JJJJMMTT>_<HHMM>.csv` (vor 0.17.0 ohne `-<teilbereich>`) |
 | Fragebogen | `HXNOW_FB_<FB1/KB/FB2>_<pseudonym>_<JJJJMMTT>_<HHMM>_<sitzungs-id, 8 Zeichen>.csv` |
 | Logbuch (je Gerät, wird ersetzt) | `HXNOW_Logbuch_<geräte-id, 8 Zeichen>.csv` |
 | Komplettsicherung | `HXNOW_Komplettsicherung_<geräte-id, 8>_<JJJJMMTT>_<HHMM>.json` |
@@ -128,7 +128,7 @@ der eine Episode angelegt hat (`erfasstTs`). Blöcke aus Version 0.4.0 können a
 | Spalte | Inhalt |
 | --- | --- |
 | `datensatz` | immer `tageskennzahlen` |
-| `datum`, `bereich` | Tag und Bereich (Schlüssel) |
+| `datum`, `bereich`, `teilbereich` | Tag, Bereich und Teilbereich (Schlüssel). Teilbereiche laut Kodierschema: NEPH = `STATION` Normalstation · `DIALYSE` Dialyse · `AMBULANZ` Ambulanz · `KONSIL` Konsile; ZNA = `NOTAUFNAHME` Notaufnahme · `NA-STATION` Notaufnahmestation. Leer bei Erfassungen vor App 0.17.0 (ganzer Bereich). |
 | `auslastung` | Bettenbelegung (Station) bzw. Patientenzugänge (Notaufnahme) |
 | `aerzte_anwesend` | Zahl der anwesenden Ärztinnen und Ärzte |
 | `ereignisse` | besondere Ereignisse, Freitext |

@@ -18,8 +18,16 @@
   "pseudonym": { "muster": "^[A-Z0-9][A-Z0-9-]{1,19}$", "beispiel": "P017", "testCode": "P000", "pruefziffer": false },
   "beobachter": ["B1"],
   "bereiche": [
-    { "code": "NEPH", "label": "Nephrologie" },
-    { "code": "ZNA", "label": "Notaufnahme" }
+    { "code": "NEPH", "label": "Nephrologie", "teilbereiche": [
+      { "code": "STATION", "label": "Normalstation" },
+      { "code": "DIALYSE", "label": "Dialyse" },
+      { "code": "AMBULANZ", "label": "Ambulanz" },
+      { "code": "KONSIL", "label": "Konsile" }
+    ] },
+    { "code": "ZNA", "label": "Notaufnahme", "teilbereiche": [
+      { "code": "NOTAUFNAHME", "label": "Notaufnahme" },
+      { "code": "NA-STATION", "label": "Notaufnahmestation" }
+    ] }
   ],
   "dienste": [
     { "code": "F", "label": "Früh" },

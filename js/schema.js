@@ -64,6 +64,11 @@ export function ntCode(taetigkeit) {
   return `N${taetigkeit}`;
 }
 
+/** Teilbereiche eines Bereichs (leer = keiner). */
+export function teilbereiche(schema, bereich) {
+  return schema.bereiche.find((b) => b.code === bereich)?.teilbereiche ?? [];
+}
+
 /** Ist der Studien-Code der reservierte Code für Probeläufe (z. B. P000)? */
 export function istTestPseudonym(schema, pseudonym) {
   const t = schema.pseudonym?.testCode;
@@ -192,6 +197,18 @@ export function validiereSchema(s) {
     });
     for (const d of duplikate(s.beobachter.filter(istText))) {
       f(`„beobachter“: Kürzel „${d}“ kommt mehrfach vor.`);
+    }
+  }
+
+  // --- Teilbereiche je Bereich (Tageskennzahlen, ENTSCHEIDUNGEN Nr. 45; optional) ---
+  if (Array.isArray(s.bereiche)) {
+    for (const b of s.bereiche.filter((x) => istObjekt(x) && x.teilbereiche !== undefined)) {
+      const t = b.teilbereiche;
+      if (!Array.isArray(t) || t.length === 0 || !t.every((x) => istObjekt(x) && istText(x.code) && istText(x.label) && /^[A-Z0-9_-]+$/.test(x.code))) {
+        f(`„bereiche“ (${b.code}): „teilbereiche“ muss eine nicht leere Liste aus { code (A–Z, 0–9, _ -), label } sein.`);
+      } else {
+        for (const d of duplikate(t.map((x) => x.code))) f(`„bereiche“ (${b.code}): Teilbereich „${d}“ kommt mehrfach vor.`);
+      }
     }
   }
 

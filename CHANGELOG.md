@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.17.0 – 08.11.2026
+Tageskennzahlen je Teilbereich; **Datenbank-Migration 3 → 4** (automatisch beim ersten Start, alle Daten bleiben):
+- Nephrologie: Normalstation, Dialyse, Ambulanz, Konsile; Notaufnahme: Notaufnahme, Notaufnahmestation (Kodierschema
+  `bereiche[].teilbereiche`). Auswahl nach dem Bereich, Pflicht; je Tag und Teilbereich ein eigener Eintrag.
+- Store `tageskennzahlen` mit Schlüssel `[datum, bereich, teilbereich]`; vorhandene Einträge erhalten `teilbereich` = ''.
+- Export: Spalte `teilbereich` nach `bereich`, Dateiname `HXNOW_TAG_<bereich>-<teilbereich>_<JJJJMMTT>_<HHMM>.csv`.
+- Behoben: Nach dem Wechsel des Teilbereichs gingen sehr schnelle Eingaben verloren (Felder wurden erst nach dem Lesen
+  geleert).
+
 ## 0.16.0 – 08.11.2026
 Anmerkungen aus der Prüfung der Testdateien; keine Datenbank-Migration, Fragebogen-Definition 0.1.1:
 - Fragebogen-Datei: neue Spalte `testmodus` (nach `definition_version`); ausgeblendete Freitextfelder `wert` = −88

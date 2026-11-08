@@ -79,6 +79,8 @@ export function pruefeSicherung(text) {
     for (const name of ['fb_sitzungen', 'fb_antworten', 'teilnehmende', 'logbuch', 'aenderungen', 'phasenplan']) {
       if (s.stores[name] === undefined) s.stores[name] = [];
     }
+    // Sicherungen vor App 0.17.0: Tageskennzahlen ohne Teilbereich
+    for (const t of Array.isArray(s.stores.tageskennzahlen) ? s.stores.tageskennzahlen : []) if (t && t.teilbereich === undefined) t.teilbereich = '';
     for (const [name, schluessel] of Object.entries(GESICHERTE_STORES)) {
       const liste = s.stores[name];
       if (!Array.isArray(liste)) { fehler.push(`Bereich „${name}“ fehlt.`); continue; }

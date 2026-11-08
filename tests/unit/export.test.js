@@ -160,14 +160,20 @@ test('Versuch-CSV', () => {
     + 'versuch;abcdef12-0000-4000-8000-000000000000;g;0.1;1.0.0;P099;B1;ZNA;N;PRE;2026-12-03;2026-12-03T09:15:02+01:00;OP\r\n');
 });
 
+test('Tageskennzahlen ohne Teilbereich (vor 0.17.0): Spalte leer, Dateiname wie bisher', () => {
+  const d = X.tagDatei({ datum: '2026-12-03', bereich: 'ZNA', teilbereich: '', auslastung: 1, aerzteAnwesend: 1, beobachter: 'B1', ts: START });
+  assert.equal(d.dateiname, 'HXNOW_TAG_ZNA_20261203_0915.csv');
+  assert.match(d.inhalt, /\r\ntageskennzahlen;2026-12-03;ZNA;;1;1;/);
+});
+
 test('Tageskennzahlen-CSV', () => {
   const d = X.tagDatei({
-    datum: '2026-12-03', bereich: 'ZNA', auslastung: 31, aerzteAnwesend: 4, ereignisse: 'MANV; Übung',
+    datum: '2026-12-03', bereich: 'ZNA', teilbereich: 'NA-STATION', auslastung: 31, aerzteAnwesend: 4, ereignisse: 'MANV; Übung',
     beobachter: 'B1', geraeteId: 'g', schemaVersion: '0.1', appVersion: '1.0.0', ts: START,
   });
-  assert.equal(d.dateiname, 'HXNOW_TAG_ZNA_20261203_0915.csv');
+  assert.equal(d.dateiname, 'HXNOW_TAG_ZNA-NA-STATION_20261203_0915.csv');
   assert.equal(d.inhalt, '﻿' + X.SPALTEN_TAG.join(';') + '\r\n'
-    + 'tageskennzahlen;2026-12-03;ZNA;31;4;"MANV; Übung";B1;g;0.1;1.0.0;2026-12-03T09:15:02+01:00\r\n');
+    + 'tageskennzahlen;2026-12-03;ZNA;NA-STATION;31;4;"MANV; Übung";B1;g;0.1;1.0.0;2026-12-03T09:15:02+01:00\r\n');
 });
 
 test('mailto: nur mit Empfänger, ohne BOM, Längengrenze 8000', () => {

@@ -7,7 +7,7 @@ import { blockDatei, versuchDatei, tagDatei } from '../export.js';
 import { uhrzeit, datumLokal, formatiereCountdown } from '../zeit.js';
 import { exportiere, andereWege, bestaetigeEingang, sichereLogbuch } from './exportieren.js';
 import { updateHinweis, updateSuche, aktualisiertHinweis } from './update.js';
-import { istTestPseudonym } from '../schema.js';
+import { istTestPseudonym, teilbereiche } from '../schema.js';
 import { fbExportDatei, brecheFbAb, BOGEN_NAME } from './fragebogen.js';
 
 const TAG_MS = 24 * 3600 * 1000;
@@ -57,11 +57,11 @@ export async function zeigeStart(app) {
     })),
     ...daten.tageskennzahlen.filter(offen).map((k) => ({
       art: 'Tageskennzahlen', ts: k.ts, test: 'eintrag-tag',
-      titel: `${k.datum} · ${bereich(schema, k.bereich)}`,
+      titel: `${k.datum} · ${bereich(schema, k.bereich)}${k.teilbereich ? ` · ${teilbereichLabel(schema, k.bereich, k.teilbereich)}` : ''}`,
       details: '', exportStatus: k.exportStatus,
       datei: tagDatei(k),
-      ziel: { store: db.STORES.TAGESKENNZAHLEN, schluessel: [k.datum, k.bereich], nachher: neuZeichnen },
-      oeffnen: () => app.zeige('tageskennzahlen', { datum: k.datum, bereich: k.bereich }),
+      ziel: { store: db.STORES.TAGESKENNZAHLEN, schluessel: [k.datum, k.bereich, k.teilbereich ?? ''], nachher: neuZeichnen },
+      oeffnen: () => app.zeige('tageskennzahlen', { datum: k.datum, bereich: k.bereich, teilbereich: k.teilbereich || null }),
     })),
   ].sort((a, b) => b.ts - a.ts);
 
@@ -169,6 +169,10 @@ const datumDe = (ts) => datumLokal(ts).split('-').reverse().join('.');
 
 function phase(schema, code) {
   return schema.phasen.find((p) => p.code === code)?.label ?? code;
+}
+
+function teilbereichLabel(schema, b, code) {
+  return teilbereiche(schema, b).find((t) => t.code === code)?.label ?? code;
 }
 
 function bereich(schema, code) {

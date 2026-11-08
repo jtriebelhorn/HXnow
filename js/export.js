@@ -60,7 +60,7 @@ export const SPALTEN_VERSUCH = Object.freeze([
 ]);
 
 export const SPALTEN_TAG = Object.freeze([
-  'datensatz', 'datum', 'bereich', 'auslastung', 'aerzte_anwesend', 'ereignisse', 'beobachter',
+  'datensatz', 'datum', 'bereich', 'teilbereich', 'auslastung', 'aerzte_anwesend', 'ereignisse', 'beobachter',
   'geraete_id', 'schema_version', 'app_version', 'erfasst',
 ]);
 
@@ -166,11 +166,12 @@ export function versuchDatei(v, schema = null) {
 export function tagDatei(t) {
   const { uhrzeit } = dateinameZeit(t.ts);
   const zeile = [
-    'tageskennzahlen', t.datum, t.bereich, t.auslastung, t.aerzteAnwesend, t.ereignisse ?? '', t.beobachter,
+    'tageskennzahlen', t.datum, t.bereich, t.teilbereich ?? '', t.auslastung, t.aerzteAnwesend, t.ereignisse ?? '', t.beobachter,
     t.geraeteId ?? '', t.schemaVersion ?? '', t.appVersion ?? '', isoMitOffset(t.ts),
   ];
   return {
-    dateiname: `HXNOW_TAG_${dateinameTeil(t.bereich)}_${t.datum.replace(/-/g, '')}_${uhrzeit}.csv`,
+    // Teilbereich mit Bindestrich am Bereich: HXNOW_TAG_NEPH-DIALYSE_20261203_1530.csv
+    dateiname: `HXNOW_TAG_${dateinameTeil(t.bereich)}${t.teilbereich ? `-${dateinameTeil(t.teilbereich)}` : ''}_${t.datum.replace(/-/g, '')}_${uhrzeit}.csv`,
     inhalt: csvText(SPALTEN_TAG, [zeile]),
     typ: 'text/csv',
   };

@@ -46,6 +46,13 @@ Gilt ab App-Version 0.14.0. Die App läuft auf dem Studien-iPhone als Symbol auf
    → **Fortsetzen**. Solange ein Bogen offen ist, startet kein Beobachtungsblock und kein Update.
 6. Fragebogen 2 ist noch ein Entwurf und nur mit P000 möglich, bis der Pretest abgeschlossen ist.
 
+## 3a. Tageskennzahlen
+
+Startseite → **Tageskennzahlen**: Datum, Bereich und **Teilbereich** wählen – Nephrologie: Normalstation, Dialyse,
+Ambulanz oder Konsile; Notaufnahme: Notaufnahme oder Notaufnahmestation. Für jeden Teilbereich gibt es je Tag einen
+eigenen Eintrag (Belegung bzw. Zugänge, anwesende Ärztinnen und Ärzte, besondere Ereignisse). Danach exportieren wie
+jede Sitzung.
+
 ## 4. Exportieren und sichern
 
 - **Exportieren** öffnet das Teilen-Menü mit **zwei Dateien**: der Sitzungsdatei und dem Logbuch

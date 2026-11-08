@@ -351,21 +351,36 @@ test('Person nicht angetroffen und Tageskennzahlen; rotes Banner nach 24 h', asy
   await pruefeTastengroessen(page, 'Tageskennzahlen');
   await expect(page.locator('[data-test=tag-speichern]')).toBeDisabled();
   await page.click('[data-test=tag-bereich-ZNA]');
-  await expect(page.locator('[data-test=tag-speichern]')).toBeEnabled(); // Datum + Bereich genügen
+  await expect(page.locator('[data-test=tag-speichern]')).toBeDisabled(); // Teilbereich fehlt noch
+  await expect(page.locator('[data-test=tag-teilbereich-box] button')).toHaveText(['Notaufnahme', 'Notaufnahmestation']);
+  await page.click('[data-test=tag-teilbereich-NA-STATION]');
+  await pruefeTastengroessen(page, 'Tageskennzahlen mit Teilbereich');
+  await expect(page.locator('[data-test=tag-speichern]')).toBeEnabled(); // Datum + Bereich + Teilbereich genügen
   for (let i = 0; i < 3; i++) await page.click('[data-test=tag-auslastung-plus]');
   await page.fill('[data-test=tag-aerzte]', '4');
   await page.fill('[data-test=tag-ereignisse]', 'MANV-Übung');
   await page.click('[data-test=tag-speichern]');
-  await expect(page.locator('[data-test=eintrag-tag]')).toContainText('2026-12-03');
+  await expect(page.locator('[data-test=eintrag-tag]')).toContainText('2026-12-03 · Notaufnahme · Notaufnahmestation');
+  // zweiter Teilbereich am selben Tag: eigener Datensatz, der erste bleibt
+  await page.click('[data-test=tageskennzahlen]');
+  await page.click('[data-test=tag-bereich-NEPH]');
+  await expect(page.locator('[data-test=tag-teilbereich-box] button')).toHaveText(['Normalstation', 'Dialyse', 'Ambulanz', 'Konsile']);
+  await page.click('[data-test=tag-bereich-ZNA]');
+  await page.click('[data-test=tag-teilbereich-NOTAUFNAHME]');
+  await expect(page.locator('[data-test=tag-vorhanden]')).toHaveText('');
+  await page.fill('[data-test=tag-aerzte]', '6');
+  await page.click('[data-test=tag-speichern]');
+  await expect(page.locator('[data-test=eintrag-tag]')).toHaveCount(2);
 
   const db = await leseDb(page);
   expect(db.versuche[0]).toMatchObject({ beobachter: 'B1', pseudonym: 'P099', bereich: 'ZNA', phase: 'PRE', exportStatus: 'offen' });
-  expect(db.tageskennzahlen[0]).toMatchObject({ datum: '2026-12-03', bereich: 'ZNA', auslastung: 3, aerzteAnwesend: 4, ereignisse: 'MANV-Übung' });
+  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NA-STATION')).toMatchObject({ datum: '2026-12-03', bereich: 'ZNA', auslastung: 3, aerzteAnwesend: 4, ereignisse: 'MANV-Übung' });
+  expect(db.tageskennzahlen.find((t) => t.teilbereich === 'NOTAUFNAHME')).toMatchObject({ aerzteAnwesend: 6 });
 
   await expect(page.locator('[data-test=banner-24h]')).toHaveCount(0);
   await page.clock.fastForward('25:00:00');
   await page.reload();
-  await expect(page.locator('[data-test=banner-24h]')).toContainText('2 Einträge');
+  await expect(page.locator('[data-test=banner-24h]')).toContainText('3 Einträge');
 });
 
 test('Info und Datensicherung ohne Platzhaltertexte', async ({ page }) => {

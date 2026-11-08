@@ -47,7 +47,7 @@ test.describe('mit Service Worker', () => {
   });
 });
 
-test('Migration Datenbank Version 2 → 3: Altdaten unverändert, neue Stores, laufender Block läuft weiter', async ({ page }) => {
+test('Migration Datenbank Version 2 → 4: Altdaten unverändert, neue Stores, Tageskennzahlen mit Teilbereich, laufender Block läuft weiter', async ({ page }) => {
   await page.goto('./icons/icon-180.png'); // gleiche Herkunft, App noch nicht geladen
   const alt = await page.evaluate(() => new Promise((ok, fehler) => {
     const r = indexedDB.open('hxnow-beobachtung', 2);
@@ -88,12 +88,13 @@ test('Migration Datenbank Version 2 → 3: Altdaten unverändert, neue Stores, l
       tx.oncomplete = () => { d.close(); ok(erg); };
     };
   }));
-  expect(neu.version).toBe(3);
+  expect(neu.version).toBe(4);
   expect(neu.stores).toEqual(['aenderungen', 'bloecke', 'episoden', 'fb_antworten', 'fb_sitzungen', 'logbuch', 'meta', 'pausen', 'phasenplan', 'tageskennzahlen', 'teilnehmende', 'versuche']);
-  for (const s of ['episoden', 'pausen', 'versuche', 'tageskennzahlen']) expect(neu[s]).toEqual(alt[s]);
+  for (const s of ['episoden', 'pausen', 'versuche']) expect(neu[s]).toEqual(alt[s]);
+  expect(neu.tageskennzahlen).toEqual(alt.tageskennzahlen.map((t) => ({ ...t, teilbereich: '' }))); // Version 4: Teilbereich ergänzt
   expect(neu.bloecke[0]).toEqual(alt.bloecke[0]);
   const meta = Object.fromEntries(neu.meta.map((m) => [m.schluessel, m.wert]));
-  expect(meta).toMatchObject({ geraeteId: 'g-alt', installiertTs: 1, dbVersion: 3, letzteSicherungTs: null, exportordnerText: '', stillgelegt: false });
+  expect(meta).toMatchObject({ geraeteId: 'g-alt', installiertTs: 1, dbVersion: 4, letzteSicherungTs: null, exportordnerText: '', stillgelegt: false });
 });
 
 test('Safari-Tab auf dem iPhone: Erfassen gesperrt, Anleitung zum Home-Bildschirm', async ({ browser }, testInfo) => {
@@ -124,6 +125,45 @@ test('Desktop-Browser-Tab: erlaubt, mit Hinweisband; Testversion: eigener Datenb
 test('Info zeigt Datenbank- und Definitionsversion', async ({ page }) => {
   await oeffne(page);
   await page.click('[data-test=menue-info]');
-  await expect(page.locator('[data-test=info-db-version]')).toHaveText('hxnow-beobachtung, Version 3');
+  await expect(page.locator('[data-test=info-db-version]')).toHaveText('hxnow-beobachtung, Version 4');
   await expect(page.locator('[data-test=info-definition-version]')).toHaveText(FRAGEBOGEN_DEFINITION.definitionVersion);
+});
+
+test('Migration Datenbank Version 3 → 4: Tageskennzahlen behalten alle Felder, Schlüssel mit Teilbereich', async ({ page }) => {
+  await page.goto('./icons/icon-180.png');
+  await page.evaluate(() => new Promise((ok, fehler) => {
+    const r = indexedDB.open('hxnow-beobachtung', 3);
+    r.onupgradeneeded = () => {
+      const d = r.result;
+      for (const [n, k] of [['bloecke', 'blockId'], ['episoden', 'episodeId'], ['pausen', 'pauseId'], ['versuche', 'versuchId'], ['meta', 'schluessel'],
+        ['fb_sitzungen', 'sitzungId'], ['teilnehmende', 'pseudonym'], ['logbuch', 'eintragId'], ['aenderungen', 'aenderungId'], ['phasenplan', 'bereich']]) d.createObjectStore(n, { keyPath: k });
+      r.transaction.objectStore('bloecke').createIndex('status', 'status');
+      r.transaction.objectStore('episoden').createIndex('blockId', 'blockId');
+      r.transaction.objectStore('pausen').createIndex('blockId', 'blockId');
+      r.transaction.objectStore('fb_sitzungen').createIndex('status', 'status');
+      d.createObjectStore('fb_antworten', { keyPath: ['sitzungId', 'itemId'] }).createIndex('sitzungId', 'sitzungId');
+      d.createObjectStore('tageskennzahlen', { keyPath: ['datum', 'bereich'] }).createIndex('exportStatus', 'exportStatus');
+    };
+    r.onsuccess = () => {
+      const tx = r.result.transaction(['tageskennzahlen', 'meta'], 'readwrite');
+      tx.objectStore('tageskennzahlen').put({ datum: '2026-11-30', bereich: 'NEPH', auslastung: 22, aerzteAnwesend: 5, ereignisse: 'x', exportStatus: 'bestaetigt', ts: 1 });
+      tx.objectStore('meta').put({ schluessel: 'geraeteId', wert: 'g3' });
+      tx.oncomplete = () => { r.result.close(); ok(); };
+      tx.onerror = () => fehler(tx.error);
+    };
+  }));
+  await page.goto('./');
+  await expect(page.locator('[data-test=neuer-block]')).toBeVisible();
+  const t = await page.evaluate(() => new Promise((ok) => {
+    const r = indexedDB.open('hxnow-beobachtung');
+    r.onsuccess = () => {
+      const d = r.result;
+      const s = d.transaction('tageskennzahlen').objectStore('tageskennzahlen');
+      const g = s.get(['2026-11-30', 'NEPH', '']);
+      g.onsuccess = () => { ok({ version: d.version, keyPath: s.keyPath, satz: g.result }); d.close(); };
+    };
+  }));
+  expect(t.version).toBe(4);
+  expect(t.keyPath).toEqual(['datum', 'bereich', 'teilbereich']);
+  expect(t.satz).toEqual({ datum: '2026-11-30', bereich: 'NEPH', teilbereich: '', auslastung: 22, aerzteAnwesend: 5, ereignisse: 'x', exportStatus: 'bestaetigt', ts: 1 });
 });

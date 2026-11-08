@@ -155,6 +155,7 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
   await page.click('[data-test=zur-startseite]');
   await page.click('[data-test=tageskennzahlen]');
   await page.click('[data-test=tag-bereich-NEPH]');
+  await page.click('[data-test=tag-teilbereich-DIALYSE]');
   await page.click('[data-test=tag-auslastung-plus]');
   await page.click('[data-test=tag-aerzte-plus]');
   await page.click('[data-test=tag-speichern]');

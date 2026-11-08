@@ -10,7 +10,7 @@ const daten = {
   episoden: [{ episodeId: 'e1', blockId: 'b1' }],
   pausen: [{ pauseId: 'p1', blockId: 'b1' }],
   versuche: [],
-  tageskennzahlen: [{ datum: '2026-12-03', bereich: 'ZNA' }],
+  tageskennzahlen: [{ datum: '2026-12-03', bereich: 'ZNA', teilbereich: 'NOTAUFNAHME' }],
 };
 
 test('Sicherung erstellen und wieder einlesen', () => {
@@ -53,4 +53,11 @@ test('Sicherung von vor 0.7.0 (Format 1, ohne neue Stores) bleibt ladbar', () =>
   const r = pruefeSicherung(JSON.stringify(alt));
   assert.deepEqual(r.fehler, []);
   assert.deepEqual(r.sicherung.stores.logbuch, []);
+});
+
+test('Sicherung vor 0.17.0: Tageskennzahlen ohne Teilbereich bekommen teilbereich = ""', () => {
+  const alt = { format: 'hxnow-beobachtung-sicherung', formatVersion: 2, stores: { bloecke: [], episoden: [], pausen: [], versuche: [], tageskennzahlen: [{ datum: '2026-11-01', bereich: 'NEPH' }] } };
+  const r = pruefeSicherung(JSON.stringify(alt));
+  assert.deepEqual(r.fehler, []);
+  assert.deepEqual(r.sicherung.stores.tageskennzahlen, [{ datum: '2026-11-01', bereich: 'NEPH', teilbereich: '' }]);
 });

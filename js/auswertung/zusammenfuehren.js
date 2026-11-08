@@ -63,7 +63,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     const { kopf, zeilen } = leseCsv(d.text);
     if (zeilen.length === 0) { zahlen.unbekannt += 1; hinweis(`Leere Datei: ${d.name}`); continue; }
     const z0 = zeilen[0];
-    const id = { block: z0.block_id, versuch: z0.versuch_id, fb: z0.sitzung_id, tag: `${z0.datum}|${z0.bereich}` }[art];
+    const id = { block: z0.block_id, versuch: z0.versuch_id, fb: z0.sitzung_id, tag: `${z0.datum}|${z0.bereich}|${z0.teilbereich ?? ''}` }[art];
     if (art !== 'tag' && istTest(d.name, z0.pseudonym)) { zahlen.uebersprungenTest += 1; continue; }
     const n = art === 'block' ? Number(z0.n_zeilen_block) : art === 'fb' ? Number(z0.n_zeilen) : zeilen.length;
     if (!(n === zeilen.length || (art === 'block' && n === 0 && zeilen.length === 1))) hinweis(`Unvollständig (${zeilen.length} statt ${n} Zeilen): ${d.name}`);

@@ -9,7 +9,10 @@ export { DB_NAME };
 // Version 3 (App 0.7.0, ENTSCHEIDUNGEN Nr. 34): alle Stores für Fragebögen, Teilnehmende, Logbuch, Änderungen und
 // Phasenplan auf einmal, dazu Meta-Standardwerte. Migrationen legen nur an und ergänzen fehlende Werte; sie löschen
 // nie Stores, ändern keine Schlüssel und lassen vorhandene Daten unverändert (PLAN_Logbuch_Datensicherheit 2.4).
-export const DB_VERSION = 3;
+// Version 4 (App 0.17.0, ENTSCHEIDUNGEN Nr. 45): Tageskennzahlen je Teilbereich, Schlüssel [datum, bereich, teilbereich].
+// Der Store wird mit allen Datensätzen umgebaut (teilbereich = '' für vorhandene); sonst bleibt alles unverändert.
+export const DB_VERSION = 4;
+export const TAG_SCHLUESSEL = Object.freeze(['datum', 'bereich', 'teilbereich']);
 
 export const STORES = Object.freeze({
   BLOECKE: 'bloecke',
@@ -54,8 +57,9 @@ export function oeffneDb(idb = globalThis.indexedDB) {
       return;
     }
     const anfrage = idb.open(DB_NAME, DB_VERSION);
-    anfrage.onupgradeneeded = () => {
+    anfrage.onupgradeneeded = (ev) => {
       const db = anfrage.result;
+      const vorher = ev.oldVersion ?? 0;
       if (!db.objectStoreNames.contains(STORES.BLOECKE)) {
         const s = db.createObjectStore(STORES.BLOECKE, { keyPath: 'blockId' });
         s.createIndex('status', 'status');
@@ -73,9 +77,21 @@ export function oeffneDb(idb = globalThis.indexedDB) {
         const s = db.createObjectStore(STORES.VERSUCHE, { keyPath: 'versuchId' });
         s.createIndex('exportStatus', 'exportStatus');
       }
-      if (!db.objectStoreNames.contains(STORES.TAGESKENNZAHLEN)) {
-        const s = db.createObjectStore(STORES.TAGESKENNZAHLEN, { keyPath: ['datum', 'bereich'] });
+      const tagStore = () => {
+        const s = db.createObjectStore(STORES.TAGESKENNZAHLEN, { keyPath: [...TAG_SCHLUESSEL] });
         s.createIndex('exportStatus', 'exportStatus');
+        return s;
+      };
+      if (!db.objectStoreNames.contains(STORES.TAGESKENNZAHLEN)) {
+        tagStore();
+      } else if (vorher < 4) {
+        // Version 4: Schlüssel um teilbereich erweitern – alle Datensätze lesen, Store neu anlegen, zurückschreiben
+        const r = anfrage.transaction.objectStore(STORES.TAGESKENNZAHLEN).getAll();
+        r.onsuccess = () => {
+          db.deleteObjectStore(STORES.TAGESKENNZAHLEN);
+          const s = tagStore();
+          for (const t of r.result) s.put({ ...t, teilbereich: t.teilbereich ?? '' });
+        };
       }
       if (!db.objectStoreNames.contains(STORES.META)) {
         db.createObjectStore(STORES.META, { keyPath: 'schluessel' });
@@ -449,7 +465,7 @@ function loescheWo(db, { block, sonstige }) {
         const s = tx.objectStore(name);
         s.getAll().onsuccess = (ev) => {
           for (const satz of ev.target.result.filter(sonstige)) {
-            s.delete(name === STORES.VERSUCHE ? satz.versuchId : [satz.datum, satz.bereich]);
+            s.delete(name === STORES.VERSUCHE ? satz.versuchId : [satz.datum, satz.bereich, satz.teilbereich ?? '']);
             anzahl[name] += 1;
           }
         };
