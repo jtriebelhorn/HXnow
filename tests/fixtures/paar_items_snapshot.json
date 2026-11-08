@@ -14,6 +14,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -31,6 +32,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -48,6 +50,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -65,6 +68,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -82,6 +86,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -99,6 +104,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -116,6 +122,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -133,6 +140,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -150,6 +158,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -167,6 +176,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -184,6 +194,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -201,6 +212,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -218,6 +230,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -235,6 +248,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -252,6 +266,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -269,6 +284,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -286,6 +302,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -303,6 +320,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -320,6 +338,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -337,6 +356,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -355,6 +375,7 @@
         9
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -374,6 +395,7 @@
         7
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -391,6 +413,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -408,6 +431,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -419,6 +443,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -430,6 +455,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -441,6 +467,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -452,6 +479,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -463,6 +491,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -474,6 +503,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -485,6 +515,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -496,6 +527,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -507,6 +539,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -518,6 +551,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -529,6 +563,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -540,6 +575,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -551,6 +587,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -562,6 +599,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -573,6 +611,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -584,6 +623,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -595,6 +635,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -606,6 +647,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -617,6 +659,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -628,6 +671,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -639,6 +683,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -650,6 +695,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -661,8 +707,178 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "GERAET_DABEI",
+      "zelle": "G1",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_1",
+      "zelle": "G2_1",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_2",
+      "zelle": "G2_2",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_3",
+      "zelle": "G2_3",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_4",
+      "zelle": "G2_4",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_5",
+      "zelle": "G2_5",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_6",
+      "zelle": "G2_6",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "FUNK_HAEUF_7",
+      "zelle": "G2_7",
+      "typ": "matrix",
+      "codes": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "KB",
+      "paar": "INFO_HAEUF_LOES",
+      "zelle": "G3",
+      "typ": "einfach",
+      "codes": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "zusatz": null,
+      "umkodierung": {
+        "1": 1,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5
+      },
+      "min": null,
+      "max": null,
       "umpolen": false
     },
     {
@@ -678,6 +894,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -695,21 +912,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_01_C",
-      "zelle": "W3_01_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -727,6 +930,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -744,21 +948,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_02_C",
-      "zelle": "W3_02_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -776,6 +966,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -793,21 +984,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_03_C",
-      "zelle": "W3_03_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -825,6 +1002,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -842,21 +1020,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_04_C",
-      "zelle": "W3_04_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -874,6 +1038,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -891,21 +1056,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_05_C",
-      "zelle": "W3_05_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -923,6 +1074,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -940,21 +1092,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_06_C",
-      "zelle": "W3_06_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -972,6 +1110,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -989,21 +1128,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_07_C",
-      "zelle": "W3_07_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1021,6 +1146,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1038,21 +1164,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_08_C",
-      "zelle": "W3_08_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1070,6 +1182,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1087,21 +1200,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_09_C",
-      "zelle": "W3_09_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1119,6 +1218,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1136,21 +1236,7 @@
         5
       ],
       "zusatz": null,
-      "min": null,
-      "max": null,
-      "umpolen": false
-    },
-    {
-      "bogen": "FB2",
-      "paar": "W3_10_C",
-      "zelle": "W3_10_C",
-      "typ": "matrix",
-      "codes": [
-        1,
-        2,
-        3
-      ],
-      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1167,6 +1253,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1174,7 +1261,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_1",
-      "zelle": "W5_01_A",
+      "zelle": "W5_1",
       "typ": "matrix",
       "codes": [
         0,
@@ -1184,6 +1271,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1191,7 +1279,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_2",
-      "zelle": "W5_02_A",
+      "zelle": "W5_2",
       "typ": "matrix",
       "codes": [
         0,
@@ -1201,6 +1289,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1208,7 +1297,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_3",
-      "zelle": "W5_03_A",
+      "zelle": "W5_3",
       "typ": "matrix",
       "codes": [
         0,
@@ -1218,6 +1307,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1225,7 +1315,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_4",
-      "zelle": "W5_04_A",
+      "zelle": "W5_4",
       "typ": "matrix",
       "codes": [
         0,
@@ -1235,6 +1325,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1242,7 +1333,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_5",
-      "zelle": "W5_05_A",
+      "zelle": "W5_5",
       "typ": "matrix",
       "codes": [
         0,
@@ -1252,6 +1343,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1259,7 +1351,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_6",
-      "zelle": "W5_06_A",
+      "zelle": "W5_6",
       "typ": "matrix",
       "codes": [
         0,
@@ -1269,6 +1361,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1276,7 +1369,7 @@
     {
       "bogen": "FB2",
       "paar": "FUNK_HAEUF_7",
-      "zelle": "W5_07_A",
+      "zelle": "W5_7",
       "typ": "matrix",
       "codes": [
         0,
@@ -1286,6 +1379,7 @@
         4
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1304,6 +1398,7 @@
         9
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1323,6 +1418,7 @@
         7
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1341,6 +1437,14 @@
         6
       ],
       "zusatz": null,
+      "umkodierung": {
+        "1": 1,
+        "2": 1,
+        "3": 2,
+        "4": 3,
+        "5": 4,
+        "6": 5
+      },
       "min": null,
       "max": null,
       "umpolen": false
@@ -1358,6 +1462,7 @@
         5
       ],
       "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false
@@ -1369,6 +1474,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1380,6 +1486,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1391,6 +1498,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1402,6 +1510,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1413,6 +1522,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1424,6 +1534,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1435,6 +1546,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1446,6 +1558,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1457,6 +1570,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1468,6 +1582,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1479,6 +1594,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1490,6 +1606,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1501,6 +1618,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1512,6 +1630,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 7,
       "umpolen": false
@@ -1523,8 +1642,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1536,8 +1656,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1549,8 +1670,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1562,8 +1684,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1575,8 +1698,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1588,8 +1712,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1601,8 +1726,9 @@
       "typ": "skala",
       "codes": null,
       "zusatz": [
-        0
+        9
       ],
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1614,6 +1740,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false
@@ -1625,6 +1752,7 @@
       "typ": "skala",
       "codes": null,
       "zusatz": null,
+      "umkodierung": null,
       "min": 1,
       "max": 5,
       "umpolen": false

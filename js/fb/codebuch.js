@@ -34,6 +34,7 @@ export function paarSchnappschuss(def) {
   return def.boegen.flatMap((b) => alleZellen(b, { mitEntfernten: true }).filter((z) => z.paar).map((z) => ({
     bogen: b.id, paar: z.paar, zelle: z.id, typ: z.typ,
     codes: z.optionen ? z.optionen.map(([c]) => c) : null, zusatz: z.zusatz ? z.zusatz.map(([c]) => c) : null,
+    umkodierung: z.paarUmkodierung,
     min: z.min, max: z.max, umpolen: z.umpolen,
   })));
 }

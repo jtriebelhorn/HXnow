@@ -2,13 +2,14 @@
 
 ## 0.6.0 – 08.11.2026
 Fragebogen-Modus, Phase F0 (Definition; noch keine Oberfläche):
-- `js/frageboegen.js`: FB1 (Baseline) und FB2 (Ende Regelbetrieb) wortgetreu nach Version 0.3,
-  `definitionVersion` 0.1.0, stabile Item- und Zellen-IDs, Paar-IDs für den Vorher-Nachher-Vergleich,
-  Filterbedingungen (`showIf`) und Auto-Werte. Kurzbogen Gewöhnung folgt.
+- `js/frageboegen.js`: FB1 (Baseline), KB (Kurzbogen Gewöhnung) und FB2 (Ende Regelbetrieb) nach den Spezifikationen
+  v0.3 vom 08.11.2026, `definitionVersion` 0.1.0; stabile Item- und Zellen-IDs, Paar-IDs mit Umkodierung für den
+  Vorher-Nachher-Vergleich, Bedingungen (`showIf`, `IRGENDEIN`, `ALLE`, `UNBEKANNT`), Auto-Werte, weiche Sprungregel.
 - `js/fb/definition.js` (Zellen, Prüfung), `js/fb/codebuch.js` (Codebuch-CSV, Paar-Schnappschuss),
-  `npm run codebuch` erzeugt `docs/codebuch/codebuch_<version>.csv` und mit `--snapshot` den Schnappschuss.
-- Tests: Wortlaut und Vollständigkeit gegen den Originaltext (`docs/quellen/`), Codes, Zellen, gleiche Kodierung
-  gepaarter Fragen in FB1 und FB2, Paar-Schnappschuss (erstmals erzeugt), Codebuch.
+  `npm run codebuch` erzeugt `docs/codebuch/codebuch_<version>.csv` und mit `--snapshot` den Schnappschuss
+  (erstmals erzeugt).
+- Tests: jedes Item gegen die Spezifikation (`docs/quellen/*.md`), Wortlaut von FB1/FB2 gegen die Papierfassungen,
+  gleiche Kodierung gepaarter Fragen in FB1, KB und FB2, Zellen, Schnappschuss, Codebuch.
 
 ## 0.5.6 – 08.11.2026
 Nach zwei Testläufen (P000):

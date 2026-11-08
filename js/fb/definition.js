@@ -1,13 +1,16 @@
 // Zugriff auf die Fragebogen-Definition und ihre Prüfung. DOM-frei.
 //
-// Zelle = eine Zeile im Export (Plan 6.2): ein Item, eine Matrixzelle, eine Mehrfachoption oder bei
-// Prozentgruppen je Zeile „angekreuzt“ (0/1) und Prozent. Die Zellen-ID ist dauerhaft (Plan 4.1).
+// Zelle = eine Zeile im Export (Plan 6.2) mit dauerhafter ID (Plan 4.1):
+//   einfach/zahl/skala/text/freitext → <ID>; Freitext zu einer Option → <ID>_TXT
+//   prozentgruppe → <ID>_<Zeile> (angekreuzt 0/1), <ID>_<Zeile>_PCT (Prozent), <ID>_<Zeile>_TXT (Freitext)
+//   matrix mit mehreren Spaltengruppen → <ID>_<Zeile>_<Gruppe>, mit einer Spaltengruppe → <ID>_<Zeile>
+//   mehrfach → <ID>_<Code>; weiche Sprungregel → <softSkip-ID>
 
 export const FRAGETYPEN = Object.freeze(['info', 'text', 'freitext', 'zahl', 'einfach', 'mehrfach', 'skala', 'prozentgruppe', 'matrix']);
 export const KEINE_ANGABE = -99;
 export const GEFILTERT = -88;
 
-const SCHLUESSELWOERTER = new Set(['UND', 'ODER']);
+const SCHLUESSELWOERTER = new Set(['UND', 'ODER', 'IN', 'IRGENDEIN', 'ALLE', 'UNBEKANNT']);
 
 /** Bogen nach ID oder null. */
 export function bogen(def, id) {
@@ -20,60 +23,107 @@ export function items(b, { mitEntfernten = false } = {}) {
     .filter((it) => mitEntfernten || !it.entfernt);
 }
 
-const und = (...teile) => {
+/** Bedingungen mit UND verknüpfen (jede geklammert). */
+export function und(...teile) {
   const da = teile.filter(Boolean);
   return da.length <= 1 ? (da[0] ?? '') : da.map((t) => `(${t})`).join(' UND ');
-};
+}
+
+/** Bedingung, unter der ein Abschnitt nicht durch eine weiche Sprungregel übersprungen ist. */
+function nichtUebersprungen(b, abschnittId) {
+  return (b.softSkips ?? []).filter((s) => s.abschnitte.includes(abschnittId))
+    .map((s) => `${s.id} != 1`).join(' UND ');
+}
 
 /**
  * Zellen eines Items (Exportzeilen) mit allem, was Codebuch, Filter und Export brauchen.
- * @returns {{ id, itemId, abschnitt, v, typ, text, optionen, min, max, skala, umpolen, paar, showIf, entfernt, art }[]}
+ * `b` (Bogen) wird für weiche Sprungregeln gebraucht.
  */
-export function zellen(it) {
+export function zellen(it, b = null) {
+  const skip = b ? nichtUebersprungen(b, it.abschnitt) : '';
+  const sichtbar = und(it.showIf, skip);
   const basis = {
     itemId: it.id, abschnitt: it.abschnitt, v: it.v, typ: it.typ, optionen: it.optionen ?? null,
     min: it.min ?? null, max: it.max ?? null, skala: it.skala ?? '', umpolen: Boolean(it.umpolen),
-    zusatz: it.zusatz ?? null, // Skala: zusätzliche Codes außerhalb min–max, z. B. [[0, 'nicht genutzt']]
-    paar: it.paar ?? '', entfernt: Boolean(it.entfernt), art: 'wert',
+    zusatz: it.zusatz ?? null, paar: it.paar ?? '', paarUmkodierung: it.paarUmkodierung ?? null,
+    entfernt: Boolean(it.entfernt), auto: it.auto ?? null, art: 'wert',
   };
+  const freitext = (id, text, bedingung) => ({
+    ...basis, id, typ: 'text', text, optionen: null, min: null, max: null, skala: '', umpolen: false, zusatz: null,
+    paar: '', paarUmkodierung: null, auto: null, showIf: und(sichtbar, bedingung), art: 'freitext',
+  });
   switch (it.typ) {
     case 'info':
       return [];
     case 'mehrfach':
       return it.optionen.map(([code, label]) => ({
         ...basis, id: `${it.id}_${code < 0 ? 'KA' : code}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']],
-        paar: it.paar ? `${it.paar}_${code}` : '', showIf: und(it.showIf, it.optionShowIf?.[code]), art: 'option', code,
+        paar: it.paar ? `${it.paar}_${code}` : '', showIf: und(sichtbar, it.optionShowIf?.[code]), art: 'option', code,
       }));
     case 'prozentgruppe':
       return it.zeilen.flatMap(([z, label]) => [
-        { ...basis, id: `${it.id}_${z}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']], showIf: it.showIf ?? '', art: 'angekreuzt', zeile: z },
-        { ...basis, id: `${it.id}_${z}_P`, text: `${it.text} – ${label} (Anteil in %)`, optionen: null, min: 0, max: it.summe ?? 100, showIf: und(it.showIf, `${it.id}.${z} = 1`), art: 'prozent', zeile: z },
+        { ...basis, id: `${it.id}_${z}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']], showIf: sichtbar, art: 'angekreuzt', zeile: z },
+        {
+          ...basis, id: `${it.id}_${z}_PCT`, text: `${it.text} – ${label} (Anteil in %)`, optionen: null, min: 0, max: it.summe ?? 100,
+          showIf: und(sichtbar, `${it.id}_${z} = 1`), art: 'prozent', zeile: z,
+        },
+        ...(it.freitextBei === z ? [freitext(`${it.id}_${z}_TXT`, `${it.text} – ${label}: Freitext`, `${it.id}_${z} = 1`)] : []),
       ]);
-    case 'matrix':
+    case 'matrix': {
+      const eineGruppe = it.gruppen.length === 1;
       return it.zeilen.flatMap(([z, label]) => it.gruppen.map((g) => {
-        const id = `${it.id}_${z}_${g.id}`;
+        const id = eineGruppe ? `${it.id}_${z}` : `${it.id}_${z}_${g.id}`;
         return {
-          ...basis, id, text: `${it.text} – ${label} – ${g.id}: ${g.titel}`, optionen: g.optionen,
-          paar: it.paarJeZelle ? id : it.paarZeilen ? `${it.paarZeilen}_${Number(z)}` : '', showIf: und(it.showIf, it.zeilenShowIf?.[z], g.showIf?.replaceAll('*', z)),
+          ...basis, id, text: `${it.text} – ${label}${eineGruppe ? '' : ` – ${g.id}: ${g.titel}`}`, optionen: g.optionen,
+          paar: g.paarJeZelle ? id : it.paarZeilen ? `${it.paarZeilen}_${Number(z)}` : '',
+          showIf: und(sichtbar, it.zeilenShowIf?.[z], g.showIf?.replaceAll('*', z)),
+          auto: it.auto ?? (it.zeilenShowIf?.[z] && it.zeilenAuto !== undefined ? { wert: it.zeilenAuto } : null),
           art: 'zelle', zeile: z, gruppe: g.id,
         };
       }));
+    }
+    case 'einfach':
+      return [
+        { ...basis, id: it.id, text: it.text, showIf: sichtbar },
+        ...(it.freitextBei !== undefined ? [freitext(`${it.id}_TXT`, `${it.text} – Freitext`, `${it.id} = ${it.freitextBei}`)] : []),
+      ];
     default:
-      return [{ ...basis, id: it.id, text: it.text, showIf: it.showIf ?? '' }];
+      return [{ ...basis, id: it.id, text: it.text, showIf: sichtbar }];
   }
 }
 
-/** Alle Zellen eines Bogens in Reihenfolge. */
-export function alleZellen(b, opt) {
-  return items(b, opt).flatMap(zellen);
+/** Zellen der weichen Sprungregeln eines Bogens (Antwort 1 = überspringen, 2 = nicht überspringen). */
+export function sprungZellen(b) {
+  return (b.softSkips ?? []).map((s) => ({
+    id: s.id, itemId: s.id, abschnitt: s.nachAbschnitt, v: 1, typ: 'einfach', text: s.text,
+    optionen: [[1, 'ja, überspringen'], [2, 'nein']], min: null, max: null, skala: '', umpolen: false, zusatz: null,
+    paar: '', paarUmkodierung: null, entfernt: false, auto: null, showIf: s.wenn, art: 'sprung',
+  }));
 }
 
-/** Namen, auf die ein Filter verweist (A6.STAT → Zelle A6_STAT). */
+/** Alle Zellen eines Bogens in Reihenfolge (Sprungregel nach ihrem Abschnitt). */
+export function alleZellen(b, opt) {
+  const liste = [];
+  for (const a of b.abschnitte) {
+    for (const it of a.items) {
+      if (it.entfernt && !opt?.mitEntfernten) continue;
+      liste.push(...zellen({ ...it, abschnitt: a.id }, b));
+    }
+    liste.push(...sprungZellen(b).filter((s) => s.abschnitt === a.id));
+  }
+  return liste;
+}
+
+/** Namen und Muster, auf die eine Bedingung verweist (z. B. W1, A6_STAT, W3_*_A). */
 export function filterNamen(ausdruck) {
   const ohneText = String(ausdruck ?? '').replace(/"[^"]*"/g, '');
-  return [...new Set((ohneText.match(/[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)?/g) ?? [])
-    .filter((n) => !SCHLUESSELWOERTER.has(n))
-    .map((n) => n.replace('.', '_')))];
+  return [...new Set((ohneText.match(/[A-Za-z][A-Za-z0-9_*]*/g) ?? []).filter((n) => !SCHLUESSELWOERTER.has(n)))];
+}
+
+/** Zellen-IDs, die auf ein Muster passen (* = ein Teil ohne Unterstrich). */
+export function passendeIds(muster, ids) {
+  const re = new RegExp(`^${muster.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '[^_]+')}$`);
+  return ids.filter((id) => re.test(id));
 }
 
 /**
@@ -83,19 +133,30 @@ export function filterNamen(ausdruck) {
 export function pruefeDefinition(def) {
   const f = [];
   if (!/^\d+\.\d+\.\d+$/.test(def.definitionVersion ?? '')) f.push('definitionVersion muss SemVer sein (z. B. 1.0.0).');
-  const bogenIds = def.boegen.map((b) => b.id);
-  for (const d of doppelte(bogenIds)) f.push(`Bogen ${d} kommt mehrfach vor.`);
+  for (const d of doppelte(def.boegen.map((b) => b.id))) f.push(`Bogen ${d} kommt mehrfach vor.`);
 
   for (const b of def.boegen) {
     const wo = (x) => `${b.id} ${x}`;
-    for (const d of doppelte(b.abschnitte.map((a) => a.id))) f.push(wo(`Abschnitt ${d} kommt mehrfach vor.`));
+    const abschnittIds = b.abschnitte.map((a) => a.id);
+    for (const d of doppelte(abschnittIds)) f.push(wo(`Abschnitt ${d} kommt mehrfach vor.`));
     const alle = items(b, { mitEntfernten: true });
     for (const d of doppelte(alle.map((it) => it.id))) f.push(wo(`Item-ID ${d} kommt mehrfach vor.`));
     const zellIds = alleZellen(b, { mitEntfernten: true }).map((z) => z.id);
     for (const d of doppelte(zellIds)) f.push(wo(`Zellen-ID ${d} kommt mehrfach vor.`));
-    const paare = alle.filter((it) => it.paar).map((it) => it.paar);
-    for (const d of doppelte(paare)) f.push(wo(`Paar-ID ${d} kommt mehrfach vor.`));
-    const bekannt = new Set(zellIds);
+    for (const d of doppelte(alleZellen(b, { mitEntfernten: true }).filter((z) => z.paar).map((z) => z.paar))) {
+      f.push(wo(`Paar-ID ${d} kommt mehrfach vor.`));
+    }
+
+    const pruefeAusdruck = (ausdruck, w) => {
+      for (const n of filterNamen(ausdruck)) {
+        if (n.includes('*') ? passendeIds(n, zellIds).length === 0 : !zellIds.includes(n)) w(`Bedingung verweist auf unbekannte Frage „${n}“.`);
+      }
+    };
+    for (const s of b.softSkips ?? []) {
+      const w = (x) => f.push(wo(`${s.id}: ${x}`));
+      pruefeAusdruck(s.wenn, w);
+      for (const a of [s.nachAbschnitt, ...s.abschnitte]) if (!abschnittIds.includes(a)) w(`unbekannter Abschnitt „${a}“.`);
+    }
 
     for (const it of alle) {
       const w = (x) => f.push(wo(`${it.id}: ${x}`));
@@ -110,21 +171,17 @@ export function pruefeDefinition(def) {
         for (const d of doppelte(liste.map(([c]) => c))) w(`Optionscode ${d} kommt mehrfach vor.`);
       }
       if (['einfach', 'mehrfach'].includes(it.typ) && !(it.optionen?.length > 0)) w('Optionen fehlen.');
-      if (it.reihenfolge && JSON.stringify([...it.reihenfolge].sort()) !== JSON.stringify((it.optionen ?? []).map(([c]) => c).sort())) {
-        w('reihenfolge muss genau die Optionscodes enthalten.');
-      }
-      if (it.zusatz && (it.typ !== 'skala' || it.zusatz.some(([c]) => c >= it.min && c <= it.max))) w('zusatz nur bei Skalen und außerhalb von min–max.');
       if (['prozentgruppe', 'matrix'].includes(it.typ) && !(it.zeilen?.length > 0)) w('Zeilen fehlen.');
       if (it.typ === 'matrix' && !(it.gruppen?.length > 0)) w('Spaltengruppen fehlen.');
+      if (it.zusatz && (it.typ !== 'skala' || it.zusatz.some(([c]) => c >= it.min && c <= it.max))) w('zusatz nur bei Skalen und außerhalb von min–max.');
+      if (it.paarUmkodierung && !(it.optionen ?? []).every(([c]) => Number.isInteger(it.paarUmkodierung[c]))) w('paarUmkodierung muss jeden Code abbilden.');
       if (it.freitextBei !== undefined) {
         const moeglich = it.typ === 'prozentgruppe' ? it.zeilen.map(([z]) => z) : (it.optionen ?? []).map(([c]) => c);
         if (!moeglich.includes(it.freitextBei)) w(`freitextBei „${it.freitextBei}“ gibt es nicht.`);
       }
-      const ausdruecke = [it.showIf, it.auto?.wenn, ...Object.values(it.optionShowIf ?? {}), ...Object.values(it.zeilenShowIf ?? {}),
-        ...(it.gruppen ?? []).map((g) => g.showIf?.replaceAll('*', '01'))].filter(Boolean);
-      for (const n of ausdruecke.flatMap(filterNamen)) {
-        if (!bekannt.has(n)) w(`Filter verweist auf unbekannte Frage „${n}“.`);
-      }
+      const ausdruecke = [it.showIf, it.auto?.wenn, it.validierung, ...Object.values(it.optionShowIf ?? {}),
+        ...Object.values(it.zeilenShowIf ?? {}), ...(it.gruppen ?? []).map((g) => g.showIf?.replaceAll('*', it.zeilen[0][0]))].filter(Boolean);
+      for (const a of ausdruecke) pruefeAusdruck(a, w);
     }
   }
   return f;
