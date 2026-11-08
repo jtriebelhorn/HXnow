@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.10.0 – 08.11.2026
+Phase L2 – Komplettsicherung und Wiederherstellen (PLAN_Logbuch_Datensicherheit 4.4–4.6); keine Datenbank-Migration:
+- Komplettsicherung Format 3 mit Anzahl je Store, Datenbank-Version und CRC32-Prüfsumme (Format 1 und 2 bleiben
+  ladbar).
+- „Sicherung laden“ mit Mehrfachauswahl: Erkennung am Inhalt (Komplettsicherung, Logbuch, Block, Versuch,
+  Fragebogen, Tageskennzahlen), Prüfsummen und Zeilenzahlen, neueste Logbuch-Datei, fehlende Logbuch-Einträge aus
+  Sitzungsdateien (Eingang bestätigt), Vorschau vor dem Übernehmen und Bericht; Daten widerrufener Codes werden
+  abgewiesen.
+- Leere Datenbank: Hinweis „Keine Studiendaten gefunden. Letzte Sicherung laden?“ mit „Neu beginnen“ (doppelte
+  Rückfrage).
+- Gerät wechseln: Anleitung, „Gerät stilllegen“ (keine neuen Erhebungen) und Aufheben; Herkunft fremder Geräte-IDs
+  wird gemerkt.
+
 ## 0.9.0 – 08.11.2026
 Phase L1 – Logbuch-Datei und Sitzungsexport (PLAN_Logbuch_Datensicherheit 4.1, 5); keine Datenbank-Migration:
 - Logbuch-Datei `HXNOW_Logbuch_<Gerät>.csv` (fester Name, ersetzt die vorige Fassung): Teilnehmerliste, Phasenplan,

@@ -65,6 +65,7 @@ const app = {
     // Logbuch-Daten vor jeder Ansicht neu lesen: Export-Knöpfe erzeugen die Logbuch-Datei synchron daraus.
     if (app.db) await app.aktualisiereLogbuch().catch(() => {});
     if (app.gesperrt && !['tabSperre', 'sicherung', 'info'].includes(name)) name = 'tabSperre';
+    if (app.meta?.stillgelegt && ['blockNeu', 'fbNeu', 'versuch'].includes(name)) name = 'start'; // Gerät stillgelegt (L2)
     const r = await ANSICHTEN[name](app, params);
     if (typeof r === 'function') app.aufraeumen = r;
   },

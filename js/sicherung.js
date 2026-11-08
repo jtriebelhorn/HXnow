@@ -1,11 +1,13 @@
 // Komplettsicherung (PLAN_Logbuch_Datensicherheit 4.4, ersetzt die JSON-Datensicherung aus Spezifikation 7.5):
 // vollständiger Abzug aller Datensätze als eine Datei. DOM-frei. Import und Löschen liegen in db.js (Transaktionen).
-// Prüfsumme und Wiederherstellen aus Sitzungsdateien folgen in Phase L2.
+// Ab Format 3 mit Anzahl je Store und CRC32-Prüfsumme über die Daten (PLAN_Logbuch_Datensicherheit 4.4).
 import { isoMitOffset, dateinameZeit } from './zeit.js';
+import { crc32 } from './crc32.js';
 
 export const SICHERUNG_FORMAT = 'hxnow-beobachtung-sicherung';
-// 2: alle Stores ab Datenbank-Version 3 und Geräte-ID im Dateinamen; Version 1 bleibt ladbar
-export const SICHERUNG_VERSION = 2;
+// 2: alle Stores ab Datenbank-Version 3 und Geräte-ID im Dateinamen; 3: Anzahl und Prüfsumme.
+// Versionen 1 und 2 bleiben ladbar.
+export const SICHERUNG_VERSION = 3;
 
 // Gesicherte Stores und ihr Schlüssel (meta wird nicht übertragen: Geräte-ID bleibt pro Installation)
 export const GESICHERTE_STORES = Object.freeze({
@@ -22,7 +24,7 @@ export const GESICHERTE_STORES = Object.freeze({
   phasenplan: ['bereich'],
 });
 
-export function erstelleSicherung({ daten, geraeteId, appVersion, schemaVersion, now }) {
+export function erstelleSicherung({ daten, geraeteId, appVersion, schemaVersion, dbVersion = null, now }) {
   const stores = {};
   for (const name of Object.keys(GESICHERTE_STORES)) stores[name] = daten[name] ?? [];
   return {
@@ -33,6 +35,9 @@ export function erstelleSicherung({ daten, geraeteId, appVersion, schemaVersion,
     geraeteId,
     appVersion,
     schemaVersion,
+    dbVersion,
+    anzahl: Object.fromEntries(Object.entries(stores).map(([n, l]) => [n, l.length])),
+    pruefsumme: crc32(JSON.stringify(stores)),
     stores,
   };
 }
@@ -61,7 +66,10 @@ export function pruefeSicherung(text) {
   if (!s || s.format !== SICHERUNG_FORMAT) {
     return { sicherung: null, fehler: ['Die Datei ist keine Datensicherung dieser App.'] };
   }
-  if (![1, SICHERUNG_VERSION].includes(s.formatVersion)) fehler.push(`Unbekannte Version der Sicherung (${s.formatVersion}).`);
+  if (![1, 2, SICHERUNG_VERSION].includes(s.formatVersion)) fehler.push(`Unbekannte Version der Sicherung (${s.formatVersion}).`);
+  if (s.pruefsumme && s.stores && crc32(JSON.stringify(s.stores)) !== s.pruefsumme) {
+    return { sicherung: null, fehler: ['Prüfsumme stimmt nicht – Sicherung verändert oder beschädigt.'] };
+  }
   if (!s.stores || typeof s.stores !== 'object') {
     fehler.push('Die Sicherung enthält keine Daten.');
   } else {

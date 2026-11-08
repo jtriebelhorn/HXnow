@@ -543,11 +543,13 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     await seite2.goto('./');
     await seite2.locator('[data-test=menue-sicherung]').tap();
     await seite2.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
+    await seite2.click('[data-test=wiederherstellen-ja]');
     await expect(seite2.locator('#meldung')).toContainText('bereits vorhanden');
     const db2 = await leseDb(seite2);
     const gleich2 = vergleich.every(([s, k]) => JSON.stringify(sortiert(db2[s], k)) === JSON.stringify(sortiert(dbEnde[s], k)));
     gesamt('Import auf zweitem Gerät ergibt identische Daten', gleich2);
     await seite2.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
+    await seite2.click('[data-test=wiederherstellen-ja]');
     await expect(seite2.locator('#meldung')).toContainText('0 neu');
     const db3 = await leseDb(seite2);
     gesamt('Erneuter Import erzeugt keine Dubletten', vergleich.every(([s]) => db3[s].length === db2[s].length));

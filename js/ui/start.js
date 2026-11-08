@@ -1,6 +1,6 @@
 // Startseite (Spezifikation 7.1): Neuer Block, Person nicht angetroffen, Tageskennzahlen,
 // Liste nicht abgeschlossener Exporte mit Exportieren / Eingang bestätigt und Warnbanner (> 24 h nicht bestätigt).
-import { el, ersetze } from './dom.js';
+import { el, ersetze, bestaetige } from './dom.js';
 import * as db from '../db.js';
 import { stelleWiederHer } from '../block.js';
 import { blockDatei, versuchDatei, tagDatei } from '../export.js';
@@ -71,6 +71,10 @@ export async function zeigeStart(app) {
   const ungesichert = nichtGesichert(app);
   const aeltesteUngesichert = Math.min(...ungesichert.map((l) => l.endTs ?? l.startTs));
   const letzte = app.meta?.letzteSicherungTs ?? null;
+  // Leere Datenbank (z. B. nach Löschen des App-Symbols): Sicherung laden anbieten (PLAN_Logbuch_Datensicherheit 4.5)
+  const leer = ['bloecke', 'versuche', 'tageskennzahlen', 'fb_sitzungen', 'teilnehmende', 'logbuch'].every((n) => daten[n].length === 0)
+    && !app.meta?.neuBegonnenTs;
+  const stillgelegt = Boolean(app.meta?.stillgelegt);
 
   ersetze(app.wurzel,
     el('header', { class: 'kopf-start' },
@@ -80,6 +84,13 @@ export async function zeigeStart(app) {
         el('button', { type: 'button', class: 'klein', 'data-test': 'menue-info', onclick: () => app.zeige('info') }, 'Info'))),
     updateHinweis(app),
     aktualisiertHinweis(app),
+    stillgelegt ? el('div', { class: 'banner-rot', role: 'alert', 'data-test': 'banner-stillgelegt' },
+      'Dieses Gerät ist stillgelegt – keine neuen Erhebungen. Daten bleiben exportierbar (Aufheben unter „Sicherung“).') : null,
+    leer ? el('div', { class: 'banner-info', 'data-test': 'banner-leer' },
+      el('p', {}, 'Keine Studiendaten gefunden. Letzte Sicherung laden?'),
+      el('div', { class: 'knopfreihe' },
+        el('button', { type: 'button', class: 'primaer', 'data-test': 'leer-laden', onclick: () => app.zeige('sicherung') }, 'Sicherung laden'),
+        el('button', { type: 'button', 'data-test': 'leer-neu', onclick: () => neuBeginnen(app) }, 'Neu beginnen'))) : null,
     ungesichert.length > 0
       ? el('div', {
         class: Date.now() - aeltesteUngesichert > TAG_MS ? 'banner-rot' : 'banner-gelb', role: 'alert', 'data-test': 'banner-nicht-gesichert',
@@ -91,9 +102,9 @@ export async function zeigeStart(app) {
         `${alt.length} ${alt.length === 1 ? 'Eintrag ist' : 'Einträge sind'} seit über 24 Stunden nicht bestätigt. Bitte exportieren und Eingang bestätigen.`)
       : null,
     el('div', { class: 'stapel' },
-      el('button', { type: 'button', class: 'primaer gross', 'data-test': 'neuer-block', onclick: () => app.zeige('blockNeu') }, 'Neuer Block'),
-      el('button', { type: 'button', class: 'gross', 'data-test': 'neuer-fragebogen', onclick: () => app.zeige('fbNeu') }, 'Fragebogen'),
-      el('button', { type: 'button', class: 'gross', 'data-test': 'nicht-angetroffen', onclick: () => app.zeige('versuch') }, 'Person nicht angetroffen'),
+      el('button', { type: 'button', class: 'primaer gross', 'data-test': 'neuer-block', disabled: stillgelegt, onclick: () => app.zeige('blockNeu') }, 'Neuer Block'),
+      el('button', { type: 'button', class: 'gross', 'data-test': 'neuer-fragebogen', disabled: stillgelegt, onclick: () => app.zeige('fbNeu') }, 'Fragebogen'),
+      el('button', { type: 'button', class: 'gross', 'data-test': 'nicht-angetroffen', disabled: stillgelegt, onclick: () => app.zeige('versuch') }, 'Person nicht angetroffen'),
       el('button', { type: 'button', class: 'gross', 'data-test': 'tageskennzahlen', onclick: () => app.zeige('tageskennzahlen') }, 'Tageskennzahlen'),
     ),
     el('div', { class: 'sicherung-zeile', 'data-test': 'sicherung-zeile' },
@@ -131,6 +142,16 @@ export async function zeigeStart(app) {
       `${schema.studie} · App-Version ${app.appVersion} · Schema-Version ${schema.schemaVersion}`),
     updateSuche(app, { klein: true }),
   );
+}
+
+/** „Neu beginnen“ trotz leerer Datenbank: doppelte Rückfrage, damit niemand versehentlich ohne Sicherung weitermacht. */
+async function neuBeginnen(app) {
+  if (!(await bestaetige('Ohne Sicherung beginnen?', 'Wenn auf diesem Gerät schon Studiendaten erfasst wurden, zuerst die letzte Sicherung laden.', { ja: 'Weiter', nein: 'Zurück' }))) return;
+  if (!(await bestaetige('Wirklich neu beginnen?', 'Es gibt hier keine früheren Daten. Neu beginnen nur beim ersten Einsatz dieses Geräts oder nach Rücksprache.', { ja: 'Neu beginnen', nein: 'Zurück', gefahr: true }))) return;
+  const ts = Date.now();
+  await db.setzeMeta(app.db, 'neuBegonnenTs', ts);
+  app.meta.neuBegonnenTs = ts;
+  app.zeige('start');
 }
 
 /** Abgeschlossene Sitzungen (außer Probeläufen), deren Datei noch nicht exportiert wurde. */

@@ -468,3 +468,9 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .code-treffer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .optionen-reihe.lang { grid-template-columns: repeat(3, 1fr); }
 .optionen-reihe.lang .option.klein { min-height: 52px; hyphens: auto; -webkit-hyphens: auto; }
+
+/* Wiederherstellen und Hinweise mit Knöpfen (L2) */
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
+.knopfreihe > button { flex: 1 1 140px; }
+ul.bericht { margin: 0; padding-left: 20px; }
+ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }

@@ -21,13 +21,15 @@ test('Sicherung erstellen und wieder einlesen', () => {
   assert.deepEqual(r.fehler, []);
   const leer = { fb_sitzungen: [], fb_antworten: [], teilnehmende: [], logbuch: [], aenderungen: [], phasenplan: [] };
   assert.deepEqual(r.sicherung.stores, { ...daten, ...leer });
-  assert.equal(r.sicherung.formatVersion, 2);
+  assert.equal(r.sicherung.formatVersion, 3);
+  assert.equal(r.sicherung.anzahl.episoden, 1);
   assert.equal(r.sicherung.erstellt, '2026-12-03T09:15:02+01:00');
 });
 
 test('ältere Sicherung ohne Pausen wird angenommen', () => {
   const s = erstelleSicherung({ daten, geraeteId: 'g', appVersion: '1', schemaVersion: '0.1', now: START });
   delete s.stores.pausen;
+  delete s.pruefsumme; s.formatVersion = 2;
   const r = pruefeSicherung(JSON.stringify(s));
   assert.deepEqual(r.fehler, []);
   assert.deepEqual(r.sicherung.stores.pausen, []);
@@ -37,6 +39,8 @@ test('fremde oder kaputte Dateien werden abgelehnt', () => {
   assert.match(pruefeSicherung('{').fehler[0], /kein gültiges JSON/);
   assert.match(pruefeSicherung('{"a":1}').fehler[0], /keine Datensicherung/);
   const s = erstelleSicherung({ daten, geraeteId: 'g', appVersion: '1', schemaVersion: '0.1', now: START });
+  assert.match(pruefeSicherung(JSON.stringify({ ...s, stores: { ...s.stores, bloecke: [] } })).fehler[0], /Prüfsumme/);
+  delete s.pruefsumme;
   s.stores.episoden.push({ blockId: 'b1' });
   delete s.stores.versuche;
   const f = pruefeSicherung(JSON.stringify(s)).fehler;

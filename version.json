@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.9.0",
+  "appVersion": "0.10.0",
   "datum": "2026-11-08",
-  "hinweis": "Logbuch-Datei mit Prüfsumme wird bei jedem Export mitgeteilt; Anzeige „Letzte Sicherung“ und Knopf „Logbuch sichern“."
+  "hinweis": "Sicherung laden mit Mehrfachauswahl (Erkennung am Inhalt, Prüfsummen, Bericht), Hinweis bei leerer Datenbank, Gerät stilllegen."
 }

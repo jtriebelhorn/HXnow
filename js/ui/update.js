@@ -162,7 +162,7 @@ export async function aktualisiere(app) {
   // Sicherungsdatei vorab erzeugen: Teilen muss synchron in der Nutzergeste starten.
   const daten = await db.holeAlleDaten(app.db);
   const datei = sicherungsDatei(erstelleSicherung({
-    daten, geraeteId: app.meta.geraeteId, appVersion: app.appVersion, schemaVersion: app.schema.schemaVersion, now: Date.now(),
+    daten, geraeteId: app.meta.geraeteId, appVersion: app.appVersion, schemaVersion: app.schema.schemaVersion, dbVersion: db.DB_VERSION, now: Date.now(),
   }));
   const offen = [
     ...daten.bloecke.filter((b) => ['beendet', 'abgebrochen'].includes(b.status)),

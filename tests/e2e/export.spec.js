@@ -169,6 +169,8 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
 
   // Erneuter Import derselben Sicherung → nichts doppelt
   await page.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
+  await expect(page.locator('[data-test=wiederherstellen-vorschau]')).toContainText('1 Datei gelesen: 1 Komplettsicherung');
+  await page.click('[data-test=wiederherstellen-ja]');
   await expect(page.locator('#meldung')).toContainText('0 neu, 6 bereits vorhanden');
   expect(await leseDb(page)).toEqual(vorher);
 
@@ -176,9 +178,12 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
   const ctx2 = await browser.newContext({ ...testInfo.project.use, serviceWorkers: 'block' });
   const seite2 = await ctx2.newPage();
   await seite2.goto('./');
-  await seite2.click('[data-test=menue-sicherung]');
+  await expect(seite2.locator('[data-test=banner-leer]')).toContainText('Keine Studiendaten gefunden');
+  await seite2.click('[data-test=leer-laden]');
   await seite2.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
+  await seite2.click('[data-test=wiederherstellen-ja]');
   await expect(seite2.locator('#meldung')).toContainText('6 neu, 0 bereits vorhanden');
+  await expect(seite2.locator('[data-test=wiederherstellen-bericht]')).toContainText('Übernommen: 6 neu');
   await expect(seite2.locator('[data-test=anzahl-episoden]')).toHaveText('2');
   const db2 = await leseDb(seite2);
   expect(db2.bloecke).toEqual(vorher.bloecke);
