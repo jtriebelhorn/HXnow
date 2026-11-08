@@ -14,12 +14,12 @@ test.describe('mit Service Worker', () => {
   test('Nach Updates suchen: aktuell, neue Version (mit Hinweis), keine Verbindung', async ({ page, context }) => {
     await bereit(page);
     await page.click('[data-test=update-suchen-start]');
-    await expect(page.locator('[data-test=update-aktuell]')).toHaveText('Die App ist aktuell (0.7.0).');
+    await expect(page.locator('[data-test=update-aktuell]')).toHaveText('Die App ist aktuell (0.8.0).');
 
     await context.addCookies([{ name: 'sw-test-version', value: '9.9.9-test', url: page.url() }]);
     await page.click('[data-test=menue-info]');
     await page.click('[data-test=update-suchen]');
-    await expect(page.locator('[data-test=update-neu]')).toHaveText('Neue Version 9.9.9-test verfügbar (installiert: 0.7.0).', { timeout: 20_000 });
+    await expect(page.locator('[data-test=update-neu]')).toHaveText('Neue Version 9.9.9-test verfügbar (installiert: 0.8.0).', { timeout: 20_000 });
     await expect(page.locator('[data-test=update-jetzt]')).toBeVisible();
 
     await context.setOffline(true);

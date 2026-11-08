@@ -409,3 +409,43 @@ body.kodiermodus .meldung { bottom: calc(132px + env(safe-area-inset-bottom)); }
 .sperre h1 { color: var(--fehler); font-size: 1.4rem; }
 .update-suche.klein { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
 .update-ergebnis p { margin: 6px 0; }
+
+/* Fragebogen (Fragebogenplan F1) */
+.fb-kopf h1 { font-size: 1.15rem; margin-bottom: 4px; }
+.fortschritt { margin: 4px 0; color: var(--text-leise); font-size: 0.85rem; }
+.fortschritt-balken { height: 6px; background: var(--flaeche-stark); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.fortschritt-balken span { display: block; height: 100%; background: var(--primaer); }
+.fb-einleitung { padding: 10px 12px; border-radius: var(--radius); background: var(--flaeche); margin-bottom: 12px; }
+.frage { margin: 14px 0; padding: 12px; border-radius: 14px; background: var(--flaeche); }
+.frage-text { margin: 0 0 8px; font-weight: 600; }
+.frage-nr { color: var(--text-leise); font-size: 0.8rem; font-weight: 700; margin-right: 4px; }
+.fb-info { margin: 12px 2px; color: var(--text-leise); }
+.fb-unter { margin: 18px 2px 4px; font-size: 1rem; }
+.optionen { display: flex; flex-direction: column; gap: 6px; }
+.option { text-align: left; min-height: 48px; }
+.option.klein { text-align: center; padding: 4px 2px; font-size: 0.85rem; }
+.skala, .optionen-reihe { display: grid; gap: 4px; grid-template-columns: repeat(5, 1fr); }
+.skala.anzahl-6, .optionen-reihe.anzahl-6 { grid-template-columns: repeat(6, 1fr); }
+.skala.anzahl-7 { grid-template-columns: repeat(7, 1fr); }
+.skala.anzahl-11 { grid-template-columns: repeat(6, 1fr); }
+.optionen-reihe.anzahl-3 { grid-template-columns: repeat(3, 1fr); }
+.optionen-reihe.anzahl-4 { grid-template-columns: repeat(4, 1fr); }
+.anker { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-leise); }
+.matrix-karte { margin: 8px 0; padding: 10px; border-radius: var(--radius); background: var(--hintergrund); border: 1px solid var(--rand); }
+.matrix-zeile { margin: 0 0 6px; font-weight: 600; }
+.matrix-gruppe { margin-top: 6px; }
+.matrix-titel { display: block; font-size: 0.8rem; color: var(--text-leise); margin-bottom: 3px; }
+.zahl-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.zahl-feld { width: 6em; font-size: 1.1rem; min-height: 48px; }
+.prozent-zeile { display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center; margin-bottom: 6px; }
+.prozent-zeile > input[type=text] { grid-column: 1 / -1; }
+.prozent-feld { white-space: nowrap; }
+.fb-navigation { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; margin: 20px 0 32px; }
+.fb-navigation button { min-height: 56px; }
+.sprung { border: 2px solid var(--primaer); }
+.uebergabe, .danke { margin: 40px 0; text-align: center; }
+.uebergabe h1, .danke h1 { font-size: 1.5rem; }
+.halten { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: none; }
+.code-treffer { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.optionen-reihe.lang { grid-template-columns: repeat(3, 1fr); }
+.optionen-reihe.lang .option.klein { min-height: 52px; hyphens: auto; -webkit-hyphens: auto; }

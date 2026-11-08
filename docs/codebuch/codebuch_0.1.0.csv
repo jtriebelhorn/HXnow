@@ -146,49 +146,49 @@ FB2;W;W7b;1;;einfach;Wo nutzten Sie HX Now dafür meistens?;1=Flur/Wegstrecke | 
 FB2;W;W7c;1;;einfach;Was hätten Sie ohne HX Now meistens getan?;1=Weg zum PC | 2=Anruf / Rückfrage | 3=aufgeschoben | 4=verzichtet | 5=anders vor Ort gelöst (z. B. Visitenwagen);;;;0;W1 > 0 UND (IRGENDEIN(W5_*) > 0 ODER IRGENDEIN(W3_*_C) > 1);0
 FB2;W;W8;1;;freitext;Möchten Sie etwas zu den letzten 14 Tagen anmerken?;;;;;0;W1 > 0;0
 FB2;W;SKIP_HX;1;;einfach;Sie haben HX Now in den letzten 14 Tagen offenbar nicht genutzt. Möchten Sie die Fragen zur Bewertung der App (Abschnitte A, B, E, T) überspringen?;1=ja, überspringen | 2=nein;;;;0;W1 > 0 UND ALLE(W5_*) = 0 UND ALLE(W3_*_C) IN (1, -88);0
-FB2;A;A1;1;;skala;Ich denke, dass ich HX Now gerne häufig benutzen würde.;;1;5;SUS;0;SKIP_HX != 1;0
-FB2;A;A2;1;;skala;Ich fand HX Now unnötig komplex.;;1;5;SUS;1;SKIP_HX != 1;0
-FB2;A;A3;1;;skala;Ich fand HX Now einfach zu benutzen.;;1;5;SUS;0;SKIP_HX != 1;0
-FB2;A;A4;1;;skala;Ich glaube, ich würde die Hilfe einer technisch versierten Person benötigen, um HX Now benutzen zu können.;;1;5;SUS;1;SKIP_HX != 1;0
-FB2;A;A5;1;;skala;Ich fand, die verschiedenen Funktionen in HX Now waren gut integriert.;;1;5;SUS;0;SKIP_HX != 1;0
-FB2;A;A6;1;;skala;Ich denke, HX Now enthielt zu viele Inkonsistenzen.;;1;5;SUS;1;SKIP_HX != 1;0
-FB2;A;A7;1;;skala;Ich kann mir vorstellen, dass die meisten Menschen den Umgang mit HX Now sehr schnell lernen.;;1;5;SUS;0;SKIP_HX != 1;0
-FB2;A;A8;1;;skala;Ich fand HX Now sehr umständlich zu nutzen.;;1;5;SUS;1;SKIP_HX != 1;0
-FB2;A;A9;1;;skala;Ich fühlte mich bei der Benutzung von HX Now sicher.;;1;5;SUS;0;SKIP_HX != 1;0
-FB2;A;A10;1;;skala;Ich musste eine Menge lernen, bevor ich anfangen konnte, HX Now zu verwenden.;;1;5;SUS;1;SKIP_HX != 1;0
-FB2;B;B1;1;TAM_PU_1;skala;Mit HX Now kann ich meine Aufgaben schneller erledigen.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B2;1;TAM_PU_2;skala;HX Now verbessert die Qualität meiner Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B3;1;TAM_PU_3;skala;HX Now steigert meine Produktivität.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B4;1;TAM_PU_4;skala;HX Now steigert meine Effektivität bei der Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B5;1;TAM_PU_5;skala;HX Now erleichtert meine Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B6;1;TAM_PU_6;skala;HX Now ist für meine Arbeit nützlich.;;1;7;TAM_PU;0;SKIP_HX != 1;0
-FB2;B;B7;1;TAM_PEOU_1;skala;Den Umgang mit HX Now zu erlernen, ist für mich leicht.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B8;1;TAM_PEOU_2;skala;Es ist leicht, mit HX Now das zu erreichen, was ich möchte.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B9;1;TAM_PEOU_3;skala;Die Bedienung von HX Now ist klar und verständlich.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B10;1;TAM_PEOU_4;skala;HX Now ist flexibel in der Bedienung.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B11;1;TAM_PEOU_5;skala;Es ist leicht, im Umgang mit HX Now geübt zu werden.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B12;1;TAM_PEOU_6;skala;HX Now ist einfach zu bedienen.;;1;7;TAM_PEOU;0;SKIP_HX != 1;0
-FB2;B;B13;1;TAM_BI_1;skala;Ich beabsichtige, HX Now auch künftig regelmäßig zu nutzen.;;1;7;TAM_BI;0;SKIP_HX != 1;0
-FB2;B;B14;1;TAM_BI_2;skala;Ich werde HX Now nutzen, wann immer es sinnvoll ist.;;1;7;TAM_BI;0;SKIP_HX != 1;0
-FB2;E;E1;1;FUNK_NUTZEN_1;skala;Krankenakte / Verlauf einsehen;9=nicht genutzt;1;5;;0;(W5_1 > 0 ODER UNBEKANNT(W5_1)) UND (SKIP_HX != 1);0
-FB2;E;E2;1;FUNK_NUTZEN_2;skala;Laborwerte einsehen;9=nicht genutzt;1;5;;0;(W5_2 > 0 ODER UNBEKANNT(W5_2)) UND (SKIP_HX != 1);0
-FB2;E;E3;1;FUNK_NUTZEN_3;skala;Bildgebung (PACS-Viewer);9=nicht genutzt;1;5;;0;(W5_3 > 0 ODER UNBEKANNT(W5_3)) UND (SKIP_HX != 1);0
-FB2;E;E4;1;FUNK_NUTZEN_4;skala;PMDs bearbeiten (z. B. Basisanamnese, Konsil);9=nicht genutzt;1;5;;0;(W5_4 > 0 ODER UNBEKANNT(W5_4)) UND (SKIP_HX != 1);0
-FB2;E;E5;1;FUNK_NUTZEN_5;skala;Fotodokumentation;9=nicht genutzt;1;5;;0;(W5_5 > 0 ODER UNBEKANNT(W5_5)) UND (SKIP_HX != 1);0
-FB2;E;E6;1;FUNK_NUTZEN_6;skala;Dokumentenscan;9=nicht genutzt;1;5;;0;(W5_6 > 0 ODER UNBEKANNT(W5_6)) UND (SKIP_HX != 1);0
-FB2;E;E7;1;FUNK_NUTZEN_7;skala;Sprachgestützte Dokumentation;9=nicht genutzt;1;5;;0;(W5_7 > 0 ODER UNBEKANNT(W5_7)) UND (SKIP_HX != 1);0
-FB2;T;T1_1;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Keine oder schlechte Netzverbindung (WLAN);1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T1_2;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Akku leer oder zu schwach;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T1_3;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Probleme bei der Anmeldung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T1_4;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Lange Ladezeiten;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T1_5;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Absturz oder Fehlermeldung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T1_6;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Fehlerhafte Spracherkennung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;(SKIP_HX != 1) UND (W5_7 > 0 ODER UNBEKANNT(W5_7));0
-FB2;T;T1_7;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Gerät nicht griffbereit;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1;0
-FB2;T;T2_1;1;;matrix;Wie bewerten Sie folgende Funktionen? – Die Spracherkennung ist genau.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1) UND (W5_7 > 0 ODER UNBEKANNT(W5_7));0
-FB2;T;T2_2;1;;matrix;Wie bewerten Sie folgende Funktionen? – Die Bildgebung ist auf dem Smartphone ausreichend beurteilbar.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1) UND (W5_3 > 0 ODER UNBEKANNT(W5_3));0
-FB2;T;T2_3;1;;matrix;Wie bewerten Sie folgende Funktionen? – Fotos und Scans werden zuverlässig dem richtigen Patienten zugeordnet.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1) UND (W5_5 > 0 ODER W5_6 > 0 ODER UNBEKANNT(W5_5));0
-FB2;T;T2_4;1;;matrix;Wie bewerten Sie folgende Funktionen? – PMDs lassen sich vollständig in der App bearbeiten.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1) UND (W5_4 > 0 ODER UNBEKANNT(W5_4));0
-FB2;T;T3;1;;skala;Wie wahrscheinlich ist es, dass Sie HX Now Kolleginnen und Kollegen empfehlen?;;0;10;;0;SKIP_HX != 1;0
+FB2;A;A1;1;;skala;Ich denke, dass ich HX Now gerne häufig benutzen würde.;;1;5;SUS;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A2;1;;skala;Ich fand HX Now unnötig komplex.;;1;5;SUS;1;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A3;1;;skala;Ich fand HX Now einfach zu benutzen.;;1;5;SUS;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A4;1;;skala;Ich glaube, ich würde die Hilfe einer technisch versierten Person benötigen, um HX Now benutzen zu können.;;1;5;SUS;1;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A5;1;;skala;Ich fand, die verschiedenen Funktionen in HX Now waren gut integriert.;;1;5;SUS;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A6;1;;skala;Ich denke, HX Now enthielt zu viele Inkonsistenzen.;;1;5;SUS;1;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A7;1;;skala;Ich kann mir vorstellen, dass die meisten Menschen den Umgang mit HX Now sehr schnell lernen.;;1;5;SUS;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A8;1;;skala;Ich fand HX Now sehr umständlich zu nutzen.;;1;5;SUS;1;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A9;1;;skala;Ich fühlte mich bei der Benutzung von HX Now sicher.;;1;5;SUS;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;A;A10;1;;skala;Ich musste eine Menge lernen, bevor ich anfangen konnte, HX Now zu verwenden.;;1;5;SUS;1;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B1;1;TAM_PU_1;skala;Mit HX Now kann ich meine Aufgaben schneller erledigen.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B2;1;TAM_PU_2;skala;HX Now verbessert die Qualität meiner Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B3;1;TAM_PU_3;skala;HX Now steigert meine Produktivität.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B4;1;TAM_PU_4;skala;HX Now steigert meine Effektivität bei der Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B5;1;TAM_PU_5;skala;HX Now erleichtert meine Arbeit.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B6;1;TAM_PU_6;skala;HX Now ist für meine Arbeit nützlich.;;1;7;TAM_PU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B7;1;TAM_PEOU_1;skala;Den Umgang mit HX Now zu erlernen, ist für mich leicht.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B8;1;TAM_PEOU_2;skala;Es ist leicht, mit HX Now das zu erreichen, was ich möchte.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B9;1;TAM_PEOU_3;skala;Die Bedienung von HX Now ist klar und verständlich.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B10;1;TAM_PEOU_4;skala;HX Now ist flexibel in der Bedienung.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B11;1;TAM_PEOU_5;skala;Es ist leicht, im Umgang mit HX Now geübt zu werden.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B12;1;TAM_PEOU_6;skala;HX Now ist einfach zu bedienen.;;1;7;TAM_PEOU;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B13;1;TAM_BI_1;skala;Ich beabsichtige, HX Now auch künftig regelmäßig zu nutzen.;;1;7;TAM_BI;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;B;B14;1;TAM_BI_2;skala;Ich werde HX Now nutzen, wann immer es sinnvoll ist.;;1;7;TAM_BI;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;E;E1;1;FUNK_NUTZEN_1;skala;Krankenakte / Verlauf einsehen;9=nicht genutzt;1;5;;0;(W5_1 > 0 ODER UNBEKANNT(W5_1)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E2;1;FUNK_NUTZEN_2;skala;Laborwerte einsehen;9=nicht genutzt;1;5;;0;(W5_2 > 0 ODER UNBEKANNT(W5_2)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E3;1;FUNK_NUTZEN_3;skala;Bildgebung (PACS-Viewer);9=nicht genutzt;1;5;;0;(W5_3 > 0 ODER UNBEKANNT(W5_3)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E4;1;FUNK_NUTZEN_4;skala;PMDs bearbeiten (z. B. Basisanamnese, Konsil);9=nicht genutzt;1;5;;0;(W5_4 > 0 ODER UNBEKANNT(W5_4)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E5;1;FUNK_NUTZEN_5;skala;Fotodokumentation;9=nicht genutzt;1;5;;0;(W5_5 > 0 ODER UNBEKANNT(W5_5)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E6;1;FUNK_NUTZEN_6;skala;Dokumentenscan;9=nicht genutzt;1;5;;0;(W5_6 > 0 ODER UNBEKANNT(W5_6)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;E;E7;1;FUNK_NUTZEN_7;skala;Sprachgestützte Dokumentation;9=nicht genutzt;1;5;;0;(W5_7 > 0 ODER UNBEKANNT(W5_7)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX));0
+FB2;T;T1_1;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Keine oder schlechte Netzverbindung (WLAN);1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T1_2;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Akku leer oder zu schwach;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T1_3;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Probleme bei der Anmeldung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T1_4;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Lange Ladezeiten;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T1_5;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Absturz oder Fehlermeldung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T1_6;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Fehlerhafte Spracherkennung;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;(SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)) UND (W5_7 > 0 ODER UNBEKANNT(W5_7));0
+FB2;T;T1_7;1;;matrix;Wie oft sind bei der Nutzung von HX Now folgende Probleme aufgetreten? – Gerät nicht griffbereit;1=nie | 2=selten | 3=gelegentlich | 4=oft | 5=sehr oft;;;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
+FB2;T;T2_1;1;;matrix;Wie bewerten Sie folgende Funktionen? – Die Spracherkennung ist genau.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)) UND (W5_7 > 0 ODER UNBEKANNT(W5_7));0
+FB2;T;T2_2;1;;matrix;Wie bewerten Sie folgende Funktionen? – Die Bildgebung ist auf dem Smartphone ausreichend beurteilbar.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)) UND (W5_3 > 0 ODER UNBEKANNT(W5_3));0
+FB2;T;T2_3;1;;matrix;Wie bewerten Sie folgende Funktionen? – Fotos und Scans werden zuverlässig dem richtigen Patienten zugeordnet.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)) UND (W5_5 > 0 ODER W5_6 > 0 ODER UNBEKANNT(W5_5));0
+FB2;T;T2_4;1;;matrix;Wie bewerten Sie folgende Funktionen? – PMDs lassen sich vollständig in der App bearbeiten.;1=1 | 2=2 | 3=3 | 4=4 | 5=5 | 9=nicht genutzt;;;;0;(SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)) UND (W5_4 > 0 ODER UNBEKANNT(W5_4));0
+FB2;T;T3;1;;skala;Wie wahrscheinlich ist es, dass Sie HX Now Kolleginnen und Kollegen empfehlen?;;0;10;;0;SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX);0
 FB2;C;C1;1;;skala;Zeit am stationären Arbeitsplatz-PC;;1;5;;0;;0
 FB2;C;C2;1;;skala;Wege zu einem PC, um Informationen nachzusehen;;1;5;;0;;0
 FB2;C;C3;1;;skala;Telefonische Rückfragen zu Patienteninformationen;;1;5;;0;;0

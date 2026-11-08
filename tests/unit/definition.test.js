@@ -171,7 +171,7 @@ test('Zellen: Freitext, Prozentgruppe, Matrix mit einer bzw. mehreren Spalten, w
   assert.ok(z2.W5_1 && z2.W3_01_C && !z2.W5_1_A);
   assert.equal(z2.W5_1.paar, 'FUNK_HAEUF_1');
   assert.deepEqual(z2.W5_7.auto, { wenn: 'W4 = 1', wert: 0 });
-  assert.equal(z2.E1.showIf, '(W5_1 > 0 ODER UNBEKANNT(W5_1)) UND (SKIP_HX != 1)');
+  assert.equal(z2.E1.showIf, '(W5_1 > 0 ODER UNBEKANNT(W5_1)) UND (SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX))');
   assert.deepEqual(z2.E1.auto, { wenn: 'W5_1 = 0', wert: 9 });
   assert.deepEqual([z2.T2_1.auto, z2.T1_1.auto, z2.T1_6.auto], [{ wert: 9 }, null, null]);
   assert.equal(z2.SKIP_HX.art, 'sprung');

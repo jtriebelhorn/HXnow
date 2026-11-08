@@ -7,7 +7,7 @@
 
 // Muss APP_VERSION in js/version.js entsprechen (Unit-Test prüft das). Bei jeder Auslieferung erhöhen,
 // sonst bekommen installierte Geräte geänderte Dateien nicht.
-const CACHE_VERSION = '0.7.0';
+const CACHE_VERSION = '0.8.0';
 const CACHE_NAME = `hxnow-beobachtung-${CACHE_VERSION}`;
 
 // Alle ausgelieferten Dateien (Unit-Test prüft Vollständigkeit gegen das Repository).
@@ -16,31 +16,31 @@ const DATEIEN = [
   'index.html',
   'manifest.webmanifest',
   'kodierschema.json',
+  'version.json',
   'css/app.css',
   'icons/icon-180.png',
   'icons/icon-192.png',
   'icons/icon-512.png',
-  'version.json',
-  'js/config.js',
   'js/block.js',
+  'js/config.js',
   'js/db.js',
   'js/export.js',
   'js/fb/codebuch.js',
   'js/fb/definition.js',
+  'js/fb/export.js',
+  'js/fb/filter.js',
+  'js/fb/stand.js',
   'js/frageboegen.js',
+  'js/logbuch.js',
   'js/main.js',
   'js/schema.js',
   'js/sicherung.js',
   'js/sitzung.js',
-  'js/umgebung.js',
-  'js/updatepruefung.js',
-  'js/uuid.js',
-  'js/version.js',
-  'js/zeit.js',
   'js/ui/abschluss.js',
   'js/ui/blockneu.js',
   'js/ui/dom.js',
   'js/ui/exportieren.js',
+  'js/ui/fragebogen.js',
   'js/ui/info.js',
   'js/ui/kodierung.js',
   'js/ui/schemafehler.js',
@@ -50,6 +50,11 @@ const DATEIEN = [
   'js/ui/tageskennzahlen.js',
   'js/ui/update.js',
   'js/ui/versuch.js',
+  'js/umgebung.js',
+  'js/updatepruefung.js',
+  'js/uuid.js',
+  'js/version.js',
+  'js/zeit.js',
 ];
 
 self.addEventListener('install', (event) => {

@@ -26,7 +26,7 @@ export function erzeugeSitzung({ schema, schreibe, uuid, uhr = Date.now }) {
       const lauf = kette.then(async () => {
         const ergebnis = fn(sitzung.zustand, ctx);
         const { block, episoden, pausen } = ergebnis.schreiben ?? {};
-        if (block || episoden?.length > 0 || pausen?.length > 0) await schreibe(ergebnis.schreiben);
+        if (block || episoden?.length > 0 || pausen?.length > 0) await schreibe(ergebnis.schreiben, ergebnis.zustand);
         if (ergebnis.zustand) sitzung.zustand = ergebnis.zustand;
         return ergebnis;
       });

@@ -1,6 +1,6 @@
 // Phase 4: Export, Statusverwaltung, Datensicherung.
 import { test, expect } from '@playwright/test';
-import { oeffne, starteBlock, tippe, leseDb, mockeTeilen, geteilt, kurzerBlock } from './hilfen.js';
+import { oeffne, starteBlock, tippe, leseDb, mockeTeilen, geteilt, kurzerBlock , waehleCode } from './hilfen.js';
 
 test('Teilen aus der Abschlussseite: direkt aus der Geste, Status offen → exportiert → bestätigt', async ({ page }) => {
   await mockeTeilen(page, 'erfolg');
@@ -106,7 +106,7 @@ test('Startseite: Versuch exportieren und Eingang bestätigen; rotes Banner vers
   await mockeTeilen(page, 'erfolg');
   await oeffne(page);
   await page.click('[data-test=nicht-angetroffen]');
-  await page.fill('[data-test=pseudonym]', 'P099');
+  await waehleCode(page, 'P099');
   for (const t of ['bereich-ZNA', 'dienst-N', 'phase-PRE']) await page.click(`[data-test=${t}]`);
   await page.click('[data-test=versuch-speichern]');
   await expect(page.locator('[data-test=eintrag-versuch]')).toBeVisible();
@@ -165,7 +165,7 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
 
   // Erneuter Import derselben Sicherung → nichts doppelt
   await page.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
-  await expect(page.locator('#meldung')).toContainText('0 neu, 4 bereits vorhanden');
+  await expect(page.locator('#meldung')).toContainText('0 neu, 6 bereits vorhanden');
   expect(await leseDb(page)).toEqual(vorher);
 
   // Zweites Gerät (leerer Speicher)
@@ -174,7 +174,7 @@ test('JSON-Sicherung: Export, erneuter Import ohne Dubletten, Import auf zweitem
   await seite2.goto('./');
   await seite2.click('[data-test=menue-sicherung]');
   await seite2.setInputFiles('[data-test=import-datei]', { name: sicherung.name, mimeType: 'application/json', buffer: Buffer.from(sicherung.text) });
-  await expect(seite2.locator('#meldung')).toContainText('4 neu, 0 bereits vorhanden');
+  await expect(seite2.locator('#meldung')).toContainText('6 neu, 0 bereits vorhanden');
   await expect(seite2.locator('[data-test=anzahl-episoden]')).toHaveText('2');
   const db2 = await leseDb(seite2);
   expect(db2.bloecke).toEqual(vorher.bloecke);

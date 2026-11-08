@@ -8,6 +8,7 @@ import { uhrzeit, datumLokal, formatiereCountdown } from '../zeit.js';
 import { exportiere, andereWege, bestaetigeEingang } from './exportieren.js';
 import { updateHinweis, updateSuche, aktualisiertHinweis } from './update.js';
 import { istTestPseudonym } from '../schema.js';
+import { fbExportDatei, brecheFbAb, BOGEN_NAME } from './fragebogen.js';
 
 const TAG_MS = 24 * 3600 * 1000;
 
@@ -24,6 +25,8 @@ export async function zeigeStart(app) {
   }
 
   const offen = (x) => x.exportStatus !== 'bestaetigt';
+  const antwortenJe = Map.groupBy(daten.fb_antworten, (a) => a.sitzungId);
+  const laufendeFb = daten.fb_sitzungen.filter((s) => s.status === 'laufend');
   const neuZeichnen = () => app.zeige('start');
 
   // Exportdateien werden hier vorbereitet, damit der Klick auf „Exportieren“ synchron teilen kann.
@@ -43,6 +46,14 @@ export async function zeigeStart(app) {
       details: '', exportStatus: v.exportStatus,
       datei: versuchDatei(v, schema),
       ziel: { store: db.STORES.VERSUCHE, schluessel: v.versuchId, nachher: neuZeichnen },
+    })),
+    ...daten.fb_sitzungen.filter((s) => offen(s) && s.status === 'abgeschlossen').map((s) => ({
+      art: s.testmodus ? 'Fragebogen · Probelauf' : 'Fragebogen', ts: s.endTs ?? s.angelegtTs, test: 'eintrag-fb',
+      titel: `${s.pseudonym} · ${BOGEN_NAME[s.bogen]} · ${datumLokal(s.angelegtTs)} ${uhrzeit(s.angelegtTs).slice(0, 5)}`,
+      details: s.erhebungsmodus === 'PAPIER' ? 'Papier' : '', exportStatus: s.exportStatus,
+      datei: fbExportDatei(app, s, Object.fromEntries((antwortenJe.get(s.sitzungId) ?? []).map((a) => [a.itemId, a]))),
+      ziel: { store: db.STORES.FB_SITZUNGEN, schluessel: s.sitzungId, nachher: neuZeichnen },
+      oeffnen: () => app.zeige('fbStatus', { sitzungId: s.sitzungId }),
     })),
     ...daten.tageskennzahlen.filter(offen).map((k) => ({
       art: 'Tageskennzahlen', ts: k.ts, test: 'eintrag-tag',
@@ -70,9 +81,19 @@ export async function zeigeStart(app) {
       : null,
     el('div', { class: 'stapel' },
       el('button', { type: 'button', class: 'primaer gross', 'data-test': 'neuer-block', onclick: () => app.zeige('blockNeu') }, 'Neuer Block'),
+      el('button', { type: 'button', class: 'gross', 'data-test': 'neuer-fragebogen', onclick: () => app.zeige('fbNeu') }, 'Fragebogen'),
       el('button', { type: 'button', class: 'gross', 'data-test': 'nicht-angetroffen', onclick: () => app.zeige('versuch') }, 'Person nicht angetroffen'),
       el('button', { type: 'button', class: 'gross', 'data-test': 'tageskennzahlen', onclick: () => app.zeige('tageskennzahlen') }, 'Tageskennzahlen'),
     ),
+    laufendeFb.length === 0 ? null : el('section', { 'data-test': 'offene-fragebogen' },
+      el('h2', {}, 'Nicht abgeschlossene Fragebögen'),
+      el('ul', { class: 'liste' }, laufendeFb.map((s) => el('li', { 'data-test': 'eintrag-fb-offen' },
+        el('div', { class: 'liste-text' },
+          el('span', { class: 'liste-art' }, BOGEN_NAME[s.bogen]),
+          el('span', { class: 'liste-titel' }, `${s.pseudonym} · begonnen ${datumLokal(s.angelegtTs)} ${uhrzeit(s.angelegtTs).slice(0, 5)}`)),
+        el('div', { class: 'liste-knoepfe' },
+          el('button', { type: 'button', class: 'primaer', 'data-test': 'fb-fortsetzen', onclick: () => app.zeige(s.startTs ? 'fbAusfuellen' : 'fbUebergabe', { sitzungId: s.sitzungId }) }, 'Fortsetzen'),
+          el('button', { type: 'button', class: 'gefahr', 'data-test': 'fb-abbrechen', onclick: () => brecheFbAb(app, s) }, 'Abbrechen')))))),
     el('h2', {}, 'Nicht abgeschlossene Exporte'),
     eintraege.length === 0
       ? el('p', { class: 'hinweis', 'data-test': 'keine-offenen' }, 'Keine offenen Einträge.')

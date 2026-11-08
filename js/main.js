@@ -17,8 +17,10 @@ import { zeigeInfo } from './ui/info.js';
 import { zeigeSicherung } from './ui/sicherung.js';
 import { starteOfflineBetrieb } from './ui/update.js';
 import { zeigeTabSperre } from './ui/tabsperre.js';
+import { zeigeFbNeu, zeigeFbUebergabe, zeigeFbAusfuellen, zeigeFbDanke, zeigeFbStatus } from './ui/fragebogen.js';
 import { ermittleUmgebung } from './umgebung.js';
 import { TESTVERSION } from './config.js';
+import { eintragAusBlock, eintragAusVersuch } from './logbuch.js';
 
 const ANSICHTEN = {
   start: zeigeStart,
@@ -30,6 +32,11 @@ const ANSICHTEN = {
   info: zeigeInfo,
   sicherung: zeigeSicherung,
   tabSperre: zeigeTabSperre,
+  fbNeu: zeigeFbNeu,
+  fbUebergabe: zeigeFbUebergabe,
+  fbAusfuellen: zeigeFbAusfuellen,
+  fbDanke: zeigeFbDanke,
+  fbStatus: zeigeFbStatus,
 };
 
 /** Gemeinsamer App-Kontext für alle Ansichten. */
@@ -60,7 +67,10 @@ const app = {
 
   /** Neue Sitzung für einen Block-Zustand (speichert über db.js). */
   neueSitzung(zustand) {
-    const s = erzeugeSitzung({ schema: app.schema, uuid, schreibe: (w) => db.schreibeAenderungen(app.db, w) });
+    const s = erzeugeSitzung({
+      schema: app.schema, uuid,
+      schreibe: (w, zustand) => db.schreibeAenderungen(app.db, w, zustand ? eintragAusBlock(zustand, app.schema) : null),
+    });
     s.laden(zustand);
     app.sitzung = s;
     return s;
@@ -91,6 +101,20 @@ async function fordereDauerhaftenSpeicher() {
       app.meta.persistiert = ok;
     }
   } catch { /* nicht unterstützt */ }
+}
+
+/** Logbuch-Einträge für Blöcke und Versuche ohne Eintrag (z. B. aus Versionen vor dem Logbuch). */
+async function logbuchNachtragen() {
+  const daten = await db.holeAlleDaten(app.db);
+  const vorhanden = new Set(daten.logbuch.map((l) => l.eintragId));
+  const episodenJe = Map.groupBy(daten.episoden, (e) => e.blockId);
+  const pausenJe = Map.groupBy(daten.pausen, (p) => p.blockId);
+  const neu = [
+    ...daten.bloecke.filter((b) => !vorhanden.has(b.blockId))
+      .map((b) => eintragAusBlock(B.stelleWiederHer(b, episodenJe.get(b.blockId) ?? [], pausenJe.get(b.blockId) ?? []), app.schema)),
+    ...daten.versuche.filter((v) => !vorhanden.has(v.versuchId)).map((v) => eintragAusVersuch(v, app.schema)),
+  ];
+  if (neu.length) await db.ergaenzeLogbuch(app.db, neu);
 }
 
 /** Merkt sich die App-Version; war sie anders, wurde gerade aktualisiert (Hinweis auf der Startseite). */
@@ -129,6 +153,8 @@ async function starte() {
   }
   if (app.meta.ersterStart || app.meta.persistiert !== true) await fordereDauerhaftenSpeicher();
   await merkeVersion();
+  await logbuchNachtragen();
+  app.teilnehmende = new Map((await db.holeAlle(app.db, db.STORES.TEILNEHMENDE)).map((t) => [t.pseudonym, t]));
 
   if (ermittleUmgebung() === 'ios-tab') {
     app.gesperrt = true;

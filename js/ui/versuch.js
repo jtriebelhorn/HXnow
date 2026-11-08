@@ -2,6 +2,7 @@
 import { el, ersetze, kommentarFeld, meldung } from './dom.js';
 import { stammdatenFormular } from './blockneu.js';
 import * as db from '../db.js';
+import { eintragAusVersuch } from '../logbuch.js';
 
 export function zeigeVersuch(app) {
   let laeuft = false;
@@ -29,7 +30,7 @@ export function zeigeVersuch(app) {
         bestaetigtTs: null,
       };
       try {
-        await db.speichere(app.db, db.STORES.VERSUCHE, versuch);
+        await db.speichereMitLogbuch(app.db, db.STORES.VERSUCHE, versuch, eintragAusVersuch(versuch, app.schema));
       } catch (e) {
         meldung(`Speichern fehlgeschlagen: ${e.message}`, 'fehler');
         laeuft = false;

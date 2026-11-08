@@ -13,7 +13,7 @@ import { zufall, DAUER, KOMMENTARE, naechsteTaetigkeit, ortFuer, nutzungsart, ha
 import { pruefeBlock, pruefeRohdaten, pruefeEinzelCsv } from './abgleich.js';
 import { isoBerlin } from './lesen.js';
 import { schreibeBericht } from './bericht.js';
-import { mockeTeilen, geteilt, leseDb } from '../e2e/hilfen.js';
+import { mockeTeilen, geteilt, leseDb, waehleCode } from '../e2e/hilfen.js';
 
 const SCHEMA = JSON.parse(readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8'));
 const APP_VERSION = /APP_VERSION = '([^']+)'/.exec(readFileSync(new URL('../../js/version.js', import.meta.url), 'utf8'))[1];
@@ -92,7 +92,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     let pseudonym;
     do pseudonym = `P${String(r.ganz(100, 199)).padStart(3, '0')}`; while (versuchErwartet.some((v) => v.pseudonym === pseudonym));
     await tippe('nicht-angetroffen');
-    await page.locator('[data-test=pseudonym]').fill(pseudonym);
+    await waehleCode(page, pseudonym);
     await tippe(`phase-${phase}`);
     await tippe(`bereich-${bereich}`);
     const kommentar = 'Im OP; Rückruf "später"';
@@ -114,7 +114,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     const m = sz.meta;
     await tippe('neuer-block');
     await tippe(`dauer-${m.dauerSek}`);
-    await page.locator('[data-test=pseudonym]').fill(m.pseudonym);
+    await waehleCode(page, m.pseudonym);
     await tippe(`phase-${m.phase}`);
     await tippe(`bereich-${m.bereich}`);
     if (m.dienst) await tippe(`dienst-${m.dienst}`);

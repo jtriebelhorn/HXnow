@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 – 08.11.2026
+Fragebogen-Modus (Phasen F1–F4) und Grundlage für Teilnehmerliste und Logbuch; keine Datenbank-Migration:
+- Knopf „Fragebogen“: Vorbereitung durch die Doktorandin, Übergabe, Ausfüllen mit Filtern und automatischen Werten,
+  Unterbrechen und Fortsetzen, Papier-Nacherfassung, Rückkehr per langem Druck, Statusansicht ohne Antworten.
+- Export `HXNOW_FB_<Bogen>_<Code>_…csv` im Long-Format (eine Zeile je Zelle, Status inkl. `automatisch`).
+- Studien-Code aus der Teilnehmerliste (Suche, „Neuen Code anlegen“), gesperrt bei widerrufen/ausgeschieden.
+- Logbuch-Eintrag für jeden Block, Versuch und Fragebogen (ohne Inhalte), bleibt beim Löschen bestätigter Daten.
+- Fragebogen-Definition: Bedingung der weichen Sprungregel korrigiert (`SKIP_HX != 1 ODER UNBEKANNT(SKIP_HX)`).
+
 ## 0.7.0 – 08.11.2026
 Phase L0 – Updates und Migration (PLAN_Logbuch_Datensicherheit), Datenbank-Migration nötig (2 → 3, automatisch):
 - „Nach Updates suchen“ in Info und auf der Startseite: neue Version (mit Hinweistext), aktuell oder keine Verbindung;

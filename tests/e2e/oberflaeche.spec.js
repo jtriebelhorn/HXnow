@@ -1,6 +1,6 @@
 // Phase 3: Bedienung im iPhone-Profil.
 import { test, expect } from '@playwright/test';
-import { oeffne, starteBlock, tippe, leseDb, mockeTeilen, geteilt, pauseUndWeiter } from './hilfen.js';
+import { oeffne, starteBlock, tippe, leseDb, mockeTeilen, geteilt, pauseUndWeiter , waehleCode } from './hilfen.js';
 
 /** Alle sichtbaren Tasten müssen mindestens 48 × 48 px groß sein. */
 async function pruefeTastengroessen(page, wo) {
@@ -153,7 +153,7 @@ test('nur Pflichtangaben beim Anlegen; Dienst und Kontext auf der Abschlussseite
   await expect(page.locator('legend', { hasText: 'Dienst' })).toContainText('(optional)');
   await expect(page.locator('[data-test^=beobachter-]')).toHaveCount(0); // nur ein Beobachter → keine Auswahl
   await expect(page.locator('legend', { hasText: 'Arbeitskontext' })).toContainText('(optional)');
-  await page.fill('[data-test=pseudonym]', 'P030');
+  await waehleCode(page, 'P030');
   await page.click('[data-test=phase-PRE]');
     await expect(page.locator('[data-test=block-starten]')).toBeDisabled(); // Bereich (Pflicht) fehlt
   await page.click('[data-test=bereich-NEPH]');
@@ -341,7 +341,7 @@ test('Wechsel der Nebentätigkeit steht im Ablauf und in den Anteilen der Abschl
 test('Person nicht angetroffen und Tageskennzahlen; rotes Banner nach 24 h', async ({ page }) => {
   await oeffne(page);
   await page.click('[data-test=nicht-angetroffen]');
-  await page.fill('[data-test=pseudonym]', 'P099');
+  await waehleCode(page, 'P099');
   for (const t of ['bereich-ZNA', 'dienst-N', 'phase-PRE']) await page.click(`[data-test=${t}]`);
   await expect(page.locator('[data-test=versuch-kommentar]')).toBeVisible();
   await page.click('[data-test=versuch-speichern]');

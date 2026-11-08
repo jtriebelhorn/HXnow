@@ -18,7 +18,7 @@ const KONTEXT_GRUPPE = { K1: 'Station', K2: 'Station', K3: 'Station', K4: 'Funkt
 export async function starteBlock(page, { pseudonym = 'P017', phase = 'POST', beobachter = 'B1', bereich = 'NEPH', dienst = 'F', dauer = 900, kontext = 'K1' } = {}) {
   await page.click('[data-test=neuer-block]');
   await page.click(`[data-test=dauer-${dauer}]`);
-  await page.fill('[data-test=pseudonym]', pseudonym);
+  await waehleCode(page, pseudonym);
   if (await page.locator(`[data-test=beobachter-${beobachter}]`).count()) await page.click(`[data-test=beobachter-${beobachter}]`);
   await page.click(`[data-test=bereich-${bereich}]`);
   await page.click(`[data-test=dienst-${dienst}]`);
@@ -41,7 +41,7 @@ export function leseDb(page) {
     const r = indexedDB.open('hxnow-beobachtung');
     r.onerror = () => reject(r.error);
     r.onsuccess = () => {
-      const stores = ['bloecke', 'episoden', 'pausen', 'versuche', 'tageskennzahlen'];
+      const stores = [...r.result.objectStoreNames].filter((s) => s !== 'meta');
       const tx = r.result.transaction(stores, 'readonly');
       const erg = {};
       for (const s of stores) {
@@ -114,4 +114,14 @@ export async function pauseUndWeiter(page, { grund = null, notiz = null } = {}) 
   }
   await page.click('[data-test=pause]');
   await expect(page.locator('[data-test=pause-status]')).toHaveCount(0);
+}
+
+/** Studien-Code eintippen; ist er noch nicht in der Teilnehmerliste, „Neuen Code anlegen“ tippen. */
+export async function waehleCode(page, code) {
+  await page.fill('[data-test=pseudonym]', code);
+  const anlegen = page.locator('[data-test=code-anlegen]');
+  if (await anlegen.count()) {
+    await anlegen.click();
+    await expect(page.locator('[data-test=code-gewaehlt]')).toBeVisible();
+  }
 }

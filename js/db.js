@@ -141,10 +141,12 @@ function lesen(db, stores, arbeit) {
  * Schreibt die von block.js gelieferten Änderungen ({ block, episoden, pausen }) in einer Transaktion.
  * Löst auf, wenn alles dauerhaft gespeichert ist.
  */
-export function schreibeAenderungen(db, { block = null, episoden = [], pausen = [] } = {}) {
+export function schreibeAenderungen(db, { block = null, episoden = [], pausen = [] } = {}, logbuch = null) {
   if (!block && episoden.length === 0 && pausen.length === 0) return Promise.resolve();
-  return transaktion(db, [STORES.BLOECKE, STORES.EPISODEN, STORES.PAUSEN], 'readwrite', (tx) => {
+  return transaktion(db, [STORES.BLOECKE, STORES.EPISODEN, STORES.PAUSEN, STORES.LOGBUCH], 'readwrite', (tx) => {
     if (block) tx.objectStore(STORES.BLOECKE).put(block);
+    // Logbuch-Eintrag in derselben Transaktion wie die Daten (Fragebogenplan 2a)
+    if (logbuch) tx.objectStore(STORES.LOGBUCH).put(logbuch);
     const s = tx.objectStore(STORES.EPISODEN);
     for (const e of episoden) s.put(e);
     const sp = tx.objectStore(STORES.PAUSEN);
@@ -250,8 +252,17 @@ export function setzeMeta(db, schluessel, wert) {
  * @returns {Promise<object|null>} der geänderte Datensatz
  */
 export function setzeExportStatus(db, store, schluessel, status, ts = Date.now()) {
-  return transaktion(db, [store], 'readwrite', (tx) => {
+  return transaktion(db, [store, STORES.LOGBUCH], 'readwrite', (tx) => {
     const s = tx.objectStore(store);
+    // Exportstatus auch im Logbuch-Eintrag nachführen (gleiche ID wie Block, Versuch bzw. Fragebogen)
+    if (typeof schluessel === 'string') {
+      const lb = tx.objectStore(STORES.LOGBUCH);
+      const l = lb.get(schluessel);
+      l.onsuccess = () => {
+        if (!l.result || l.result.exportStatus === 'bestaetigt') return;
+        lb.put({ ...l.result, exportStatus: status === 'bestaetigt' ? 'bestaetigt' : 'exportiert' });
+      };
+    }
     const box = { satz: null };
     const r = s.get(schluessel);
     r.onsuccess = () => {
@@ -279,6 +290,40 @@ export function setzeExportStatus(db, store, schluessel, status, ts = Date.now()
 export async function offeneFbSitzungen(db) {
   const r = await lesen(db, [STORES.FB_SITZUNGEN], (tx, merke) => merke('s', tx.objectStore(STORES.FB_SITZUNGEN).index('status').getAll('laufend')));
   return r.s;
+}
+
+/** Speichert einen Datensatz und seinen Logbuch-Eintrag in einer Transaktion. */
+export function speichereMitLogbuch(db, store, satz, logbuch) {
+  return transaktion(db, [store, STORES.LOGBUCH], 'readwrite', (tx) => {
+    tx.objectStore(store).put(satz);
+    tx.objectStore(STORES.LOGBUCH).put(logbuch);
+  });
+}
+
+/** Ergänzt fehlende Logbuch-Einträge (Daten aus der Zeit vor dem Logbuch); vorhandene bleiben unverändert. */
+export function ergaenzeLogbuch(db, eintraege) {
+  return transaktion(db, [STORES.LOGBUCH], 'readwrite', (tx) => {
+    const s = tx.objectStore(STORES.LOGBUCH);
+    for (const e of eintraege) {
+      const r = s.get(e.eintragId);
+      r.onsuccess = () => { if (!r.result) s.put(e); };
+    }
+  });
+}
+
+/** Antworten einer Fragebogen-Sitzung als Objekt nach Zellen-ID. */
+export async function holeFbAntworten(db, sitzungId) {
+  const r = await lesen(db, [STORES.FB_ANTWORTEN], (tx, merke) => merke('a', tx.objectStore(STORES.FB_ANTWORTEN).index('sitzungId').getAll(sitzungId)));
+  return Object.fromEntries(r.a.map((x) => [x.itemId, x]));
+}
+
+/** Speichert Antwort(en) und optional Sitzung und Logbuch-Eintrag in einer Transaktion. */
+export function schreibeFb(db, { sitzung = null, antworten = [], logbuch = null } = {}) {
+  return transaktion(db, [STORES.FB_SITZUNGEN, STORES.FB_ANTWORTEN, STORES.LOGBUCH], 'readwrite', (tx) => {
+    if (sitzung) tx.objectStore(STORES.FB_SITZUNGEN).put(sitzung);
+    for (const a of antworten) tx.objectStore(STORES.FB_ANTWORTEN).put(a);
+    if (logbuch) tx.objectStore(STORES.LOGBUCH).put(logbuch);
+  });
 }
 
 /** Alle Datensätze aller gesicherten Stores (alles außer meta). */

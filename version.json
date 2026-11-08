@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.7.0",
+  "appVersion": "0.8.0",
   "datum": "2026-11-08",
-  "hinweis": "Nach Updates suchen, Komplettsicherung vor dem Update, Datenbank für Fragebögen, Teilnehmende und Logbuch vorbereitet."
+  "hinweis": "Fragebogen-Modus (FB1, Kurzbogen, FB2 als Entwurf), Studien-Code aus der Teilnehmerliste, Logbuch-Einträge für alle Erhebungen."
 }

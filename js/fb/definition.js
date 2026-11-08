@@ -32,7 +32,7 @@ export function und(...teile) {
 /** Bedingung, unter der ein Abschnitt nicht durch eine weiche Sprungregel übersprungen ist. */
 function nichtUebersprungen(b, abschnittId) {
   return (b.softSkips ?? []).filter((s) => s.abschnitte.includes(abschnittId))
-    .map((s) => `${s.id} != 1`).join(' UND ');
+    .map((s) => `${s.id} != 1 ODER UNBEKANNT(${s.id})`).join(' UND ');
 }
 
 /**

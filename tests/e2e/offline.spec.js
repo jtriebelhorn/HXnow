@@ -1,7 +1,7 @@
 // Phase 5: Offline-Betrieb und Update-Ablauf mit echtem Service Worker
 // (ersetzt die Lighthouse-PWA-Prüfung, ENTSCHEIDUNGEN Nr. 5).
 import { test, expect } from '@playwright/test';
-import { oeffne, starteBlock, tippe, leseDb } from './hilfen.js';
+import { oeffne, starteBlock, tippe, leseDb , waehleCode } from './hilfen.js';
 
 test.use({ serviceWorkers: 'allow' });
 
@@ -71,7 +71,7 @@ test('Neue Version während eines laufenden Blocks: kein Neuladen, kein Hinweis,
   await expect(page.locator('[data-test=countdown]')).toBeVisible();
   await expect(page.locator('[data-test=update-hinweis]')).toHaveCount(0);
   expect(await page.evaluate(() => navigator.serviceWorker.controller.state)).toBe('activated');
-  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.7.0');
+  expect(await cacheNamen(page)).toContain('hxnow-beobachtung-0.8.0');
   expect((await leseDb(page)).episoden.filter((e) => !e.geloescht)).toHaveLength(2);
 });
 
@@ -80,7 +80,7 @@ test('Neue Version auf der Startseite: Hinweis, „Jetzt aktualisieren“ lädt 
   await expect(page.locator('[data-test=neuer-block]')).toBeVisible();
   await warteAufOfflineBereit(page);
   await page.click('[data-test=nicht-angetroffen]');
-  await page.fill('[data-test=pseudonym]', 'P017');
+  await waehleCode(page, 'P017');
   await page.click('[data-test=phase-PRE]');
   await page.click('[data-test=versuch-speichern]');
   await expect(page.locator('[data-test=eintrag-versuch]')).toHaveCount(1);
