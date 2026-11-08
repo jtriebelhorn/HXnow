@@ -21,6 +21,8 @@ const PHASEN_FELDER = [['baselineStart', 'baseline_start'], ['einfuehrungStart',
   ['regelbetriebStart', 'regelbetrieb_start'], ['abschlussStart', 'abschluss_start'], ['ende', 'phase_ende']];
 
 const iso = (ts) => (ts === null || ts === undefined || ts === '' ? '' : isoMitOffset(ts));
+// Millisekunden: Die Reihenfolge der Änderungen (gleiche Sekunde) und die neueste Logbuch-Datei müssen eindeutig bleiben.
+const isoMs = (ts) => (ts === null || ts === undefined || ts === '' ? '' : isoMitOffset(ts, true));
 const ms = (s) => (s ? Date.parse(s) : null);
 const zahl = (s) => (s === '' || s === undefined ? null : Number(s));
 
@@ -62,13 +64,13 @@ export function logbuchDatei(daten, kopf) {
       testmodus: l.testmodus ? 1 : 0, geraete_id: l.geraeteId ?? '',
     })),
     ...daten.aenderungen.map((a) => zeile({
-      ...leer, datensatz: 'aenderung', aenderung_id: a.aenderungId, ts: iso(a.ts), geraete_id: a.geraeteId ?? '', app_version: a.appVersion ?? '',
+      ...leer, datensatz: 'aenderung', aenderung_id: a.aenderungId, ts: isoMs(a.ts), geraete_id: a.geraeteId ?? '', app_version: a.appVersion ?? '',
       art: a.art, ziel_typ: a.zielTyp, ziel_id: a.zielId, feld: a.feld ?? '', alt: a.alt ?? '', neu: a.neu ?? '', grund: a.grund ?? '', text: a.text ?? '',
     })),
   ];
   const koerper = zeilen.map((z) => z.map(csvFeld).join(';')).join('\r\n');
   const meta = zeile({
-    ...leer, datensatz: 'meta', export_ts: iso(kopf.now), geraete_id: kopf.geraeteId, app_version: kopf.appVersion, db_version: kopf.dbVersion,
+    ...leer, datensatz: 'meta', export_ts: isoMs(kopf.now), geraete_id: kopf.geraeteId, app_version: kopf.appVersion, db_version: kopf.dbVersion,
     definition_version: kopf.definitionVersion, schema_version: kopf.schemaVersion, n_zeilen: zeilen.length, pruefsumme: crc32(koerper),
     stand_text: standText(daten),
   });

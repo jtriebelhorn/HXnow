@@ -533,3 +533,8 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .breite-90 { width: 90%; }
 .breite-95 { width: 95%; }
 .breite-100 { width: 100%; }
+
+/* Änderungen (L4) */
+.knopfraster { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: var(--abstand); }
+.knopfraster button { font-size: 0.95rem; }
+.dialog select, .dialog textarea, .dialog input { width: 100%; box-sizing: border-box; }

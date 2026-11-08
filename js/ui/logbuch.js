@@ -14,7 +14,7 @@ import { PHASEN, probandenUebersicht, faelligListe, verteilung, bereichsStand } 
 import { wirksamerStand, probandVerlauf, neueAenderung, ART, UNGUELTIG_GRUENDE } from '../aenderungen.js';
 import { exportiere, sichereLogbuch } from './exportieren.js';
 import { nichtGesichert } from './start.js';
-import { aenderungsKnoepfe, eintragKnoepfe, probandKnoepfe, schuetze } from './aendern.js';
+import { aenderungsKnoepfe, eintragKnoepfe, probandKnoepfe, schuetze, aenderungsKontext } from './aendern.js';
 
 export const ZIEL_STANDARD = 5;
 export const ziel = (schema) => schema.zielBloeckeProPhase ?? ZIEL_STANDARD;
@@ -88,7 +88,7 @@ export function zeigeStudie(app) {
     el('div', { class: 'stapel abstand-oben' },
       el('button', { type: 'button', class: 'gross', 'data-test': 'zu-teilnehmenden', onclick: () => app.zeige('teilnehmende') }, 'Teilnehmerliste'),
       el('button', { type: 'button', class: 'gross', 'data-test': 'zu-studienplan', onclick: () => app.zeige('studienplan') }, 'Studienplan (Phasen, Exportordner)'),
-      el('button', { type: 'button', class: 'gross', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app) }, 'Logbuch sichern')),
+      el('button', { type: 'button', class: 'gross', 'data-test': 'logbuch-sichern', onclick: () => sichereLogbuch(app, () => app.zeige('studie')) }, 'Logbuch sichern')),
     zurueck(app));
 }
 
@@ -324,7 +324,7 @@ export function pruefePhasen(p) {
 }
 
 async function speicherePhasenplan(app, bereich, alt, neu) {
-  const ctx = { uuid: app.uuid, now: Date.now, geraeteId: app.meta.geraeteId, appVersion: app.appVersion };
+  const ctx = aenderungsKontext(app);
   const aenderungen = DATUM_FELDER.filter(([f]) => (alt[f] ?? null) !== neu[f])
     .map(([f]) => neueAenderung({ art: ART.PHASENDATEN, zielTyp: 'bereich', zielId: bereich, feld: f, alt: alt[f] ?? null, neu: neu[f] }, ctx));
   if (aenderungen.length === 0) { meldung('Keine Änderung.'); return; }

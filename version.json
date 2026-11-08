@@ -1,5 +1,5 @@
 {
-  "appVersion": "0.11.0",
+  "appVersion": "0.12.0",
   "datum": "2026-11-08",
-  "hinweis": "Studienübersicht im Logbuch (Fällig-Liste, Probanden, Verteilung), Phasenplan mit Phasenvorschlag beim Blockstart, Teilnehmerliste mit CSV."
+  "hinweis": "Korrekturen im Logbuch mit PIN (ungültig, anderer Proband, Phase, Status, eigene Phasendaten), Kommentare, Verlauf."
 }

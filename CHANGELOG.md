@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.12.0 – 08.11.2026
+Phase L4 – Änderungen und PIN (PLAN_Logbuch_Datensicherheit 6); keine Datenbank-Migration:
+- Eintrag: Kommentar und Zurückziehen (ohne PIN); mit PIN: als ungültig markieren (U1–U4, U9 mit Pflichttext) und
+  aufheben, anderem Probanden zuordnen, Phase ändern. Proband: Kommentar, Status (aktiv, pausiert, ausgeschieden),
+  eigene Phasendaten. Jede Änderung wird nur angefügt; die erfassten Daten bleiben unverändert. Verlauf je Eintrag und
+  Proband; bei Änderungen mehrerer Geräte gilt die zeitlich letzte.
+- PIN: beim ersten Mal festlegen, SHA-256 mit Salz, 10 Minuten gültig, nach 5 Fehlversuchen 5 Minuten gesperrt;
+  „PIN ändern“ im Studienplan.
+- Nach jeder Änderung: Angebot „Logbuch sichern“. Studienübersicht und Probandenansicht rechnen mit dem wirksamen
+  Stand.
+- Logbuch-Datei: Zeitpunkte von Änderungen und Export mit Millisekunden, damit die Reihenfolge eindeutig bleibt.
+
 ## 0.11.0 – 08.11.2026
 Phase L3 – Phasenplan und Logbuch-Ansichten (PLAN_Logbuch_Datensicherheit 9); keine Datenbank-Migration:
 - Neuer Menüpunkt „Studie“: Studientag und Phase je Bereich, Fällig-Liste (offene Fragebögen, fehlende Blöcke,

@@ -8,7 +8,7 @@ import { ART, neueAenderung, wirksamerStand } from '../../js/aenderungen.js';
 import { phasendaten, phaseAm, probandenUebersicht, faelligListe, verteilung, bereichsStand } from '../../js/studienstand.js';
 
 const T = (s) => Date.parse(s);
-const kopf = { geraeteId: 'abcdef12-3456', appVersion: '0.9.0', dbVersion: 3, definitionVersion: '0.1.0', schemaVersion: '2.0.0', now: T('2026-12-03T10:00:00+01:00'), test: false };
+const kopf = { geraeteId: 'abcdef12-3456', appVersion: '0.9.0', dbVersion: 3, definitionVersion: '0.1.0', schemaVersion: '2.0.0', now: T('2026-12-03T10:00:00.456+01:00'), test: false };
 const block = (id, p, phase, start, extra = {}) => ({
   eintragId: id, art: 'BLOCK', pseudonym: p, phase, bereich: 'NEPH', dienst: 'FRUEH', arbeitskontext: 'STATION', startTs: T(start), endTs: T(start) + 3_600_000,
   beobachtetSek: 3600, pausenAnzahl: 1, pausenSek: 120, status: 'beendet', endeArt: 'regulaer', abbruchCode: null, erhebungsmodus: '',
@@ -28,7 +28,7 @@ const daten = () => ({
     { ...block('f1', 'P001', 'PRE', '2026-11-27T09:00:00+01:00'), art: 'FB1', status: 'abgeschlossen', erhebungsmodus: 'APP', beantwortet: 80, ausgelassen: 6 },
   ],
   aenderungen: [
-    { aenderungId: 'a1', ts: T('2026-11-28T10:00:00+01:00'), geraeteId: 'abcdef12-3456', appVersion: '0.9.0', art: 'KOMMENTAR', zielTyp: 'eintrag', zielId: 'b1', feld: null, alt: null, neu: null, grund: null, text: 'Visite verlängert' },
+    { aenderungId: 'a1', ts: T('2026-11-28T10:00:00.123+01:00'), geraeteId: 'abcdef12-3456', appVersion: '0.9.0', art: 'KOMMENTAR', zielTyp: 'eintrag', zielId: 'b1', feld: null, alt: null, neu: null, grund: null, text: 'Visite verlängert' },
   ],
 });
 
@@ -164,5 +164,30 @@ describe('Studienübersicht', () => {
     assert.deepEqual(v.PRE.tageszeit, { 'vor 10 Uhr': 2, 'nach 14 Uhr': 1 });
     assert.equal(v.POST.anzahl, 0);
     assert.equal(bereichsStand(d.phasenplan, T('2026-11-25T12:00:00+01:00'))[0].text, 'Baseline, Tag 3 von 14');
+  });
+});
+
+describe('PIN', async () => {
+  const { pinFormatOk, neuesSalz, pinHash, pruefePin, SPERRE_MS } = await import('../../js/pin.js');
+  test('Format, Salz, Hash ohne Klartext', async () => {
+    assert.equal(pinFormatOk('1234'), true);
+    assert.equal(pinFormatOk('123'), false);
+    assert.equal(pinFormatOk('12a4'), false);
+    assert.equal(neuesSalz().length, 32);
+    const h = await pinHash('1234', 'abc');
+    assert.equal(h.length, 64);
+    assert.notEqual(h, await pinHash('1234', 'abd'));
+    assert.ok(!h.includes('1234'));
+  });
+  test('5 Fehlversuche → 5 Minuten gesperrt, danach wieder möglich', async () => {
+    let z = { pinSalz: 's', pinHash: await pinHash('2468', 's'), fehlversuche: 0, sperreBis: null };
+    for (let i = 0; i < 4; i++) { const r = await pruefePin('0000', z, 1000); assert.equal(r.gesperrt, false); assert.equal(r.rest, 4 - i); z = r.z; }
+    const r5 = await pruefePin('0000', z, 1000);
+    assert.equal(r5.gesperrt, true);
+    assert.equal(r5.z.sperreBis, 1000 + SPERRE_MS);
+    assert.equal((await pruefePin('2468', r5.z, 2000)).ok, false, 'auch richtige PIN während der Sperre abgewiesen');
+    const ok = await pruefePin('2468', r5.z, 1000 + SPERRE_MS);
+    assert.equal(ok.ok, true);
+    assert.equal(ok.z.fehlversuche, 0);
   });
 });

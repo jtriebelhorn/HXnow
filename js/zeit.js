@@ -9,13 +9,14 @@ export function formatiereCountdown(restMs) {
   return `${zwei(Math.floor(sek / 60))}:${zwei(sek % 60)}`;
 }
 
-/** Lokale Zeit als ISO 8601 mit Offset, z. B. 2026-12-03T09:15:02+01:00 (Sekundengenau, Millisekunden abgeschnitten). */
-export function isoMitOffset(ts) {
+/** Lokale Zeit als ISO 8601 mit Offset, z. B. 2026-12-03T09:15:02+01:00 (sekundengenau; mit `mitMs` inkl. Millisekunden). */
+export function isoMitOffset(ts, mitMs = false) {
   const d = new Date(ts);
   const offsetMin = -d.getTimezoneOffset();
   const vz = offsetMin >= 0 ? '+' : '-';
   const abs = Math.abs(offsetMin);
   return `${datumLokal(ts)}T${zwei(d.getHours())}:${zwei(d.getMinutes())}:${zwei(d.getSeconds())}`
+    + (mitMs ? `.${String(d.getMilliseconds()).padStart(3, '0')}` : '')
     + `${vz}${zwei(Math.floor(abs / 60))}:${zwei(abs % 60)}`;
 }
 

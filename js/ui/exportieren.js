@@ -45,8 +45,8 @@ function logbuchAnhang(app, ziel) {
 }
 
 /** „Logbuch sichern“: nur die Logbuch-Datei teilen (synchron aus dem Klick). */
-export function sichereLogbuch(app) {
-  exportiere(app, app.logbuchDateiFuer(null), { nurLogbuch: true, nachher: () => app.zeige('start') });
+export function sichereLogbuch(app, nachher = () => app.zeige('start')) {
+  exportiere(app, app.logbuchDateiFuer(null), { nurLogbuch: true, nachher });
 }
 
 /** Wege 2–4: Download, Mail, Zwischenablage. */
