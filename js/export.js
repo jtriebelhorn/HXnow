@@ -17,7 +17,7 @@ const BOM = '\uFEFF';
  * (→ 1.1 …); geänderte Bedeutung einer Spalte → 2.0. tests/unit/versionen.test.js prüft, dass Spalten und Version
  * zusammenpassen.
  */
-export const EXPORT_FORMAT = '1.1'; // 1.1: Spalten NT1, NT1_nutzung (PC als Nebentätigkeit, Kodierschema 2.2)
+export const EXPORT_FORMAT = '1.2'; // 1.1: NT1, NT1_nutzung (Schema 2.2); 1.2: bezug_sitzung_id im Fragebogen (Nachtrag)
 const mitFormat = (z) => [z[0], EXPORT_FORMAT, ...z.slice(1)];
 const TRENNER = ';';
 const ZEILENENDE = '\r\n';

@@ -184,31 +184,6 @@ describe('Studienübersicht', () => {
   });
 });
 
-describe('PIN', async () => {
-  const { pinFormatOk, neuesSalz, pinHash, pruefePin, SPERRE_MS } = await import('../../js/pin.js');
-  test('Format, Salz, Hash ohne Klartext', async () => {
-    assert.equal(pinFormatOk('1234'), true);
-    assert.equal(pinFormatOk('123'), false);
-    assert.equal(pinFormatOk('12a4'), false);
-    assert.equal(neuesSalz().length, 32);
-    const h = await pinHash('1234', 'abc');
-    assert.equal(h.length, 64);
-    assert.notEqual(h, await pinHash('1234', 'abd'));
-    assert.ok(!h.includes('1234'));
-  });
-  test('5 Fehlversuche → 5 Minuten gesperrt, danach wieder möglich', async () => {
-    let z = { pinSalz: 's', pinHash: await pinHash('2468', 's'), fehlversuche: 0, sperreBis: null };
-    for (let i = 0; i < 4; i++) { const r = await pruefePin('0000', z, 1000); assert.equal(r.gesperrt, false); assert.equal(r.rest, 4 - i); z = r.z; }
-    const r5 = await pruefePin('0000', z, 1000);
-    assert.equal(r5.gesperrt, true);
-    assert.equal(r5.z.sperreBis, 1000 + SPERRE_MS);
-    assert.equal((await pruefePin('2468', r5.z, 2000)).ok, false, 'auch richtige PIN während der Sperre abgewiesen');
-    const ok = await pruefePin('2468', r5.z, 1000 + SPERRE_MS);
-    assert.equal(ok.ok, true);
-    assert.equal(ok.z.fehlversuche, 0);
-  });
-});
-
 describe('Widerruf', async () => {
   const { widerrufUmfang, widerrufProtokoll, exportDateiname, dateinameWiderruf } = await import('../../js/widerruf.js');
   test('Umfang: eigene und zugeordnete Einträge, Änderungen, Dateinamen wie beim Export', () => {

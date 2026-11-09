@@ -31,7 +31,8 @@ export function eintragAusVersuch(v, schema) {
 /** Logbuch-Eintrag einer Fragebogen-Sitzung (`kennzahlen`: beantwortet/ausgelassen, ohne Inhalte). */
 export function eintragAusFb(s, schema, phase, kennzahlen = null) {
   return {
-    eintragId: s.sitzungId, art: s.bogen, pseudonym: s.pseudonym, phase, bereich: s.bereich ?? null,
+    // Nachtrag eines Abschnitts (Papier) zählt nicht als eigener Bogen: Art z. B. „FB1-NACHTRAG“
+    eintragId: s.sitzungId, art: s.art === 'NACHTRAG' ? `${s.bogen}-NACHTRAG` : s.bogen, pseudonym: s.pseudonym, phase, bereich: s.bereich ?? null,
     dienst: null, arbeitskontext: null, startTs: s.startTs ?? s.angelegtTs, endTs: s.endTs ?? null,
     beobachtetSek: null, dauerSek: s.endTs && s.startTs ? Math.round((s.endTs - s.startTs) / 1000) : null, pausenAnzahl: 0, pausenSek: 0,
     status: s.status, endeArt: null, abbruchCode: null, erhebungsmodus: s.erhebungsmodus,

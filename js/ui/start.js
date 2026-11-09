@@ -29,6 +29,7 @@ export async function zeigeStart(app) {
   const offen = (x) => x.exportStatus !== 'bestaetigt';
   const antwortenJe = Map.groupBy(daten.fb_antworten, (a) => a.sitzungId);
   const laufendeFb = daten.fb_sitzungen.filter((s) => s.status === 'laufend');
+  const antwortenObjekt = (id) => Object.fromEntries((antwortenJe.get(id) ?? []).map((a) => [a.itemId, a]));
   const neuZeichnen = () => app.zeige('start');
 
   // Exportdateien werden hier vorbereitet, damit der Klick auf „Exportieren“ synchron teilen kann.
@@ -50,10 +51,10 @@ export async function zeigeStart(app) {
       ziel: { store: db.STORES.VERSUCHE, schluessel: v.versuchId, nachher: neuZeichnen },
     })),
     ...daten.fb_sitzungen.filter((s) => offen(s) && s.status === 'abgeschlossen').map((s) => ({
-      art: s.testmodus ? 'Fragebogen · Probelauf' : 'Fragebogen', ts: s.endTs ?? s.angelegtTs, test: 'eintrag-fb', probelauf: Boolean(s.testmodus),
+      art: `${s.art === 'NACHTRAG' ? `Nachtrag Abschnitt ${s.abschnitt}` : 'Fragebogen'}${s.testmodus ? ' · Probelauf' : ''}`, ts: s.endTs ?? s.angelegtTs, test: 'eintrag-fb', probelauf: Boolean(s.testmodus),
       titel: `${s.pseudonym} · ${BOGEN_NAME[s.bogen]} · ${datumLokal(s.angelegtTs)} ${uhrzeit(s.angelegtTs).slice(0, 5)}`,
       details: s.erhebungsmodus === 'PAPIER' ? 'Papier' : '', exportStatus: s.exportStatus,
-      datei: fbExportDatei(app, s, Object.fromEntries((antwortenJe.get(s.sitzungId) ?? []).map((a) => [a.itemId, a]))),
+      datei: fbExportDatei(app, s, antwortenObjekt(s.sitzungId), s.art === 'NACHTRAG' ? antwortenObjekt(s.bezugSitzungId) : {}),
       ziel: { store: db.STORES.FB_SITZUNGEN, schluessel: s.sitzungId, nachher: neuZeichnen },
       oeffnen: () => app.zeige('fbStatus', { sitzungId: s.sitzungId }),
     })),

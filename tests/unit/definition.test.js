@@ -34,15 +34,23 @@ test('Prüfung findet doppelte IDs, unbekannte Verweise und falsche Typen', () =
 });
 
 // ------------------------------------------------------------------ Abgleich mit den Spezifikationen
+// Ab Definition 1.1.0 (ENTSCHEIDUNGEN Nr. 50) weicht die Definition bewusst von den Spezifikationen v0.3 ab:
+// neue Items (`seit`) werden nicht verglichen, entfernte (W1, W2, A8) weiter; Bedingungen mit den Nachfolgern (W1b …)
+// werden auf die Vorgänger zurückgeführt; die einzige Textänderung bestehender Items steht in ABWEICHUNGEN.
+const VORGAENGER = { W1b: 'W1', W2b: 'W2', A8b: 'A8' };
+const alsSpez = (t) => (t ? String(t).replace(/\b(W1b|W2b|A8b)\b/g, (m) => VORGAENGER[m]) : t);
+const ABWEICHUNGEN = new Set(['W3 zeilen']); // 1.1.0: Zeile 09 „Im Dienst außerhalb der regulären Arbeitszeit …“
+const wieSpez = (b) => items(b, { mitEntfernten: true }).filter((it) => !it.seit);
+
 for (const [id, datei] of Object.entries(SPEZ)) {
   test(`${id} entspricht der Spezifikation ${datei} (Abschnitte, Items, Texte, Codes, Bedingungen)`, () => {
     const b = bogen(DEF, id);
     const s = leseSpezifikation(QUELLE(datei));
     const abw = [];
-    const gleich = (was, ist, soll) => { if (JSON.stringify(ist) !== JSON.stringify(soll)) abw.push(`${was}: ${JSON.stringify(ist)} statt ${JSON.stringify(soll)}`); };
+    const gleich = (was, ist, soll) => { if (!ABWEICHUNGEN.has(was) && JSON.stringify(ist) !== JSON.stringify(soll)) abw.push(`${was}: ${JSON.stringify(ist)} statt ${JSON.stringify(soll)}`); };
 
     gleich('Abschnitte', b.abschnitte.map((a) => [a.id, a.titel]), s.abschnitte.map((a) => [a.id, a.titel]));
-    const meine = items(b).filter((it) => it.typ !== 'info');
+    const meine = wieSpez(b).filter((it) => it.typ !== 'info');
     gleich('Items', meine.map((it) => `${it.id}·${it.typ}`), s.items.map((it) => `${it.id}·${it.typ}`));
 
     for (const sp of s.items) {
@@ -55,10 +63,10 @@ for (const [id, datei] of Object.entries(SPEZ)) {
       if (f.optionen) w('optionen', it.optionen, optionenAus(f.optionen.wert));
       for (const k of ['min', 'max']) if (f[k]) w(k, it[k], Number(f[k].wert));
       if (f.einheit) w('einheit', it.einheit, f.einheit.wert);
-      if (f.showIf) w('showIf', bedingung(it.showIf), bedingung(backticks(f.showIf.wert).join(' ')));
+      if (f.showIf) w('showIf', bedingung(alsSpez(it.showIf)), bedingung(backticks(f.showIf.wert).join(' ')));
       else w('showIf', it.showIf ?? '', '');
       if (f.validierung && sp.typ !== 'prozentgruppe') w('validierung', it.validierung, backticks(f.validierung.wert)[0]);
-      if (f.autoWert && sp.typ !== 'prozentgruppe') w('autoWert', it.auto, autoAus(f.autoWert.wert));
+      if (f.autoWert && sp.typ !== 'prozentgruppe') w('autoWert', it.auto && { ...it.auto, wenn: alsSpez(it.auto.wenn) }, autoAus(f.autoWert.wert));
       if (!f.autoWert) w('autoWert', it.auto ?? null, null);
       if (f.umpolen) w('umpolen', it.umpolen, true); else w('umpolen', Boolean(it.umpolen), false);
       if (f.score) w('score', it.skala, f.score.wert.split(' ')[0]);
@@ -70,14 +78,14 @@ for (const [id, datei] of Object.entries(SPEZ)) {
       if (!f.paar) w('paar', it.paar ?? null, null);
       if (f.freitextBei) w('freitextBei', String(it.freitextBei), f.freitextBei.wert.split(' ')[0]);
       if (f.optionShowIf) {
-        w('optionShowIf', Object.fromEntries(Object.entries(it.optionShowIf ?? {}).map(([k, v]) => [k, bedingung(v)])),
+        w('optionShowIf', Object.fromEntries(Object.entries(it.optionShowIf ?? {}).map(([k, v]) => [k, bedingung(alsSpez(v))])),
           Object.fromEntries([f.optionShowIf.wert, ...f.optionShowIf.unter].filter(Boolean).map((u) => [u.split(' ')[0], bedingung(backticks(u)[0])])));
       }
       if (f.zeilen) w('zeilen', it.zeilen, f.zeilen.unter.map((u) => { const m = /^(\S+) = (.+)$/.exec(u); return [m[1], m[2]]; }));
       if (f.zeileShowIf) {
         const soll = Object.fromEntries([f.zeileShowIf.wert, ...f.zeileShowIf.unter]
           .map((u) => /Zeile (\d+)[^:]*: `([^`]+)`/.exec(u)).filter(Boolean).map((m) => [m[1], bedingung(m[2])]));
-        if (Object.keys(soll).length) w('zeileShowIf', Object.fromEntries(Object.entries(it.zeilenShowIf ?? {}).map(([k, v]) => [k, bedingung(v)])), soll);
+        if (Object.keys(soll).length) w('zeileShowIf', Object.fromEntries(Object.entries(it.zeilenShowIf ?? {}).map(([k, v]) => [k, bedingung(alsSpez(v))])), soll);
         if (f.zeileShowIf.unter.some((u) => /sonst `9`/.test(u))) w('zeilenAuto', it.zeilenAuto, 9);
       }
       if (f.spalten && sp.typ === 'matrix') {
@@ -92,14 +100,14 @@ for (const [id, datei] of Object.entries(SPEZ)) {
 
     // Info-Texte, Einleitung, Abschluss, weiche Sprungregel
     const infos = norm(s.infos.join(' '));
-    for (const it of items(b).filter((x) => x.typ === 'info')) if (!infos.includes(norm(it.text))) abw.push(`Info ${it.id} nicht in der Spezifikation`);
+    for (const it of wieSpez(b).filter((x) => x.typ === 'info')) if (!infos.includes(norm(it.text))) abw.push(`Info ${it.id} nicht in der Spezifikation`);
     const kopf = lies(`../../docs/quellen/${datei}`);
     const einleitung = /Einleitung: „(.+)“/.exec(kopf)?.[1];
     if (einleitung) gleich('Einleitung', b.einleitung, einleitung);
     gleich('Bearbeitungszeit', b.dauerMin, Number(/Bearbeitungszeit: ca\. (\d+) Minuten/.exec(kopf)[1]));
     gleich('Abschluss', b.abschluss, /Abschluss: „(.+)“/.exec(kopf)[1]);
     gleich('Phase', b.phase, /`phase`: (\S+)/.exec(kopf)[1]);
-    if (s.sprung) gleich('softSkip', [bedingung(b.softSkips[0].wenn), b.softSkips[0].text], [bedingung(s.sprung.wenn), s.sprung.text]);
+    if (s.sprung) gleich('softSkip', [bedingung(alsSpez(b.softSkips[0].wenn)), b.softSkips[0].text], [bedingung(s.sprung.wenn), s.sprung.text]);
     assert.deepEqual(abw, []);
   });
 }
@@ -120,16 +128,16 @@ for (const [id, datei] of Object.entries(PAPIER)) {
     const b = bogen(DEF, id);
     const q = papier(datei);
     const nummern = [...lies(`../../docs/quellen/${datei}`).matchAll(/^([A-FTW]\d+[a-d]?)\.?\s{1,2}\S/gm)].map((m) => m[1]);
-    const ids = items(b).map((it) => it.id).filter((x) => /^[A-Z]\d+[a-d]?$/.test(x));
+    const ids = wieSpez(b).map((it) => it.id).filter((x) => /^[A-Z]\d+[a-d]?$/.test(x));
     assert.deepEqual([...nummern].sort(), [...ids, ...ZUSAMMENGEFASST[id]].sort());
     const texte = [b.titel, b.einleitung, b.abschluss, `Bearbeitungszeit ca. ${b.dauerMin} Minuten`];
     for (const a of b.abschnitte) {
       texte.push(`${a.id} ${a.titel}`);
-      for (const it of a.items) {
+      for (const it of a.items.filter((x) => !x.seit)) {
         // in Sätze geteilt: Zusammengefasste Texte stehen auf Papier an zwei Stellen
         texte.push(...it.text.split(/(?<=[.?:])\s+/));
         for (const [, l] of [...(it.optionen ?? []), ...(it.zusatz ?? [])]) texte.push(l);
-        for (const [, l] of it.zeilen ?? []) texte.push(l);
+        for (const [z, l] of it.zeilen ?? []) if (!(it.id === 'W3' && z === '09')) texte.push(l); // Zeile 09 seit 1.1.0 neu
         for (const g of it.gruppen ?? []) { texte.push(g.titel); for (const [, l] of g.optionen) texte.push(l); }
         for (const l of Object.values(it.anker ?? {})) texte.push(l);
       }
@@ -154,7 +162,7 @@ test('Vorher-Nachher: gepaarte Zellen in FB1, KB und FB2 gleich kodiert (nach Um
       assert.deepEqual(codes(z), codes(ref), `${paar} ${z.bogen}`);
     }
   }
-  assert.equal(vergleiche, 47 + 1 + 7 + 1, 'FB1↔FB2 47, KB↔FB2 Gerät dabei und 7 Funktionen, KB↔FB1 Lösung');
+  assert.equal(vergleiche, 47 + 6 + 1 + 7 + 1, 'FB1↔FB2 47 (+6 seit 1.1.0: Arbeitstage, Dienste, 4 Dienstarten), KB↔FB2 Gerät dabei und 7 Funktionen, KB↔FB1 Lösung');
   const w6c = items(bogen(DEF, 'FB2')).find((x) => x.id === 'W6c');
   assert.deepEqual(w6c.optionen.map(([c]) => w6c.paarUmkodierung[c]), [1, 1, 2, 3, 4, 5]);
 });
@@ -166,8 +174,8 @@ test('Zellen: Freitext, Prozentgruppe, Matrix mit einer bzw. mehreren Spalten, w
   assert.equal(z1.A3_TXT.showIf, 'A3 = 9');
   assert.equal(z1.A6_SONST_TXT.showIf, 'A6_SONST = 1');
   assert.equal(z1.A6_STAT_PCT.showIf, 'A6_STAT = 1');
-  assert.equal(z1.W3_06_A.showIf, '(W1 > 0) UND (A6_ZNA_BEH = 1)');
-  assert.equal(z1.W3_02_B.showIf, '(W1 > 0) UND (W3_02_A > 0)');
+  assert.equal(z1.W3_06_A.showIf, '(W1b > 0) UND (A6_ZNA_BEH = 1)');
+  assert.equal(z1.W3_02_B.showIf, '(W1b > 0) UND (W3_02_A > 0)');
   assert.ok(z2.W5_1 && z2.W3_01_C && !z2.W5_1_A);
   assert.equal(z2.W5_1.paar, 'FUNK_HAEUF_1');
   assert.deepEqual(z2.W5_7.auto, { wenn: 'W4 = 1', wert: 0 });
@@ -175,10 +183,10 @@ test('Zellen: Freitext, Prozentgruppe, Matrix mit einer bzw. mehreren Spalten, w
   assert.deepEqual(z2.E1.auto, { wenn: 'W5_1 = 0', wert: 9 });
   assert.deepEqual([z2.T2_1.auto, z2.T1_1.auto, z2.T1_6.auto], [{ wert: 9 }, null, null]);
   assert.equal(z2.SKIP_HX.art, 'sprung');
-  assert.equal(z2.W1.showIf, '');
+  assert.equal(z2.W1b.showIf, ''); // W1 seit 1.1.0 entfernt
   assert.equal(z2.C1.showIf, '', 'Abschnitt C wird nicht übersprungen');
   assert.deepEqual(zk, ['G1', 'G2_1', 'G2_2', 'G2_3', 'G2_4', 'G2_5', 'G2_6', 'G2_7', 'G3', 'G4']);
-  assert.deepEqual(DEF.boegen.map((b) => alleZellen(b).length), [86, 10, 110]);
+  assert.deepEqual(DEF.boegen.map((b) => alleZellen(b).length), [91, 10, 115]); // 1.1.0: +W1b, W2b, W2c (4 + Freitext), A8b; −W1, W2, A8
 });
 
 test('Gepaarte Items unverändert gegenüber dem eingefrorenen Schnappschuss (Plan 4.4)', () => {

@@ -23,7 +23,10 @@ const DATUM_FELDER = [
   ['baselineStart', 'Beginn Baseline'], ['einfuehrungStart', 'Beginn Einführung'], ['regelbetriebStart', 'Beginn Regelbetrieb'],
   ['abschlussStart', 'Beginn Abschluss'], ['ende', 'Ende'],
 ];
-const ART_NAME = { BLOCK: 'Block', VERSUCH: 'Nicht angetroffen', FB1: 'Fragebogen 1', KB: 'Kurzbogen', FB2: 'Fragebogen 2' };
+const ART_NAME = {
+  BLOCK: 'Block', VERSUCH: 'Nicht angetroffen', FB1: 'Fragebogen 1', KB: 'Kurzbogen', FB2: 'Fragebogen 2',
+  'FB1-NACHTRAG': 'Nachtrag Fragebogen 1', 'KB-NACHTRAG': 'Nachtrag Kurzbogen', 'FB2-NACHTRAG': 'Nachtrag Fragebogen 2',
+};
 const STATUS_NAME = { beendet: 'beendet', abgebrochen: 'abgebrochen', nicht_angetroffen: 'nicht angetroffen', abgeschlossen: 'abgeschlossen', laufend: 'läuft', pausiert: 'pausiert', verworfen: 'verworfen' };
 const EXPORT_NAME = { offen: 'nicht exportiert', exportiert: 'exportiert', bestaetigt: 'Eingang bestätigt' };
 
@@ -54,7 +57,6 @@ export function zeigeStudie(app) {
     boegen: echt.filter((e) => ['FB1', 'KB', 'FB2'].includes(e.art) && e.status === 'abgeschlossen').length,
     versuche: echt.filter((e) => e.art === 'VERSUCH').length,
   };
-  const marke = (x) => (x.bogen ? '✓' : '–');
 
   ersetze(app.wurzel,
     el('h1', {}, 'Studie'),
@@ -67,7 +69,7 @@ export function zeigeStudie(app) {
 
     uebersicht.length === 0 ? el('p', { class: 'hinweis' }, 'Noch keine Probanden. Sie werden beim ersten Block oder Fragebogen angelegt.')
       : el('table', { class: 'tabelle probanden', 'data-test': 'probanden' },
-        el('thead', {}, el('tr', {}, el('th', {}, 'Proband'), el('th', {}, 'Base­line'), el('th', {}, 'Einf.'), el('th', {}, 'Regel'), el('th', { class: 'zahl' }, ''))),
+        el('thead', {}, el('tr', {}, el('th', {}, 'Proband'), el('th', {}, 'Blöcke'), el('th', {}, 'Fragebögen'), el('th', { class: 'zahl' }, ''))),
         el('tbody', {}, uebersicht.map((u) => {
           const [ba, ei, re] = PHASEN.map((p) => u.phasen[p.id]);
           return el('tr', {
@@ -75,12 +77,15 @@ export function zeigeStudie(app) {
             onclick: () => app.zeige('proband', { pseudonym: u.t.pseudonym }),
           },
           el('td', {}, el('strong', {}, u.t.pseudonym), u.t.status !== 'aktiv' ? el('span', { class: 'klein-text block' }, u.t.status) : null),
-          el('td', { class: `ampel-zelle-${ba.ampel}` }, `${ba.bloecke}/${ba.ziel} ${marke(ba)}`),
-          el('td', { class: `ampel-zelle-${ei.ampel}` }, marke(ei)),
-          el('td', { class: `ampel-zelle-${re.ampel}` }, `${re.bloecke}/${re.ziel} ${marke(re)}`),
+          el('td', {},
+            el('span', { class: `bloecke ampel-zelle-${ba.ampel}`, title: 'Baseline' }, `B ${ba.bloecke}/${ba.ziel}`), ' ',
+            el('span', { class: `bloecke ampel-zelle-${re.ampel}`, title: 'Regelbetrieb' }, `R ${re.bloecke}/${re.ziel}`)),
+          el('td', { 'data-test': `boegen-${u.t.pseudonym}` }, [[ba, 'FB1'], [ei, 'KB'], [re, 'FB2']].map(([x, n]) => el('span', {
+            class: `bogen-marke${x.bogen ? ' erledigt' : ''}`, title: x.bogen ? `${n} ausgefüllt` : `${n} offen`,
+          }, n))),
           el('td', { class: 'zahl pfeil-zelle' }, u.offeneExporte ? el('span', { class: 'marke-offen', title: 'nicht exportiert' }, String(u.offeneExporte)) : '›'));
         }))),
-    uebersicht.length ? el('p', { class: 'klein-text legende' }, `Zahl = gültige Blöcke von ${ziel(app.schema)} · ✓ = Fragebogen der Phase ausgefüllt (FB1, KB, FB2) · rote Zahl = Sitzungen nicht exportiert · Antippen für Details`) : null,
+    uebersicht.length ? el('p', { class: 'klein-text legende' }, `B/R = gültige Blöcke in Baseline/Regelbetrieb (Ziel ${ziel(app.schema)}) · Fragebogen ausgefüllt = dunkel hinterlegt · rote Zahl = Sitzungen nicht exportiert · Antippen für Details`) : null,
 
     el('details', { class: 'aufklapp', 'data-test': 'faellig-box', open: faellig.length > 0 && faellig.length <= 3 },
       el('summary', {}, `Fällig (${faellig.length})`),
@@ -181,6 +186,7 @@ const VERLAUF_TEXT = {
   ZUORDNUNG: (a) => `Proband ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`, PHASE: (a) => `Phase ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`,
   STATUS: (a) => `Status ${a.alt} → ${a.neu}${a.text ? ` – ${a.text}` : ''}`, PHASENDATEN: (a) => `${a.feld}: ${a.alt || '–'} → ${a.neu || '–'}${a.text ? ` – ${a.text}` : ''}`,
   GELOESCHT: () => 'Gelöscht (nicht abgeschlossener Export)',
+  NACHTRAG_FELD: (a) => `${a.feld === 'arbeitskontext' ? 'Arbeitskontext' : 'Dienst'} nachgetragen: ${a.neu}`,
   WIDERRUF_LOESCHUNG: (a) => `Widerruf – Daten gelöscht${a.text ? ` (${a.text})` : ''}`,
 };
 

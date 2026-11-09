@@ -23,7 +23,7 @@ import { isoMitOffset } from '../zeit.js';
 import { bereinigeBlock } from './bereinigen.js';
 
 const FB_ARTEN = ['FB1', 'KB', 'FB2'];
-const ZUSATZ = ['gueltig', 'ungueltig_grund', 'pseudonym_original', 'phase_original'];
+const ZUSATZ = ['gueltig', 'ungueltig_grund', 'pseudonym_original', 'phase_original', 'nachgetragen', 'nachtrag_von'];
 
 /** Datei am Kopf erkennen (Spaltennamen). */
 export function dateiArt(text) {
@@ -45,6 +45,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   // ------------------------------------------------------------------ Dateien einlesen
   const logbuecher = [];
   const sitzungen = { block: new Map(), versuch: new Map(), fb: new Map(), tag: new Map() };
+  const nachtraege = new Map();
   for (const d of dateien) {
     const art = dateiArt(d.text);
     if (!art) { zahlen.unbekannt += 1; hinweis(`Nicht erkannt, übersprungen: ${d.name}`); continue; }
@@ -68,6 +69,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     if (art !== 'tag' && istTest(d.name, z0.pseudonym)) { zahlen.uebersprungenTest += 1; continue; }
     const n = art === 'block' ? Number(z0.n_zeilen_block) : art === 'fb' ? Number(z0.n_zeilen) : zeilen.length;
     if (!(n === zeilen.length || (art === 'block' && n === 0 && zeilen.length === 1))) hinweis(`Unvollständig (${zeilen.length} statt ${n} Zeilen): ${d.name}`);
+    if (art === 'fb' && z0.bezug_sitzung_id) { nachtraege.set(id, { name: d.name, text: d.text, kopf, zeilen }); continue; }
     const alt = sitzungen[art].get(id);
     if (alt) {
       if (alt.text.replace(/^﻿/, '') === d.text.replace(/^﻿/, '')) { zahlen.doppelt += 1; continue; }
@@ -76,6 +78,29 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     }
     sitzungen[art].set(id, { name: d.name, text: d.text, kopf, zeilen });
   }
+
+  // ------------------------------------------------------------------ Abschnitts-Nachträge in die Originalbögen einsetzen
+  // (Korrekturauftrag A2): Werte des Nachtrags ersetzen nur Zellen mit Status gefiltert/ausgelassen; fehlende Zellen
+  // (z. B. neue Items der aktuellen Definition) kommen hinzu. Ohne Original bleibt der Nachtrag eigenständig in fb_long.
+  const nachtragOhneBasis = new Set();
+  let nachtragZellen = 0;
+  for (const [nid, n] of nachtraege) {
+    const basis = sitzungen.fb.get(n.zeilen[0].bezug_sitzung_id);
+    if (!basis) {
+      hinweis(`Nachtrag ohne Originalbogen (${n.zeilen[0].bezug_sitzung_id}): ${n.name}`);
+      sitzungen.fb.set(nid, n);
+      nachtragOhneBasis.add(nid);
+      continue;
+    }
+    for (const k of n.kopf) if (!basis.kopf.includes(k)) basis.kopf.push(k);
+    for (const r of n.zeilen) {
+      const i = basis.zeilen.findIndex((x) => x.item_id === r.item_id);
+      const neu = { ...(i >= 0 ? basis.zeilen[i] : basis.zeilen[0]), item_id: r.item_id, item_v: r.item_v, paar: r.paar, typ: r.typ,
+        abschnitt: r.abschnitt, wert: r.wert, wert_text: r.wert_text, status: r.status, nachtrag_von: nid };
+      if (i < 0) { basis.zeilen.push(neu); nachtragZellen += 1; } else if (['gefiltert', 'ausgelassen'].includes(basis.zeilen[i].status)) { basis.zeilen[i] = neu; nachtragZellen += 1; }
+    }
+  }
+  if (nachtraege.size) hinweis(`Abschnitts-Nachträge: ${nachtraege.size} (${nachtragZellen} Zellen eingesetzt, ${nachtragOhneBasis.size} ohne Originalbogen)`);
 
   // ------------------------------------------------------------------ Logbuch zusammenführen
   const jeGeraet = new Map();
@@ -105,9 +130,10 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   };
   const zusatz = (id, pseudonym, phase) => {
     const s = stand(id);
-    if (!s) return { gueltig: 1, ungueltig_grund: '', pseudonym_original: '', phase_original: '', pseudonym, phase, imLogbuch: false };
+    if (!s) return { gueltig: 1, ungueltig_grund: '', pseudonym_original: '', phase_original: '', nachgetragen: '', pseudonym, phase, imLogbuch: false };
     return {
       gueltig: s.gueltig ? 1 : 0, ungueltig_grund: s.ungueltigGrund ?? '', pseudonym_original: s.pseudonymOriginal ?? '', phase_original: s.phaseOriginal ?? '',
+      nachgetragen: (s.nachgetragen ?? []).join(','), arbeitskontext: s.arbeitskontext, dienst: s.dienst,
       pseudonym: s.pseudonym, phase: s.phase ?? phase, imLogbuch: true,
     };
   };
@@ -130,7 +156,9 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
         if (zu) {
           w.pseudonym = zu.pseudonym;
           if (phaseSpalte) w[phaseSpalte] = zu.phase;
-          Object.assign(w, { gueltig: zu.gueltig, ungueltig_grund: zu.ungueltig_grund, pseudonym_original: zu.pseudonym_original, phase_original: zu.phase_original });
+          Object.assign(w, { gueltig: zu.gueltig, ungueltig_grund: zu.ungueltig_grund, pseudonym_original: zu.pseudonym_original, phase_original: zu.phase_original, nachgetragen: zu.nachgetragen });
+          // nachgetragene Blockangaben (Änderung NACHTRAG_FELD) füllen nur leere Felder
+          if (art === 'block') for (const feld of ['arbeitskontext', 'dienst']) if (!w[feld] && zu[feld]) w[feld] = zu[feld];
         } else Object.assign(w, { gueltig: 1 });
         zeilen.push(alle.map((k) => w[k] ?? ''));
       }
@@ -154,7 +182,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   langDatei('fb', 'fb_long.csv', 'sitzung_id', null);
 
   // ------------------------------------------------------------------ Fragebögen: Wide, Prä-Post, Scores
-  const boegen = [...sitzungen.fb.entries()].filter(([id]) => !verworfen.has(id)).map(([id, s]) => {
+  const boegen = [...sitzungen.fb.entries()].filter(([id]) => !verworfen.has(id) && !nachtragOhneBasis.has(id)).map(([id, s]) => {
     const z0 = s.zeilen[0];
     const zu = zusatz(id, z0.pseudonym, null);
     const werte = Object.fromEntries(s.zeilen.map((r) => [r.item_id, r.wert !== '' ? r.wert : r.wert_text]));

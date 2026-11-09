@@ -17,10 +17,6 @@ async function phasenplan(page) {
   await setze('abschlussStart', '2027-02-01');
   await setze('ende', '2027-02-07');
   await page.click('[data-test=plan-NEPH-speichern]');
-  // Phasenplan ist geschützt (L4): beim ersten Mal PIN festlegen
-  await page.fill('[data-test=pin-neu]', '2468');
-  await page.fill('[data-test=pin-wiederholen]', '2468');
-  await page.click('[data-test=pin-speichern]');
   await expect(page.locator('#meldung')).toHaveText('Phasenplan gespeichert.');
   await page.click('[data-test=zurueck]');
   await expect(page.locator('[data-test=bereichsstand]')).toHaveText('Nephrologie: Baseline, Tag 4 von 14');
@@ -48,7 +44,8 @@ test('Phasenplan → Phasenvorschlag beim Blockstart → Übersicht, Proband, Ei
   await expect(page.locator('[data-test=faellig]')).toContainText('P017: 1 von 5 Blöcken (Baseline), noch 11 Tage');
   const zeile = page.locator('[data-test=proband-P017]');
   await expect(zeile).toContainText('1/5');
-  await expect(zeile).toContainText('1/5 –'); // Blöcke von Ziel, FB1 offen
+  await expect(zeile).toContainText('B 1/5'); // Blöcke in der Baseline von Ziel 5
+  await expect(page.locator('[data-test=boegen-P017] .bogen-marke.erledigt')).toHaveCount(0); // FB1 noch offen
   await expect(page.locator('[data-test=verteilung-PRE]')).toContainText('Visite');
   await expect(page.locator('[data-test=verteilung-PRE] .balken-zahl').first()).toHaveText('1');
   const text = await page.locator('#app').innerText();

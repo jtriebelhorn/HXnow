@@ -26,19 +26,53 @@ function verfuegbareBoegen(app) {
 }
 
 /** Datei, Stand und Logbuch-Eintrag einer Sitzung (synchron, für Teilen in der Nutzergeste). */
-export function fbExportDatei(app, sitzung, antworten) {
+export function fbExportDatei(app, sitzung, antworten, basis = {}) {
   return fbDatei(bogenNach(DEF, sitzung.bogen), sitzung, antworten, {
-    definitionVersion: sitzung.definitionVersion ?? DEF.definitionVersion, test: Boolean(sitzung.testmodus),
+    definitionVersion: sitzung.definitionVersion ?? DEF.definitionVersion, test: Boolean(sitzung.testmodus), basis,
   });
 }
 
-function logbuchFuer(app, sitzung, antworten = null) {
+/** Stand einer Sitzung; bei einem Nachtrag mit den Antworten des Originalbogens (`basis`) und nur dessen Abschnitt. */
+export function standFuer(sitzung, antworten, basis = {}) {
   const b = bogenNach(DEF, sitzung.bogen);
-  return eintragAusFb(sitzung, app.schema, b.phase, antworten ? zusammenfassungStand(berechneStand(b, antworten)) : null);
+  return berechneStand(b, { ...basis, ...antworten }, { definitionVersion: sitzung.definitionVersion ?? DEF.definitionVersion });
 }
 
-async function speichereSitzung(app, sitzung, antworten = null) {
-  await db.schreibeFb(app.db, { sitzung, logbuch: logbuchFuer(app, sitzung, antworten) });
+function logbuchFuer(app, sitzung, antworten = null, basis = {}) {
+  const b = bogenNach(DEF, sitzung.bogen);
+  let kennzahlen = null;
+  if (antworten) {
+    const st = standFuer(sitzung, antworten, basis);
+    if (sitzung.art === 'NACHTRAG') for (const [id, x] of [...st.zellen]) if (x.zelle.abschnitt !== sitzung.abschnitt) st.zellen.delete(id);
+    kennzahlen = zusammenfassungStand(st);
+  }
+  return eintragAusFb(sitzung, app.schema, b.phase, kennzahlen);
+}
+
+async function speichereSitzung(app, sitzung, antworten = null, basis = {}) {
+  await db.schreibeFb(app.db, { sitzung, logbuch: logbuchFuer(app, sitzung, antworten, basis) });
+}
+
+/** Antworten des Originalbogens für einen Nachtrag (sonst leer). */
+async function basisAntworten(app, sitzung) {
+  return sitzung.art === 'NACHTRAG' ? db.holeFbAntworten(app.db, sitzung.bezugSitzungId) : {};
+}
+
+/**
+ * Abschnitt eines abgeschlossenen Bogens auf Papier nachtragen (Korrekturauftrag A2): eigene Sitzung `art: 'NACHTRAG'`
+ * mit Bezug, nur dieser Abschnitt, aktuelle Definition; keine Dublette des Bogens.
+ */
+export async function starteNachtrag(app, { bezug, abschnitt, papierDatum }) {
+  const jetzt = Date.now();
+  const sitzung = {
+    sitzungId: app.uuid(), art: 'NACHTRAG', bezugSitzungId: bezug.eintragId, abschnitt,
+    geraeteId: app.meta.geraeteId, appVersion: app.appVersion, definitionVersion: DEF.definitionVersion,
+    bogen: bezug.art, pseudonym: bezug.pseudonym, bereich: bezug.bereich, erhebungsmodus: 'PAPIER', papierDatum,
+    angelegtTs: jetzt, startTs: jetzt, endTs: null, status: 'laufend', seite: abschnitt, seitenzeiten: {},
+    exportStatus: 'offen', exportiertTs: null, bestaetigtTs: null, testmodus: istTestPseudonym(app.schema, bezug.pseudonym),
+  };
+  await speichereSitzung(app, sitzung, {}, await basisAntworten(app, sitzung));
+  app.zeige('fbAusfuellen', { sitzungId: sitzung.sitzungId });
 }
 
 // ===================================================================== Vorbereitung
@@ -122,8 +156,13 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
   let sitzung = await db.hole(app.db, db.STORES.FB_SITZUNGEN, sitzungId);
   const b = bogenNach(DEF, sitzung.bogen);
   const antworten = await db.holeFbAntworten(app.db, sitzungId);
-  let stand = berechneStand(b, antworten);
-  let seite = sitzung.seite && seiten(b, stand).includes(sitzung.seite) ? sitzung.seite : seiten(b, stand)[0];
+  const basis = await basisAntworten(app, sitzung);
+  const nachtrag = sitzung.art === 'NACHTRAG';
+  const neuerStand = () => standFuer(sitzung, antworten, basis);
+  let stand = neuerStand();
+  // Nachtrag: nur der gewählte Abschnitt
+  const seitenListe = () => (nachtrag ? [sitzung.abschnitt] : seiten(b, stand));
+  let seite = sitzung.seite && seitenListe().includes(sitzung.seite) ? sitzung.seite : seitenListe()[0];
   let seiteSeit = Date.now();
   const inhalt = el('div', { class: 'fb-seite' });
   document.body.classList.add('fbmodus');
@@ -133,7 +172,7 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
     const a = { sitzungId, itemId: zelle.id, v: zelle.v, wert: wert ?? null, wertText, ts: Date.now() };
     try { await db.schreibeFb(app.db, { antworten: [a] }); } catch (e) { meldung(`Speichern fehlgeschlagen: ${e.message}`, 'fehler'); return; }
     antworten[zelle.id] = a;
-    stand = berechneStand(b, antworten);
+    stand = neuerStand();
     zeichne();
     if (weiter) springeNach(zelle.id);
   }
@@ -151,7 +190,7 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
   async function wechsleSeite(ziel) {
     const zeiten = { ...sitzung.seitenzeiten, [seite]: (sitzung.seitenzeiten?.[seite] ?? 0) + (Date.now() - seiteSeit) / 1000 };
     sitzung = { ...sitzung, seitenzeiten: zeiten, seite: ziel ?? seite };
-    await speichereSitzung(app, sitzung, antworten);
+    await speichereSitzung(app, sitzung, antworten, basis);
     seiteSeit = Date.now();
     if (ziel) { seite = ziel; zeichne(); window.scrollTo(0, 0); }
   }
@@ -163,18 +202,18 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
       const text = [offen > 0 ? `${offen} ${offen === 1 ? 'Frage ist' : 'Fragen sind'} noch offen – trotzdem weiter?` : '', ...hinweise.map((h) => h.text)].filter(Boolean).join(' ');
       if (!(await bestaetige('Hinweis', text, { ja: 'Trotzdem weiter', nein: 'Zurück zur Seite' }))) return;
     }
-    const liste = seiten(b, stand);
+    const liste = seitenListe();
     const i = liste.indexOf(seite);
     if (i < liste.length - 1) { await wechsleSeite(liste[i + 1]); return; }
     // Abschließen
     await wechsleSeite(null);
     sitzung = { ...sitzung, status: 'abgeschlossen', endTs: Date.now() };
-    await speichereSitzung(app, sitzung, antworten);
-    app.zeige('fbDanke', { sitzungId });
+    await speichereSitzung(app, sitzung, antworten, basis);
+    app.zeige(nachtrag ? 'fbStatus' : 'fbDanke', { sitzungId });
   }
 
   function zeichne() {
-    const liste = seiten(b, stand);
+    const liste = seitenListe();
     if (!liste.includes(seite)) seite = liste.find((s) => b.abschnitte.findIndex((a) => a.id === s) >= b.abschnitte.findIndex((a) => a.id === seite)) ?? liste.at(-1);
     const nr = liste.indexOf(seite);
     const a = b.abschnitte.find((x) => x.id === seite);
@@ -182,8 +221,9 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
     ersetze(inhalt,
       el('p', { class: 'fortschritt', 'data-test': 'fb-fortschritt' }, `Abschnitt ${nr + 1} von ${liste.length}`),
       el('div', { class: 'fortschritt-balken', 'aria-hidden': 'true' }, el('span', { style: `width:${Math.round(((nr + 1) / liste.length) * 100)}%` })),
-      nr === 0 ? el('div', { class: 'fb-einleitung', 'data-test': 'fb-einleitung' },
+      nr === 0 && !nachtrag ? el('div', { class: 'fb-einleitung', 'data-test': 'fb-einleitung' },
         el('p', {}, `Bearbeitungszeit ca. ${b.dauerMin} Minuten. ${b.einleitung}`)) : null,
+      nachtrag ? el('div', { class: 'banner-test', 'data-test': 'fb-nachtrag' }, `Nachtrag (Papier vom ${sitzung.papierDatum}) zum ${BOGEN_NAME[b.id]} von ${sitzung.pseudonym}`) : null,
       el('h2', { 'data-test': 'fb-abschnitt' }, `${a.id}  ${a.titel}`),
       items(b).filter((it) => it.abschnitt === seite).map((it) => zeichneItem(it)),
       (b.softSkips ?? []).filter((s) => s.nachAbschnitt === seite).map((s) => zeichneSprung(s)),
@@ -215,7 +255,19 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
     return el('input', {
       type: 'number', inputmode: 'numeric', min: zelle.min ?? undefined, max: zelle.max ?? undefined, class: 'zahl-feld',
       value: a ?? '', placeholder: auto ? String(e(zelle.id).wert) : '', 'data-test': `fb-${zelle.id}`,
-      onchange: (ev) => { const t = ev.target.value.trim(); antworte(zelle, t === '' ? null : Number(t)); },
+      onchange: async (ev) => {
+        const t = ev.target.value.trim();
+        const w = t === '' ? null : Number(t);
+        // Rückfrage vor dem Ausblenden ganzer Abschnitte (z. B. W1b = 0 Arbeitstage)
+        if (w === 0 && zelle.rueckfrageNull && antworten[zelle.id]?.wert !== 0) {
+          if (!(await bestaetige('Bitte bestätigen', zelle.rueckfrageNull, { ja: 'Ja, weiter', nein: 'Korrigieren' }))) {
+            ev.target.value = antworten[zelle.id]?.wert ?? '';
+            ev.target.focus();
+            return;
+          }
+        }
+        antworte(zelle, w);
+      },
     });
   }
 
@@ -234,6 +286,20 @@ export async function zeigeFbAusfuellen(app, { sitzungId }) {
         const txt = e(`${it.id}_TXT`);
         koerper = [
           el('div', { class: 'optionen' }, sichtbareOptionen(it, stand).map(([c, l]) => optionKnopf(haupt.zelle, c, l))),
+          txt?.sichtbar ? el('label', { class: 'feld' }, el('span', { class: 'hinweis' }, 'Bitte angeben:'), textFeld(txt.zelle)) : null,
+        ];
+        break;
+      }
+      case 'mehrfach': {
+        const txt = e(`${it.id}_TXT`);
+        koerper = [
+          el('div', { class: 'optionen' }, zellen.filter((x) => x.zelle.art === 'option' && x.sichtbar).map((x) => {
+            const an = x.wert === 1 && x.status === 'beantwortet' && antworten[x.zelle.id]?.wert === 1;
+            return el('button', {
+              type: 'button', class: 'option', 'aria-pressed': an ? 'true' : 'false', 'data-test': `fb-${x.zelle.id}`,
+              onclick: () => antworte(x.zelle, an ? 0 : 1),
+            }, `${an ? '☑' : '☐'} ${it.optionen.find(([c]) => c === x.zelle.code)?.[1] ?? x.zelle.code}`);
+          })),
           txt?.sichtbar ? el('label', { class: 'feld' }, el('span', { class: 'hinweis' }, 'Bitte angeben:'), textFeld(txt.zelle)) : null,
         ];
         break;
@@ -348,13 +414,13 @@ export async function zeigeFbDanke(app, { sitzungId }) {
 export async function zeigeFbStatus(app, { sitzungId }) {
   const sitzung = await db.hole(app.db, db.STORES.FB_SITZUNGEN, sitzungId);
   const antworten = await db.holeFbAntworten(app.db, sitzungId);
-  const b = bogenNach(DEF, sitzung.bogen);
-  const k = zusammenfassungStand(berechneStand(b, antworten));
-  const datei = fbExportDatei(app, sitzung, antworten);
+  const basis = await basisAntworten(app, sitzung);
+  const k = logbuchFuer(app, sitzung, antworten, basis);
+  const datei = fbExportDatei(app, sitzung, antworten, basis);
   const ziel = { store: db.STORES.FB_SITZUNGEN, schluessel: sitzungId, nachher: () => app.zeige('fbStatus', { sitzungId }) };
   const EXPORT = { offen: 'nicht exportiert', exportiert: 'exportiert – Eingang noch nicht bestätigt', bestaetigt: 'Eingang bestätigt' };
   ersetze(app.wurzel,
-    el('h1', {}, 'Fragebogen abgeschlossen'),
+    el('h1', {}, sitzung.art === 'NACHTRAG' ? `Nachtrag Abschnitt ${sitzung.abschnitt} abgeschlossen` : 'Fragebogen abgeschlossen'),
     sitzung.testmodus ? el('div', { class: 'banner-test', 'data-test': 'probelauf' }, 'Probelauf – Datei beginnt mit HXNOW_TEST_ und wird nicht ausgewertet') : null,
     el('dl', { class: 'eckdaten', 'data-test': 'fb-eckdaten' },
       el('dt', {}, 'Fragebogen'), el('dd', {}, BOGEN_NAME[sitzung.bogen]),

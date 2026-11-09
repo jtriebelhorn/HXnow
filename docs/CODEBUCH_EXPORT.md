@@ -1,6 +1,7 @@
 # Codebuch der Exportdateien
 
-**Exportformat 1.1** (ab App 1.2.0, Kodierschema 2.2: neue Spalten `NT1`, `NT1_nutzung`). Format 1.0 wurde mit App 1.0.0 am 09.11.2026
+**Exportformat 1.2** (ab App 1.3.0: Spalte `bezug_sitzung_id` im Fragebogen für Abschnitts-Nachträge). Format 1.1 (App 1.2.0,
+Kodierschema 2.2) ergänzte `NT1`, `NT1_nutzung`. Format 1.0 wurde mit App 1.0.0 am 09.11.2026
 festgeschrieben; 1.1 ergänzt nur Spalten. Gilt mit Kodierschema 2.0–2.2
 (Fragebogen-Definition 1.0.0, [Kodierhandbuch 2.0](KODIERHANDBUCH_v2.0.md)). Die Bedeutung der Codes hängt von
 `schema_version` ab: ab 2.0 ist T11 Diagnostik/Intervention und T5 nur noch das Gespräch mit Patient/Angehörigen. Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
@@ -35,6 +36,7 @@ exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhand
 | Person nicht angetroffen | `HXNOW_VERSUCH_<pseudonym>_<JJJJMMTT>_<HHMM>_<id, 8 Zeichen>.csv` |
 | Tageskennzahlen | `HXNOW_TAG_<bereich>-<teilbereich>_<JJJJMMTT>_<HHMM>.csv` (vor 0.17.0 ohne `-<teilbereich>`) |
 | Fragebogen | `HXNOW_FB_<FB1/KB/FB2>_<pseudonym>_<JJJJMMTT>_<HHMM>_<sitzungs-id, 8 Zeichen>.csv` |
+| Nachtrag eines Fragebogen-Abschnitts (Papier) | `HXNOW_FB_<FB1/KB/FB2>_NACHTRAG_<pseudonym>_<JJJJMMTT>_<HHMM>_<id, 8>.csv` |
 | Logbuch (je Gerät, wird ersetzt) | `HXNOW_Logbuch_<geräte-id, 8 Zeichen>.csv` |
 | Komplettsicherung | `HXNOW_Komplettsicherung_<geräte-id, 8>_<JJJJMMTT>_<HHMM>.json` |
 | Teilnehmerliste | `HXNOW_Teilnehmende_<geräte-id, 8>_<JJJJMMTT>_<HHMM>.csv` |
@@ -175,7 +177,8 @@ Zellen-IDs, Codes und Paare stehen im Codebuch `docs/codebuch/codebuch_<definiti
 | `typ` | Fragetyp der Zelle |
 | `wert` | Code bzw. Zahl; −88 = gefiltert (Frage nicht gestellt, auch bei Freitextfeldern), −99 = keine Angabe; leer = ausgelassen |
 | `wert_text` | Freitext |
-| `status` | `beantwortet` · `ausgelassen` · `gefiltert` · `keine_angabe` · `automatisch` (Wert aus einer Regel, z. B. W2 = 0 bei A8 = nein) |
+| `status` | `beantwortet` · `ausgelassen` · `gefiltert` · `keine_angabe` · `automatisch` (Wert aus einer Regel, z. B. W2b = 0 bei A8b = nein). Bei Bögen einer älteren `definition_version` sind später eingeführte Items `gefiltert` (−88 = nicht gestellt) |
+| `bezug_sitzung_id` | nur bei Nachträgen: `sitzung_id` des Originalbogens; die Datei enthält dann nur den nachgetragenen Abschnitt (ab Format 1.2) |
 | `n_zeilen` | Zeilen der Datei (Vollständigkeit) |
 
 ## Logbuch-Datei (`HXNOW_Logbuch_…`)
@@ -195,7 +198,7 @@ Beobachtungs- oder Antwortinhalte. Die Datei nicht in Excel speichern (Prüfsumm
 
 Änderungsarten: `KOMMENTAR`, `KOMMENTAR_ZURUECK` (ziel = Kommentar), `UNGUELTIG` (`grund` U1 Testeintrag, U2 falscher
 Proband, U3 Fehlbedienung, U4 doppelt, U9 Sonstiges), `UNGUELTIG_AUFGEHOBEN`, `ZUORDNUNG` (Code), `PHASE`, `STATUS`,
-`PHASENDATEN` (`feld` = Datumsfeld), `WIDERRUF_LOESCHUNG`, `GELOESCHT` (nicht abgeschlossener Export gelöscht; `alt` = Exportstatus davor; der Eintrag zählt nicht, es gibt keine Datei). Der wirksame Stand ergibt sich, indem die Änderungen eines
+`PHASENDATEN` (`feld` = Datumsfeld), `NACHTRAG_FELD` (fehlende Blockangabe nachgetragen: `feld` = arbeitskontext bzw. dienst, `neu` = Code), `WIDERRUF_LOESCHUNG`, `GELOESCHT` (nicht abgeschlossener Export gelöscht; `alt` = Exportstatus davor; der Eintrag zählt nicht, es gibt keine Datei). Der wirksame Stand ergibt sich, indem die Änderungen eines
 Ziels nach `ts` angewendet werden; die Einträge selbst bleiben unverändert.
 
 ## Komplettsicherung (`HXNOW_Komplettsicherung_…json`)
@@ -221,7 +224,7 @@ Codes, die im Exportordner zu löschen sind.
 | Datei | Inhalt |
 | --- | --- |
 | `beobachtung_bereinigt.csv` | wie `beobachtung.csv`, aber Episoden unter der Mindestdauer (3 s, `regelnAuswertung` im Kodierschema; HX Now T3 ausgenommen) der vorangehenden Episode zugeschlagen und gleich kodierte Nachbarn vereint; Spalte `zusammengelegt` = Zahl der Rohzeilen |
-| `beobachtung.csv`, `versuche.csv`, `fb_long.csv` | alle Zeilen der Sitzungsdateien; `pseudonym` und `phase` = wirksamer Stand, zusätzlich `gueltig` (0/1), `ungueltig_grund`, `pseudonym_original`, `phase_original` |
+| `beobachtung.csv`, `versuche.csv`, `fb_long.csv` | alle Zeilen der Sitzungsdateien; `pseudonym` und `phase` = wirksamer Stand, zusätzlich `gueltig` (0/1), `ungueltig_grund`, `pseudonym_original`, `phase_original`; Blöcke mit nachgetragenem Arbeitskontext/Dienst (`nachgetragen`); Fragebögen mit eingesetzten Abschnitts-Nachträgen (`nachtrag_von`; ersetzt nur Zellen mit Status gefiltert/ausgelassen) |
 | `tageskennzahlen.csv` | alle Tageskennzahlen |
 | `fb1_wide.csv`, `kb_wide.csv`, `fb2_wide.csv` | eine Zeile je gültigem Bogen, eine Spalte je Zelle (`wert`, bei Freitext `wert_text`) |
 | `prae_post.csv` | je Code und Paar-ID: FB1-Wert, FB2-Wert und `fb2_wert_wie_fb1` (FB2 auf FB1-Codes umkodiert, z. B. W6c) |

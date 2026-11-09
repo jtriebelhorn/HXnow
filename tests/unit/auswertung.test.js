@@ -158,3 +158,47 @@ test('Prüfbericht nennt die Kodierschema-Versionen der Blöcke und warnt bei ge
   const aus = fuehreZusammen([{ name: 'a.csv', text: BLOCK }, { name: 'b.csv', text: alt }], { def: DEF, schema: SCHEMA });
   assert.match(aus.bericht.join('\n'), new RegExp(`Kodierschema der Blöcke: ${v}: 1, 1\\.0: 1 – GEMISCHT`));
 });
+
+describe('Korrekturauftrag: Definitionen 1.0.0 und 1.1.0, Abschnitts-Nachtrag, nachgetragene Blockangaben', () => {
+  const fbAlt = fbDatei(bogen(DEF, 'FB1'), {
+    sitzungId: 'alt-0001', geraeteId: 'g1', appVersion: '1.1.1', definitionVersion: '1.0.0', bogen: 'FB1', pseudonym: 'N12', bereich: 'NEPH',
+    erhebungsmodus: 'APP', startTs: START, endTs: START + 600_000,
+  }, { A1: { wert: 2 }, A8: { wert: 1 }, W1: { wert: 0 } }, { definitionVersion: '1.0.0' });
+  const fbNeu = fbDatei(bogen(DEF, 'FB1'), {
+    sitzungId: 'neu-0001', geraeteId: 'g1', appVersion: '1.3.0', bogen: 'FB1', pseudonym: 'E03', bereich: 'NEPH', erhebungsmodus: 'APP', startTs: START, endTs: START + 600_000,
+  }, { A8b: { wert: 1 }, W1b: { wert: 9 }, W2b: { wert: 2 }, W2c_1: { wert: 1 } }, { definitionVersion: DEF.definitionVersion });
+  const nachtrag = fbDatei(bogen(DEF, 'FB1'), {
+    sitzungId: 'nach-001', art: 'NACHTRAG', bezugSitzungId: 'alt-0001', abschnitt: 'W', geraeteId: 'g1', appVersion: '1.3.0', bogen: 'FB1', pseudonym: 'N12',
+    bereich: 'NEPH', erhebungsmodus: 'PAPIER', papierDatum: '2026-11-09', startTs: START + 86_400_000, endTs: START + 86_400_000 + 60_000,
+  }, { W1b: { wert: 10 }, W2b: { wert: 3 }, W3_01_A: { wert: 2 } }, { definitionVersion: DEF.definitionVersion, basis: { A8: { wert: 1 }, W1: { wert: 0 } } });
+
+  test('Nachtrag: eigener Dateiname, nur Abschnitt W, mit bezug_sitzung_id', () => {
+    assert.match(nachtrag.dateiname, /^HXNOW_FB_FB1_NACHTRAG_N12_/);
+    const z = leseCsv(nachtrag.inhalt).zeilen;
+    assert.ok(z.every((r) => r.abschnitt === 'W' && r.bezug_sitzung_id === 'alt-0001'));
+    assert.equal(z.find((r) => r.item_id === 'W2b').wert, '3', 'W2b sichtbar über A8 = ja aus dem Original');
+  });
+  test('Zusammenführen: beide Versionen ohne Fehler; Nachtrag füllt nur gefilterte/ausgelassene Zellen des Originals', () => {
+    const aus = fuehreZusammen([fbAlt, fbNeu, nachtrag].map((d) => ({ name: d.dateiname, text: d.inhalt })), { def: DEF, schema: SCHEMA });
+    const lang = csv(aus, 'fb_long.csv');
+    const alt = lang.filter((r) => r.sitzung_id === 'alt-0001');
+    assert.equal(alt.find((r) => r.item_id === 'W1').wert, '0', 'alte Antwort bleibt');
+    assert.deepEqual(['W1b', 'W2b', 'W3_01_A'].map((id) => [alt.find((r) => r.item_id === id).wert, alt.find((r) => r.item_id === id).nachtrag_von]),
+      [['10', 'nach-001'], ['3', 'nach-001'], ['2', 'nach-001']]);
+    assert.equal(lang.filter((r) => r.sitzung_id === 'nach-001').length, 0, 'Nachtrag nicht als eigener Bogen');
+    const wide = csv(aus, 'fb1_wide.csv');
+    assert.deepEqual(wide.map((r) => r.sitzung_id).sort(), ['alt-0001', 'neu-0001']);
+    assert.equal(wide.find((r) => r.sitzung_id === 'neu-0001').W2c_1, '1');
+    assert.match(aus.bericht.join('\n'), /Abschnitts-Nachträge: 1 \(\d+ Zellen eingesetzt, 0 ohne Originalbogen\)/);
+  });
+  test('Nachgetragener Arbeitskontext/Dienst (NACHTRAG_FELD) füllt leere Blockfelder, Spalte nachgetragen', () => {
+    const ohne = BLOCK.replace(/;POST;K1;/g, ';POST;;');
+    const lb = logbuchDatei({
+      teilnehmende: [t('P017')], phasenplan: [], logbuch: [e('id-0001', 'BLOCK', 'P017', 'POST', { arbeitskontext: null })],
+      aenderungen: [{ aenderungId: 'n1', ts: START + 5, geraeteId: 'g1', appVersion: '1.3.0', art: 'NACHTRAG_FELD', zielTyp: 'eintrag', zielId: 'id-0001', feld: 'arbeitskontext', alt: '', neu: 'K4', grund: null, text: '' }],
+    }, kopf('g1aaaaaa', START + 10));
+    const aus = fuehreZusammen([{ name: 'b.csv', text: ohne }, { name: lb.dateiname, text: lb.inhalt }], { def: DEF, schema: SCHEMA });
+    const b = csv(aus, 'beobachtung.csv');
+    assert.ok(b.every((r) => r.arbeitskontext === 'K4' && r.nachgetragen === 'arbeitskontext'));
+  });
+});

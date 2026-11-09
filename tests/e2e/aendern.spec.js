@@ -1,5 +1,4 @@
-// Änderungen und PIN (PLAN_Logbuch_Datensicherheit L4): PIN beim ersten Mal festlegen, 10 min gültig, Sperre nach
-// 5 Fehlversuchen; ungültig/aufheben, Zuordnung, Phase, Kommentar, Status, eigene Phasendaten; Rohdaten unverändert;
+// Änderungen (PLAN_Logbuch_Datensicherheit L4, ohne PIN seit 1.3.0): ungültig/aufheben, Zuordnung, Phase, Kommentar, Status, eigene Phasendaten; Rohdaten unverändert;
 // Logbuch sichern nach der Änderung; Änderungen stehen in der Logbuch-Datei.
 import { test, expect } from '@playwright/test';
 import { oeffne, kurzerBlock, mockeTeilen, geteilt, leseDb, waehleCode } from './hilfen.js';
@@ -12,7 +11,7 @@ async function zumEintrag(page) {
   await page.locator('[data-test=proband-eintraege] li').first().click();
 }
 
-test('Korrekturen an einem Block mit PIN; Rohdaten unverändert; Logbuch-Datei enthält die Änderungen', async ({ page }) => {
+test('Korrekturen an einem Block (ohne PIN); Rohdaten unverändert; Logbuch-Datei enthält die Änderungen', async ({ page }) => {
   await mockeTeilen(page, 'erfolg');
   await oeffne(page);
   await kurzerBlock(page, { phase: 'PRE' });
@@ -31,14 +30,8 @@ test('Korrekturen an einem Block mit PIN; Rohdaten unverändert; Logbuch-Datei e
   await page.click('[data-test=spaeter-sichern]');
   await expect(page.locator('[data-test=kommentare]')).toContainText('Visite verlängert');
 
-  // ungültig → PIN festlegen
+  // ungültig
   await page.click('[data-test=ungueltig]');
-  await page.fill('[data-test=pin-neu]', '2468');
-  await page.fill('[data-test=pin-wiederholen]', '2467');
-  await page.click('[data-test=pin-speichern]');
-  await expect(page.locator('[data-test=pin-fehler]')).toHaveText('Die beiden Eingaben stimmen nicht überein.');
-  await page.fill('[data-test=pin-wiederholen]', '2468');
-  await page.click('[data-test=pin-speichern]');
   await page.selectOption('[data-test=ungueltig-grund]', 'U9');
   await page.click('[data-test=aendern-ok]');
   await expect(page.locator('[data-test=aendern-fehler]')).toHaveText('Bei „Sonstiges“ bitte erläutern.');
@@ -47,7 +40,7 @@ test('Korrekturen an einem Block mit PIN; Rohdaten unverändert; Logbuch-Datei e
   await page.click('[data-test=spaeter-sichern]');
   await expect(page.locator('[data-test=eintrag-ungueltig]')).toContainText('Sonstiges');
 
-  // innerhalb von 10 min ohne PIN: aufheben, anderer Proband, Phase
+  // aufheben, anderer Proband, Phase
   await page.click('[data-test=ungueltig-aufheben]');
   await page.click('[data-test=aendern-ok]');
   await page.click('[data-test=spaeter-sichern]');
@@ -79,37 +72,6 @@ test('Korrekturen an einem Block mit PIN; Rohdaten unverändert; Logbuch-Datei e
   await expect(page.locator('[data-test=proband-P017]')).not.toContainText('1/5');
 });
 
-test('PIN: 5 Fehlversuche sperren 5 Minuten; nach 10 Minuten wird erneut gefragt', async ({ page }) => {
-  await oeffne(page);
-  await kurzerBlock(page, { phase: 'PRE' });
-  await zumEintrag(page);
-  await page.click('[data-test=ungueltig]');
-  await page.fill('[data-test=pin-neu]', '1357');
-  await page.fill('[data-test=pin-wiederholen]', '1357');
-  await page.click('[data-test=pin-speichern]');
-  await page.click('[data-test=aendern-abbrechen]');
-  await page.clock.fastForward('10:01');
-  await page.click('[data-test=ungueltig]');
-  await expect(page.locator('[data-test=dialog-pin]')).toBeVisible();
-  for (let i = 0; i < 4; i++) {
-    await page.fill('[data-test=pin]', '0000');
-    await page.click('[data-test=pin-ok]');
-    await expect(page.locator('[data-test=pin-fehler]')).toHaveText(`PIN falsch. Noch ${4 - i} ${4 - i === 1 ? 'Versuch' : 'Versuche'}.`);
-  }
-  await page.fill('[data-test=pin]', '0000');
-  await page.click('[data-test=pin-ok]');
-  await expect(page.locator('[data-test=pin-fehler]')).toContainText('gesperrt bis');
-  await page.fill('[data-test=pin]', '1357');
-  await page.click('[data-test=pin-ok]');
-  await expect(page.locator('[data-test=pin-fehler]')).toContainText('gesperrt bis');
-  await page.clock.fastForward('05:01');
-  await page.fill('[data-test=pin]', '1357');
-  await page.click('[data-test=pin-ok]');
-  await expect(page.locator('[data-test=dialog-ungueltig]')).toBeVisible();
-  const meta = await page.evaluate(() => new Promise((r) => { const o = indexedDB.open('hxnow-beobachtung'); o.onsuccess = () => { const g = o.result.transaction('meta').objectStore('meta').getAll(); g.onsuccess = () => r(g.result); }; }));
-  expect(JSON.stringify(meta)).not.toContain('1357');
-});
-
 test('Proband: Status pausiert sperrt die Erfassung; eigene Phasendaten', async ({ page }) => {
   await oeffne(page);
   await kurzerBlock(page, { phase: 'PRE' });
@@ -117,9 +79,6 @@ test('Proband: Status pausiert sperrt die Erfassung; eigene Phasendaten', async 
   await page.click('[data-test=menue-studie]');
   await page.click('[data-test=proband-P017]');
   await page.click('[data-test=status-aendern]');
-  await page.fill('[data-test=pin-neu]', '2468');
-  await page.fill('[data-test=pin-wiederholen]', '2468');
-  await page.click('[data-test=pin-speichern]');
   await page.selectOption('[data-test=status-neu]', 'pausiert');
   await page.click('[data-test=aendern-ok]');
   await page.click('[data-test=spaeter-sichern]');

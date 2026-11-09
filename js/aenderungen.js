@@ -4,6 +4,7 @@
 export const ART = Object.freeze({
   KOMMENTAR: 'KOMMENTAR', KOMMENTAR_ZURUECK: 'KOMMENTAR_ZURUECK', UNGUELTIG: 'UNGUELTIG', UNGUELTIG_AUFGEHOBEN: 'UNGUELTIG_AUFGEHOBEN',
   ZUORDNUNG: 'ZUORDNUNG', PHASE: 'PHASE', STATUS: 'STATUS', PHASENDATEN: 'PHASENDATEN', WIDERRUF_LOESCHUNG: 'WIDERRUF_LOESCHUNG',
+  NACHTRAG_FELD: 'NACHTRAG_FELD', // fehlende Blockangabe (Arbeitskontext, Dienst) nachgetragen
   GELOESCHT: 'GELOESCHT', // nicht exportierte Sitzung gelöscht (Daten weg, Logbuch-Eintrag bleibt als Vermerk)
 });
 
@@ -41,7 +42,7 @@ export function wirksamerStand(eintrag, aenderungen) {
     konflikt: new Set(eigene.map((a) => a.geraeteId)).size > 1,
   };
   for (const a of eigene) {
-    if (a.art === ART.GELOESCHT) Object.assign(st, { gueltig: false, geloescht: true, ungueltigGrund: 'GELOESCHT', ungueltigText: a.text });
+    if (a.art === ART.NACHTRAG_FELD && ['arbeitskontext', 'dienst'].includes(a.feld)) { st[a.feld] = a.neu; st.nachgetragen = [...new Set([...(st.nachgetragen ?? []), a.feld])]; } else if (a.art === ART.GELOESCHT) Object.assign(st, { gueltig: false, geloescht: true, ungueltigGrund: 'GELOESCHT', ungueltigText: a.text });
     else if (a.art === ART.UNGUELTIG) Object.assign(st, { gueltig: false, ungueltigGrund: a.grund, ungueltigText: a.text });
     else if (a.art === ART.UNGUELTIG_AUFGEHOBEN) Object.assign(st, { gueltig: true, ungueltigGrund: null, ungueltigText: '' });
     else if (a.art === ART.ZUORDNUNG) { st.pseudonymOriginal ??= eintrag.pseudonym; st.pseudonym = a.neu; } else if (a.art === ART.PHASE) { st.phaseOriginal ??= eintrag.phase; st.phase = a.neu; }

@@ -47,6 +47,9 @@ export function zellen(it, b = null) {
     min: it.min ?? null, max: it.max ?? null, skala: it.skala ?? '', umpolen: Boolean(it.umpolen),
     zusatz: it.zusatz ?? null, paar: it.paar ?? '', paarUmkodierung: it.paarUmkodierung ?? null,
     entfernt: Boolean(it.entfernt), auto: it.auto ?? null, art: 'wert',
+    // Versionen (Definition 1.1.0): seit = erst ab dieser Version gestellt; entferntSeit = bis davor gestellt;
+    // ersetzt = ID der Vorgängerfrage (Bedingungen älterer Sitzungen nutzen deren Antwort)
+    seit: it.seit ?? null, entferntSeit: it.entferntSeit ?? null, ersetzt: it.ersetzt ?? null, rueckfrageNull: it.rueckfrageNull ?? null,
   };
   const freitext = (id, text, bedingung) => ({
     ...basis, id, typ: 'text', text, optionen: null, min: null, max: null, skala: '', umpolen: false, zusatz: null,
@@ -56,10 +59,13 @@ export function zellen(it, b = null) {
     case 'info':
       return [];
     case 'mehrfach':
-      return it.optionen.map(([code, label]) => ({
-        ...basis, id: `${it.id}_${code < 0 ? 'KA' : code}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']],
-        paar: it.paar ? `${it.paar}_${code}` : '', showIf: und(sichtbar, it.optionShowIf?.[code]), art: 'option', code,
-      }));
+      return [
+        ...it.optionen.map(([code, label]) => ({
+          ...basis, id: `${it.id}_${code < 0 ? 'KA' : code}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']],
+          paar: it.paar ? `${it.paar}_${code}` : '', showIf: und(sichtbar, it.optionShowIf?.[code]), art: 'option', code,
+        })),
+        ...(it.freitextBei !== undefined ? [freitext(`${it.id}_TXT`, `${it.text} – Freitext`, `${it.id}_${it.freitextBei} = 1`)] : []),
+      ];
     case 'prozentgruppe':
       return it.zeilen.flatMap(([z, label]) => [
         { ...basis, id: `${it.id}_${z}`, text: `${it.text} – ${label}`, optionen: [[0, 'nein'], [1, 'ja']], showIf: sichtbar, art: 'angekreuzt', zeile: z },
@@ -192,4 +198,14 @@ function doppelte(werte) {
   const doppelt = new Set();
   for (const w of werte) (gesehen.has(w) ? doppelt : gesehen).add(w);
   return [...doppelt];
+}
+
+/** Vergleich von Versionsnummern (SemVer, nur Zahlen): a < b? */
+export function versionVor(a, b) {
+  const x = String(a ?? '').split('.').map(Number);
+  const y = String(b ?? '').split('.').map(Number);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    if ((x[i] ?? 0) !== (y[i] ?? 0)) return (x[i] ?? 0) < (y[i] ?? 0);
+  }
+  return false;
 }

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.3.0 – 09.11.2026
+Korrekturauftrag nach dem ersten Erhebungstag, Teil A (ENTSCHEIDUNGEN Nr. 50); **Fragebogen-Definition 1.1.0**,
+**Exportformat 1.2**, keine Datenbank-Migration:
+- **FB1 und FB2, Abschnitt W:** Einleitung „Die folgenden Fragen beziehen sich auf die letzten 14 Tage.“; W1b Arbeitstage
+  (Rückfrage bei 0), W2b Dienste über die reguläre Arbeitszeit hinaus (Plausibilitätshinweis), neu W2c Art der Dienste
+  (Mehrfachauswahl, Sonstige mit Freitext); FB1: A8b statt A8; W3 Zeile 09 neu formuliert. W1, W2, A8 bleiben als
+  „entfernt“ in der Definition und im Codebuch. Bereits erhobene Bögen (1.0.0) bleiben gültig und werden unverändert
+  ausgewertet. Paar-Schnappschuss um ARBEITSTAGE_14, DIENSTE_14, DIENSTART_14 ergänzt (keine bestehenden Paare geändert);
+  Codebuch `docs/codebuch/codebuch_1.1.0.csv`.
+- **Abschnitt nachtragen (Papier):** im Logbuch beim abgeschlossenen Fragebogen; eigene Datei
+  `HXNOW_FB_<Bogen>_NACHTRAG_…` mit Spalte `bezug_sitzung_id`; das Zusammenführungstool setzt den Nachtrag in den
+  Originalbogen ein (nur gefilterte/ausgelassene Zellen).
+- **Fehlende Angabe nachtragen** (Arbeitskontext, Dienst) beim Block im Logbuch; wird in der Auswertung verwendet.
+- **Studie:** Fragebögen als Marken FB1 · KB · FB2, Blöcke als B/R; Mehrfachauswahl im Fragebogen jetzt darstellbar.
+- **Keine PIN mehr** für Korrekturen, Phasenplan und Widerruf (nur Rückfragen).
+
 ## 1.2.0 – 09.11.2026
 PC als Nebentätigkeit; **Kodierschema 2.2**, **Exportformat 1.1** (neue Spalten), keine Datenbank-Migration:
 - Unter „Nebentätigkeit“ gibt es jetzt **PC (NT1)**: z. B. Gespräch mit der Pflege und nebenbei kurz am PC nachsehen

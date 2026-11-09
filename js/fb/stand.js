@@ -3,7 +3,7 @@
 //
 // Status: beantwortet · ausgelassen (sichtbar, leer) · gefiltert (ausgeblendet, −88) · keine_angabe (−99) ·
 // automatisch (ausgeblendet mit Auto-Wert, z. B. W2 = 0 bei A8 = nein; A6 = 100 % bei genau einem Bereich).
-import { alleZellen, items } from './definition.js';
+import { alleZellen, items, versionVor } from './definition.js';
 import { erfuellt, AUSGEBLENDET } from './filter.js';
 
 export const KEINE_ANGABE = -99;
@@ -15,15 +15,27 @@ export const istTextZelle = (z) => TEXT_TYPEN.has(z.typ);
 /**
  * @param {object} b Bogen aus der Definition
  * @param {Record<string, {wert?: number|null, wertText?: string}>} antworten nach Zellen-ID
+ * @param {{ definitionVersion?: string }} opt Version, mit der die Sitzung begonnen wurde (Standard: aktuelle).
+ *   Ältere Sitzungen: Fragen mit `seit` > Version gelten als nicht gestellt (−88); mit `entferntSeit` entfernte Fragen
+ *   gehören weiter dazu.
  * @returns {{ zellen: Map<string, {zelle, sichtbar, wert, text, status}>, ids: string[] }}
  */
-export function berechneStand(b, antworten) {
-  const liste = alleZellen(b);
+export function berechneStand(b, antworten, { definitionVersion = null } = {}) {
+  const alt = (z) => definitionVersion && z.seit && versionVor(definitionVersion, z.seit);
+  const liste = alleZellen(b, { mitEntfernten: true })
+    .filter((z) => !z.entfernt || (definitionVersion && z.entferntSeit && versionVor(definitionVersion, z.entferntSeit)));
   const ids = liste.map((z) => z.id);
+  const ersetzt = new Map(liste.filter((z) => z.ersetzt).map((z) => [z.id, z.ersetzt]));
   const zellen = new Map();
-  const wert = (id) => zellen.get(id)?.wert ?? null;
+  // Bedingungen: fehlt die Antwort auf eine neue Frage (ältere Sitzung, Nachtrag), gilt die der ersetzten Vorgängerfrage
+  const wert = (id) => {
+    const w = zellen.get(id)?.wert ?? null;
+    if ((w === null || w === AUSGEBLENDET) && ersetzt.has(id)) return zellen.get(ersetzt.get(id))?.wert ?? antworten[ersetzt.get(id)]?.wert ?? w;
+    return w;
+  };
 
   for (const z of liste) {
+    if (alt(z)) { zellen.set(z.id, { zelle: z, sichtbar: false, wert: istTextZelle(z) ? null : AUSGEBLENDET, text: '', status: 'gefiltert', nichtGestellt: true }); continue; }
     const a = antworten[z.id] ?? {};
     const sichtbar = erfuellt(z.showIf, wert, ids);
     let w = null;
@@ -47,6 +59,12 @@ export function berechneStand(b, antworten) {
       status = 'gefiltert';
     }
     zellen.set(z.id, { zelle: z, sichtbar, wert: w, text, status });
+  }
+
+  // Mehrfachauswahl: sobald eine Option angekreuzt ist, gelten die übrigen sichtbaren als „nein“ (0)
+  for (const it of items(b).filter((x) => x.typ === 'mehrfach')) {
+    const opt = [...zellen.values()].filter((e) => e.zelle.itemId === it.id && e.zelle.art === 'option' && e.sichtbar);
+    if (opt.some((e) => e.wert === 1)) for (const e of opt) if (e.wert === null) Object.assign(e, { wert: 0, status: 'beantwortet' });
   }
 
   // Prozentgruppen: nicht angekreuzte Zeilen = 0, sobald eine Zeile angekreuzt ist; genau eine Zeile → 100 %
@@ -73,8 +91,10 @@ export function seiten(b, stand) {
 
 /** Sichtbare, unbeantwortete Fragen eines Abschnitts (Freitexte sind optional und zählen nicht). */
 export function offeneFragen(stand, abschnittId = null) {
-  return [...stand.zellen.values()].filter((e) => (abschnittId === null || e.zelle.abschnitt === abschnittId)
-    && e.sichtbar && e.status === 'ausgelassen' && !istTextZelle(e.zelle) && e.zelle.art !== 'angekreuzt').length;
+  const offen = [...stand.zellen.values()].filter((e) => (abschnittId === null || e.zelle.abschnitt === abschnittId)
+    && e.sichtbar && e.status === 'ausgelassen' && !istTextZelle(e.zelle) && e.zelle.art !== 'angekreuzt');
+  // Mehrfachauswahl zählt als eine Frage
+  return new Set(offen.map((e) => (e.zelle.art === 'option' ? `${e.zelle.itemId}#` : e.zelle.id))).size;
 }
 
 /** Weiche Prüfhinweise eines Abschnitts (Plan: „validierung“, kein Zwang). */
@@ -90,6 +110,12 @@ export function pruefhinweise(b, stand, abschnittId) {
       const [, links, op, rechts] = /^(\S+) (\S+) (\S+)$/.exec(it.validierung) ?? [];
       if (wert(links) !== null && wert(rechts) !== null) {
         h.push({ itemId: it.id, text: op === '<=' ? `Der Wert darf nicht größer sein als bei ${rechts}.` : `Bitte prüfen (${it.validierung}).` });
+      }
+    }
+    // Plausibilitätshinweise mit eigenem Text ({ID} wird durch den Wert ersetzt), keine Sperre
+    for (const p of it.pruefung ?? []) {
+      if (e?.sichtbar && e.wert !== null && erfuellt(p.wenn, wert, stand.ids)) {
+        h.push({ itemId: it.id, text: p.text.replace(/\{(\w+)\}/g, (_, id) => String(wert(id) ?? '')) });
       }
     }
     if (it.typ === 'prozentgruppe') {

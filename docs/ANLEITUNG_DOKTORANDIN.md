@@ -1,6 +1,6 @@
 # Anleitung für die Doktorandin
 
-Gilt ab App-Version 1.1.0 (Kodierhandbuch 2.0). Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
+Gilt ab App-Version 1.3.0 (Kodierhandbuch 2.0, Fragebögen 1.1.0). Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
 („Beobachtung“). Alle Daten liegen nur auf dem iPhone, bis Sie sie in den Exportordner teilen.
 
 > **Wichtigste Regel:** Nach jeder Sitzung (Block, Fragebogen, „nicht angetroffen“) sofort **Exportieren** und die
@@ -15,8 +15,6 @@ Gilt ab App-Version 1.1.0 (Kodierhandbuch 2.0). Die App läuft auf dem Studien-i
 3. **Studie → Studienplan:**
    - Phasenplan je Bereich eintragen (Beginn Baseline, Einführung, Regelbetrieb, Abschluss, Ende).
    - Exportordner beschreiben, z. B. den Pfad auf dem Klinik-Laufwerk. Der Text erscheint auf der Startseite.
-4. Bei der ersten geschützten Änderung legt die App eine **PIN** fest (4–8 Ziffern). Nur Sie und die Studienleitung
-   kennen sie.
 5. Für Übungen immer den Test-Code **P000** verwenden. Diese Dateien heißen `HXNOW_TEST_…` und werden nicht ausgewertet.
 
 ## 2. Probanden
@@ -97,23 +95,25 @@ Beim **Neuen Block** schlägt die App die Phase aus dem Phasenplan vor. Bitte tr
 Erfasste Daten werden nie überschrieben. Korrekturen werden als Änderung gespeichert und erscheinen im Verlauf.
 Weg: **Studie → Proband antippen → Eintrag antippen**.
 
-| Was | Wo | PIN |
-| --- | --- | --- |
-| Kommentar, Kommentar zurückziehen | Eintrag oder Proband | nein |
-| Als ungültig markieren (Grund U1 Testeintrag, U2 falscher Proband, U3 Fehlbedienung, U4 doppelt, U9 Sonstiges mit Text) bzw. aufheben | Eintrag | ja |
-| Anderer Proband (Code verwechselt) | Eintrag | ja |
-| Phase ändern | Eintrag (Block, nicht angetroffen) | ja |
-| Status (aktiv, pausiert, ausgeschieden) | Proband | ja |
-| Eigene Phasendaten (z. B. später eingestiegen) | Proband | ja |
-| Phasenplan des Bereichs | Studienplan | ja |
+| Was | Wo |
+| --- | --- |
+| Kommentar, Kommentar zurückziehen | Eintrag oder Proband |
+| Als ungültig markieren (Grund U1 Testeintrag, U2 falscher Proband, U3 Fehlbedienung, U4 doppelt, U9 Sonstiges mit Text) bzw. aufheben | Eintrag |
+| Anderer Proband (Code verwechselt) | Eintrag |
+| Phase ändern | Eintrag (Block, nicht angetroffen) |
+| **Fehlende Angabe nachtragen** (Arbeitskontext, Dienst) | Eintrag (Block) |
+| **Abschnitt nachtragen (Papier)**: z. B. Abschnitt W eines Fragebogens auf Papier nacherheben; Abschnitt und Datum des Papierbogens wählen, ausfüllen, exportieren (eigene Datei `HXNOW_FB_…_NACHTRAG_…`, kein zweiter Bogen) | Eintrag (abgeschlossener Fragebogen) |
+| Status (aktiv, pausiert, ausgeschieden) | Proband |
+| Eigene Phasendaten (z. B. später eingestiegen) | Proband |
+| Phasenplan des Bereichs | Studienplan |
 
-Eine richtig eingegebene PIN gilt 10 Minuten. Nach 5 falschen Eingaben ist die PIN 5 Minuten gesperrt.
+Eine PIN gibt es nicht; jede Korrektur wird vor dem Speichern bestätigt.
 Nach jeder Änderung fragt die App: **Logbuch jetzt sichern?** Ja, damit die Korrektur auch im Exportordner steht.
 
 ## 7. Widerruf
 
 Widerruft eine Person ihre Teilnahme:
-1. **Studie → Proband → Widerruf**, PIN, Code zur Bestätigung eintippen.
+1. **Studie → Proband → Widerruf**, Code zur Bestätigung eintippen.
 2. Die App löscht alle Daten dieses Codes vom iPhone und zeigt die Liste der Dateien, die im Exportordner zu löschen
    sind.
 3. **Protokoll und Logbuch teilen** und beide im Exportordner speichern. Dann die aufgelisteten Dateien dort löschen

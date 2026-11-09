@@ -5,8 +5,10 @@
 import { el, dialog, meldung, ersetze } from './dom.js';
 import * as db from '../db.js';
 import { neueAenderung, ART, UNGUELTIG_GRUENDE } from '../aenderungen.js';
-import { pinFormatOk, neuesSalz, pinHash, pruefePin, GUELTIG_MS } from '../pin.js';
 import { sichereLogbuch, exportiere } from './exportieren.js';
+import { starteNachtrag } from './fragebogen.js';
+import { FRAGEBOGEN_DEFINITION } from '../frageboegen.js';
+import { bogen as bogenNach } from '../fb/definition.js';
 import { widerrufUmfang, widerrufKurz, widerrufProtokoll, dateinameWiderruf } from '../widerruf.js';
 
 const STATUS_PROBAND = [
@@ -28,87 +30,16 @@ export function aenderungsKontext(app) {
 }
 const ctx = aenderungsKontext;
 
-// ============================================================================ PIN
-/** Führt `aktion` nach PIN-Abfrage aus (PIN beim ersten Mal festlegen; 10 Minuten gültig). */
+// ============================================================================ Ohne PIN
+// Auf Wunsch der Studienleitung funktioniert alles ohne PIN (ENTSCHEIDUNGEN Nr. 50); geschützt wird nur durch
+// Rückfragen. `schuetze` bleibt als Stelle, an der das bei Bedarf wieder eingehängt werden kann.
 export function schuetze(app, titel, aktion) {
-  if (app.pinGueltigBis && Date.now() < app.pinGueltigBis) return aktion();
-  if (!app.meta.pinHash) return pinFestlegen(app, () => aktion());
-  return pinAbfragen(app, titel, aktion);
+  return aktion();
 }
 
-function pinFeld(test) {
-  return el('input', { type: 'password', inputmode: 'numeric', autocomplete: 'off', maxlength: 8, 'data-test': test });
-}
-
-function pinFestlegen(app, danach, { titel = 'PIN festlegen', alt = false } = {}) {
-  const a = pinFeld('pin-neu');
-  const b = pinFeld('pin-wiederholen');
-  const fehler = el('p', { class: 'feldfehler', 'aria-live': 'polite', 'data-test': 'pin-fehler' });
-  dialog(titel, (schliessen) => [
-    el('p', {}, 'Die PIN schützt Korrekturen im Logbuch. 4–8 Ziffern; nur die Studienleitung und die Doktorandin kennen sie.'),
-    el('label', { class: 'feld' }, el('span', { class: 'feldname' }, alt ? 'Neue PIN' : 'PIN'), a),
-    el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'PIN wiederholen'), b),
-    fehler,
-    el('div', { class: 'knopfzeile' },
-      el('button', { type: 'button', 'data-test': 'pin-abbrechen', onclick: schliessen }, 'Abbrechen'),
-      el('button', {
-        type: 'button', class: 'primaer', 'data-test': 'pin-speichern',
-        onclick: async () => {
-          if (!pinFormatOk(a.value)) { fehler.textContent = 'Bitte 4 bis 8 Ziffern.'; return; }
-          if (a.value !== b.value) { fehler.textContent = 'Die beiden Eingaben stimmen nicht überein.'; return; }
-          const salz = neuesSalz();
-          const hash = await pinHash(a.value, salz);
-          await db.setzeMeta(app.db, 'pinSalz', salz);
-          await db.setzeMeta(app.db, 'pinHash', hash);
-          Object.assign(app.meta, { pinSalz: salz, pinHash: hash });
-          app.pinGueltigBis = Date.now() + GUELTIG_MS;
-          schliessen();
-          meldung('PIN gespeichert.');
-          danach();
-        },
-      }, 'Speichern')),
-  ], { testId: 'dialog-pin-festlegen' });
-}
-
-function pinAbfragen(app, titel, aktion) {
-  const feld = pinFeld('pin');
-  const fehler = el('p', { class: 'feldfehler', 'aria-live': 'polite', 'data-test': 'pin-fehler' });
-  dialog('PIN eingeben', (schliessen) => [
-    el('p', {}, titel),
-    el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'PIN'), feld),
-    fehler,
-    el('div', { class: 'knopfzeile' },
-      el('button', { type: 'button', 'data-test': 'pin-abbrechen', onclick: schliessen }, 'Abbrechen'),
-      el('button', {
-        type: 'button', class: 'primaer', 'data-test': 'pin-ok',
-        onclick: async () => {
-          const z = { pinHash: app.meta.pinHash, pinSalz: app.meta.pinSalz, fehlversuche: app.meta.pinFehlversuche ?? 0, sperreBis: app.meta.pinSperreBis ?? null };
-          const eingabe = feld.value;
-          feld.value = '';
-          const r = await pruefePin(eingabe, z);
-          Object.assign(app.meta, { pinFehlversuche: r.z.fehlversuche, pinSperreBis: r.z.sperreBis });
-          await db.setzeMeta(app.db, 'pinFehlversuche', r.z.fehlversuche);
-          await db.setzeMeta(app.db, 'pinSperreBis', r.z.sperreBis);
-          if (r.gesperrt) { fehler.textContent = `Zu viele Fehlversuche – gesperrt bis ${new Date(r.z.sperreBis).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })} Uhr.`; return; }
-          if (!r.ok) { fehler.textContent = `PIN falsch. Noch ${r.rest} ${r.rest === 1 ? 'Versuch' : 'Versuche'}.`; return; }
-          app.pinGueltigBis = Date.now() + GUELTIG_MS;
-          schliessen();
-          aktion();
-        },
-      }, 'OK')),
-  ], { testId: 'dialog-pin' });
-}
-
-/** Im Studienplan: PIN ändern (erst alte PIN). */
-export function aenderungsKnoepfe(app) {
-  return [
-    el('h2', {}, 'PIN'),
-    el('p', { class: 'hinweis', 'data-test': 'pin-stand' }, app.meta.pinHash ? 'Eine PIN ist festgelegt.' : 'Noch keine PIN – sie wird bei der ersten geschützten Änderung festgelegt.'),
-    app.meta.pinHash ? el('button', {
-      type: 'button', 'data-test': 'pin-aendern',
-      onclick: () => pinAbfragen(app, 'Zum Ändern zuerst die bisherige PIN eingeben.', () => pinFestlegen(app, () => app.zeige('studienplan'), { titel: 'Neue PIN', alt: true })),
-    }, 'PIN ändern') : null,
-  ];
+/** Früher PIN-Verwaltung im Studienplan; ohne PIN nichts anzuzeigen. */
+export function aenderungsKnoepfe() {
+  return null;
 }
 
 // ============================================================================ Speichern
@@ -178,8 +109,51 @@ export function eintragKnoepfe(app, roh, e) {
     e.kommentare.some((k) => !k.zurueckgezogen)
       ? el('button', { type: 'button', 'data-test': 'kommentar-zurueck', onclick: () => kommentarZurueck(app, e.kommentare, zurueck) }, 'Kommentar zurückziehen')
       : null,
+    roh.art === 'BLOCK' && (!e.arbeitskontext || !e.dienst)
+      ? el('button', { type: 'button', 'data-test': 'fehlende-angabe', onclick: () => fehlendeAngabe(app, roh, e, zurueck) }, 'Fehlende Angabe nachtragen')
+      : null,
+    ['FB1', 'KB', 'FB2'].includes(roh.art) && roh.status === 'abgeschlossen'
+      ? el('button', { type: 'button', 'data-test': 'abschnitt-nachtragen', onclick: () => abschnittNachtragen(app, e) }, 'Abschnitt nachtragen (Papier)')
+      : null,
   ];
   return el('div', { class: 'knopfraster abstand-oben', 'data-test': 'eintrag-knoepfe' }, knoepfe);
+}
+
+/** Fehlenden Arbeitskontext bzw. Dienst eines Blocks nachtragen (Korrekturauftrag A5): Änderung NACHTRAG_FELD. */
+async function fehlendeAngabe(app, roh, e, zurueck) {
+  const k = !e.arbeitskontext ? auswahl('nachtrag-arbeitskontext', app.schema.arbeitskontext.map((x) => ({ code: x.code, label: `${x.code} ${x.gruppe} – ${x.label}` }))) : null;
+  const d = !e.dienst ? auswahl('nachtrag-dienst', app.schema.dienste) : null;
+  const r = await formular('Fehlende Angabe nachtragen', {
+    felder: [
+      el('p', {}, 'Die erfassten Daten bleiben unverändert; die Angabe wird als Nachtrag gespeichert und in der Auswertung verwendet.'),
+      k ? el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'Arbeitskontext'), k) : null,
+      d ? el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'Dienst'), d) : null,
+    ],
+    lesen: () => ((k?.value || d?.value) ? { arbeitskontext: k?.value || null, dienst: d?.value || null } : 'Bitte mindestens eine Angabe wählen.'),
+    test: 'dialog-fehlende-angabe',
+  });
+  if (!r) return;
+  const c = ctx(app);
+  const aenderungen = ['arbeitskontext', 'dienst'].filter((f) => r[f])
+    .map((f) => neueAenderung({ art: ART.NACHTRAG_FELD, zielTyp: 'eintrag', zielId: roh.eintragId, feld: f, alt: '', neu: r[f] }, c));
+  speichere(app, aenderungen, { zurueck });
+}
+
+/** Abschnitt eines abgeschlossenen Fragebogens auf Papier nachtragen (Korrekturauftrag A2). */
+async function abschnittNachtragen(app, e) {
+  const b = bogenNach(FRAGEBOGEN_DEFINITION, e.art);
+  const s = auswahl('nachtrag-abschnitt', b.abschnitte.map((a) => ({ code: a.id, label: `${a.id} ${a.titel}` })));
+  const datum = el('input', { type: 'date', 'data-test': 'nachtrag-datum' });
+  const r = await formular('Abschnitt nachtragen (Papier)', {
+    felder: [
+      el('p', {}, `Für ${e.pseudonym}: Der Abschnitt wird mit der aktuellen Fragebogen-Fassung erfasst und als eigener Nachtrag exportiert (kein zweiter Bogen).`),
+      el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'Abschnitt'), s),
+      el('label', { class: 'feld' }, el('span', { class: 'feldname' }, 'Datum auf dem Papierbogen'), datum),
+    ],
+    lesen: () => (!s.value ? 'Bitte einen Abschnitt wählen.' : !datum.value ? 'Bitte das Datum eintragen.' : { abschnitt: s.value, papierDatum: datum.value }),
+    ok: 'Weiter', test: 'dialog-nachtrag',
+  });
+  if (r) starteNachtrag(app, { bezug: e, ...r });
 }
 
 async function kommentar(app, ziel, zurueck) {

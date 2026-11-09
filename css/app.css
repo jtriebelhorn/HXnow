@@ -571,3 +571,8 @@ ul.bericht li { margin-bottom: 6px; overflow-wrap: anywhere; }
 .x-knopf { position: absolute; top: 0; right: 0; width: 48px; height: 48px; padding: 0; border: 0; background: transparent;
   color: var(--text-leise); font-size: 1.5rem; line-height: 1; display: flex; align-items: flex-start; justify-content: flex-end; padding: 6px 10px 0 0; }
 .x-knopf:active { color: var(--fehler); }
+
+/* Studie: Fragebögen als Marken FB1 · KB · FB2 */
+.bogen-marke { display: inline-block; margin: 1px 2px; padding: 1px 6px; border-radius: 999px; border: 1px solid var(--rand); color: var(--text-leise); font-size: 0.78rem; font-weight: 700; }
+.bogen-marke.erledigt { background: var(--phase-post); border-color: var(--phase-post); color: #fff; }
+.probanden .bloecke { display: inline-block; padding: 1px 4px; border-radius: 4px; font-variant-numeric: tabular-nums; }

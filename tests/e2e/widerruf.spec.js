@@ -31,9 +31,6 @@ test('Widerruf P017: Daten gelöscht, P018 unberührt, Protokoll und Logbuch, Ab
   await page.click('[data-test=menue-studie]');
   await page.click('[data-test=proband-P017]');
   await page.click('[data-test=widerruf]');
-  await page.fill('[data-test=pin-neu]', '2468');
-  await page.fill('[data-test=pin-wiederholen]', '2468');
-  await page.click('[data-test=pin-speichern]');
   await expect(page.locator('[data-test=dialog-widerruf]')).toContainText('1 Blöcke, 0 Versuche, 1 Fragebögen');
   await page.fill('[data-test=widerruf-code]', 'P018');
   await page.click('[data-test=aendern-ok]');

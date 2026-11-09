@@ -44,7 +44,7 @@ const W3_ZEILEN = [
   ['06', 'Im Behandlungsbereich der Notaufnahme'],
   ['07', 'Außerhalb des eigenen Bereichs (z. B. Konsil, andere Station)'],
   ['08', 'In Pausen'],
-  ['09', 'Im Bereitschafts- bzw. Nachtdienst'],
+  ['09', 'Im Dienst außerhalb der regulären Arbeitszeit (24-Stunden-, Bereitschafts- oder Nachtdienst)'],
   ['10', 'Vor Dienstbeginn oder nach Dienstende'],
 ];
 const FUNKTIONEN = [
@@ -67,10 +67,27 @@ const DAUER = [[1, 'sofort'], [2, '< 5 Minuten'], [3, '5–30 Minuten'], [4, '> 
 const INFO_ART = [[1, 'Laborwerte'], [2, 'Befunde/Bildgebung'], [3, 'Vorbefunde/Arztbriefe'], [4, 'Medikation'], [5, 'Verlauf/Kurve'], [9, 'Sonstiges']];
 const ORTE = [[1, 'Flur/Wegstrecke'], [2, 'Patientenzimmer'], [3, 'Visite'], [4, 'Übergabe'], [5, 'Behandlungsbereich Notaufnahme'], [6, 'anderer Bereich'], [7, 'Bereitschafts-/Nachtdienst']];
 
-const MIT_DIENST = 'W1 > 0';
+// ===================================================================== Definition 1.1.0 (Korrekturauftrag 09.11.2026, A1)
+// W1 („Tage mit Dienst“) wurde als Arbeitstage bzw. als Zusatzdienste verstanden. Neu: W1b Arbeitstage, W2b Dienste über
+// die reguläre Arbeitszeit hinaus, W2c Art der Dienste; in FB1 A8b statt A8. Alte Items bleiben mit `entfernt`.
+const NEU = '1.1.0';
+const W_EINLEITUNG = { id: 'W_EINL', v: 1, typ: 'info', seit: NEU, text: 'Die folgenden Fragen beziehen sich auf die letzten 14 Tage.' };
+const W1B = {
+  id: 'W1b', v: 1, typ: 'zahl', seit: NEU, ersetzt: 'W1', text: 'An wie vielen Tagen haben Sie in den letzten 14 Tagen gearbeitet?',
+  einheit: 'Arbeitstage', min: 0, max: 14, hinweis: 'Urlaub, freie Tage und Krankheit zählen nicht.', paar: 'ARBEITSTAGE_14',
+  rueckfrageNull: 'Sie haben 0 Arbeitstage angegeben. Die Fragen zu den letzten 14 Tagen entfallen dann. Ist das richtig?',
+};
+const W2B_PRUEFUNG = [{ wenn: 'W2b > W1b ODER W2b > 7', text: 'Bitte prüfen Sie Ihre Angabe: {W2b} Dienste in 14 Tagen.' }];
+const W2B_TEXT = 'Wie viele Dienste über die reguläre Arbeitszeit hinaus hatten Sie in diesem Zeitraum?';
+const W2B_HINWEIS = 'z. B. 24-Stunden-, Bereitschafts- oder Nachtdienst; ein 24-Stunden-Dienst zählt als ein Dienst.';
+const W2C = {
+  id: 'W2c', v: 1, typ: 'mehrfach', seit: NEU, showIf: 'W1b > 0 UND W2b > 0', text: 'Welche Art von Diensten waren das? (Mehrfachauswahl möglich)',
+  optionen: [[1, '24-Stunden-Dienst'], [2, 'Bereitschaftsdienst'], [3, 'Nachtdienst'], [9, 'Sonstige']], freitextBei: 9, paar: 'DIENSTART_14',
+};
+const MIT_DIENST = 'W1b > 0'; // ab Definition 1.1.0 Arbeitstage (W1b) statt „Tage mit Dienst“ (W1)
 // Nur in der App (nicht im Papierbogen): Wer die Tabelle überspringt, verliert die Folgefragen W4/W6 (Filter MIT_BEDARF).
 const W3_HINWEIS = 'Bitte für jede Situation eine Häufigkeit angeben – auch „0“, wenn es nicht vorkam. Die folgenden Fragen hängen davon ab.';
-const MIT_BEDARF = 'W1 > 0 UND IRGENDEIN(W3_*_A) > 0';
+const MIT_BEDARF = 'W1b > 0 UND IRGENDEIN(W3_*_A) > 0';
 
 // ===================================================================== FB1
 const FB1 = {
@@ -101,7 +118,11 @@ const FB1 = {
           freitextBei: 'SONST',
         },
         { id: 'A7', v: 1, typ: 'zahl', text: 'Beschäftigungsumfang: ___ % einer Vollzeitstelle', einheit: '%', min: 10, max: 100 },
-        { id: 'A8', v: 1, typ: 'einfach', text: 'Nehmen Sie im Studienzeitraum an Bereitschafts- oder Nachtdiensten teil?', optionen: [[1, 'ja'], [2, 'nein']] },
+        { id: 'A8', v: 1, typ: 'einfach', entfernt: true, entferntSeit: NEU, text: 'Nehmen Sie im Studienzeitraum an Bereitschafts- oder Nachtdiensten teil?', optionen: [[1, 'ja'], [2, 'nein']] },
+        {
+          id: 'A8b', v: 1, typ: 'einfach', seit: NEU, ersetzt: 'A8', optionen: [[1, 'ja'], [2, 'nein']],
+          text: 'Haben Sie im Studienzeitraum Dienste über die reguläre Arbeitszeit hinaus (z. B. 24-Stunden-, Bereitschafts- oder Nachtdienste)?',
+        },
       ],
     },
     {
@@ -132,21 +153,28 @@ const FB1 = {
     {
       id: 'W', titel: 'Informationsbedarf in den letzten 14 Tagen',
       items: [
-        { id: 'W1', v: 1, typ: 'zahl', text: 'An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst?', einheit: 'Tage', min: 0, max: 14 },
+        W_EINLEITUNG,
+        { id: 'W1', v: 1, typ: 'zahl', entfernt: true, entferntSeit: NEU, text: 'An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst?', einheit: 'Tage', min: 0, max: 14 },
         {
-          id: 'W2', v: 1, typ: 'zahl', text: 'Davon Bereitschafts- oder Nachtdienste:', min: 0, max: 14,
+          id: 'W2', v: 1, typ: 'zahl', entfernt: true, entferntSeit: NEU, text: 'Davon Bereitschafts- oder Nachtdienste:', min: 0, max: 14,
           showIf: 'W1 > 0 UND A8 = 1', auto: { wenn: 'A8 = 2', wert: 0 }, validierung: 'W2 <= W1',
         },
+        W1B,
+        {
+          id: 'W2b', v: 1, typ: 'zahl', seit: NEU, ersetzt: 'W2', text: W2B_TEXT, einheit: 'Dienste', min: 0, max: 14, hinweis: W2B_HINWEIS,
+          showIf: 'W1b > 0 UND A8b = 1', auto: { wenn: 'A8b = 2', wert: 0 }, pruefung: W2B_PRUEFUNG, paar: 'DIENSTE_14',
+        },
+        W2C,
         {
           id: 'W_INFO', v: 1, typ: 'info', showIf: MIT_DIENST,
           text: 'Informationsbedarf abseits eines PCs: Sie benötigten eine patientenbezogene Information (z. B. Laborwert, Befund, Bildgebung, Medikation), während kein stationärer Arbeitsplatz-PC unmittelbar erreichbar war. Sofort vor Ort: ohne Ortswechsel, Anruf oder Aufschub, z. B. über einen Visitenwagen, ein anderes mobiles Gerät oder Papierunterlagen.',
         },
         {
-          id: 'W3', v: 1, typ: 'matrix', showIf: MIT_DIENST,
+          id: 'W3', v: 2, typ: 'matrix', showIf: MIT_DIENST, // v2: Zeile 09 neu formuliert (1.1.0)
           text: 'Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A) und wie Sie ihn überwiegend gelöst haben (B).',
           zeilen: W3_ZEILEN,
           hinweis: W3_HINWEIS,
-          zeilenShowIf: { '04': 'A6_STAT = 1 ODER A6_ZNA_STAT = 1', '06': 'A6_ZNA_BEH = 1', '09': 'A8 = 1' },
+          zeilenShowIf: { '04': 'A6_STAT = 1 ODER A6_ZNA_STAT = 1', '06': 'A6_ZNA_BEH = 1', '09': 'A8b = 1' },
           gruppen: [
             { id: 'A', titel: 'Wie oft?', optionen: HAEUFIGKEIT_14_TAGE, paarJeZelle: true },
             { id: 'B', titel: 'Wie überwiegend gelöst?', showIf: 'W3_*_A > 0', optionen: GELOEST, paarJeZelle: true },
@@ -159,7 +187,7 @@ const FB1 = {
         },
         {
           id: 'W4b', v: 1, typ: 'einfach', text: 'Wo entstand dieser Bedarf meistens?', showIf: MIT_BEDARF,
-          optionen: ORTE, optionShowIf: { 5: 'A6_ZNA_BEH = 1', 7: 'A8 = 1' }, paar: 'INFO_HAEUF_ORT',
+          optionen: ORTE, optionShowIf: { 5: 'A6_ZNA_BEH = 1', 7: 'A8b = 1' }, paar: 'INFO_HAEUF_ORT',
         },
         {
           id: 'W4c', v: 1, typ: 'einfach', text: 'Wie haben Sie ihn meistens gelöst?', showIf: MIT_BEDARF,
@@ -240,7 +268,7 @@ const FB1 = {
 };
 
 // ===================================================================== FB2
-const HX_GENUTZT = 'W1 > 0 UND (IRGENDEIN(W5_*) > 0 ODER IRGENDEIN(W3_*_C) > 1)';
+const HX_GENUTZT = 'W1b > 0 UND (IRGENDEIN(W5_*) > 0 ODER IRGENDEIN(W3_*_C) > 1)';
 const W5_GENUTZT = (k) => `W5_${k} > 0 ODER UNBEKANNT(W5_${k})`;
 
 const FB2 = {
@@ -254,25 +282,32 @@ const FB2 = {
   abschluss: 'Vielen Dank für Ihre Teilnahme!',
   softSkips: [{
     id: 'SKIP_HX', nachAbschnitt: 'W', abschnitte: ['A', 'B', 'E', 'T'],
-    wenn: 'W1 > 0 UND ALLE(W5_*) = 0 UND ALLE(W3_*_C) IN (1, -88)',
+    wenn: 'W1b > 0 UND ALLE(W5_*) = 0 UND ALLE(W3_*_C) IN (1, -88)',
     text: 'Sie haben HX Now in den letzten 14 Tagen offenbar nicht genutzt. Möchten Sie die Fragen zur Bewertung der App (Abschnitte A, B, E, T) überspringen?',
   }],
   abschnitte: [
     {
       id: 'W', titel: 'Informationsbedarf und Nutzung in den letzten 14 Tagen',
       items: [
-        { id: 'W1', v: 1, typ: 'zahl', text: 'An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst?', einheit: 'Tage', min: 0, max: 14 },
-        { id: 'W2', v: 1, typ: 'zahl', text: 'Davon Bereitschafts- oder Nachtdienste:', min: 0, max: 14, showIf: MIT_DIENST, validierung: 'W2 <= W1' },
+        W_EINLEITUNG,
+        { id: 'W1', v: 1, typ: 'zahl', entfernt: true, entferntSeit: NEU, text: 'An wie vielen Tagen hatten Sie in den letzten 14 Tagen Dienst?', einheit: 'Tage', min: 0, max: 14 },
+        { id: 'W2', v: 1, typ: 'zahl', entfernt: true, entferntSeit: NEU, text: 'Davon Bereitschafts- oder Nachtdienste:', min: 0, max: 14, showIf: 'W1 > 0', validierung: 'W2 <= W1' },
+        W1B,
+        {
+          id: 'W2b', v: 1, typ: 'zahl', seit: NEU, ersetzt: 'W2', text: W2B_TEXT, einheit: 'Dienste', min: 0, max: 14, hinweis: W2B_HINWEIS,
+          showIf: MIT_DIENST, pruefung: W2B_PRUEFUNG, paar: 'DIENSTE_14',
+        },
+        W2C,
         {
           id: 'W_INFO', v: 1, typ: 'info', showIf: MIT_DIENST,
           text: 'Informationsbedarf abseits eines PCs: Sie benötigten eine patientenbezogene Information (z. B. Laborwert, Befund, Bildgebung, Medikation), während kein stationärer Arbeitsplatz-PC unmittelbar erreichbar war. Sofort vor Ort: ohne Ortswechsel, Anruf oder Aufschub, z. B. über HX Now, einen Visitenwagen oder Papierunterlagen.',
         },
         {
-          id: 'W3', v: 1, typ: 'matrix', showIf: MIT_DIENST,
+          id: 'W3', v: 2, typ: 'matrix', showIf: MIT_DIENST, // v2: Zeile 09 neu formuliert (1.1.0)
           text: 'Bitte geben Sie für jede Situation an, wie oft in den letzten 14 Tagen Informationsbedarf abseits eines PCs entstand (A), wie Sie ihn überwiegend gelöst haben (B) und ob Sie dabei HX Now genutzt haben (C).',
           zeilen: W3_ZEILEN,
           hinweis: W3_HINWEIS,
-          zeilenShowIf: { '09': 'W2 > 0 ODER UNBEKANNT(W2)' },
+          zeilenShowIf: { '09': 'W2b > 0 ODER UNBEKANNT(W2b)' },
           gruppen: [
             { id: 'A', titel: 'Wie oft?', optionen: HAEUFIGKEIT_14_TAGE, paarJeZelle: true },
             { id: 'B', titel: 'Wie überwiegend gelöst?', showIf: 'W3_*_A > 0', optionen: GELOEST, paarJeZelle: true },
@@ -285,7 +320,7 @@ const FB2 = {
         },
         {
           id: 'W5', v: 1, typ: 'matrix', text: 'Wie oft haben Sie die folgenden Funktionen in den letzten 14 Tagen genutzt?',
-          showIf: 'W1 > 0 UND W4 != 1', auto: { wenn: 'W4 = 1', wert: 0 },
+          showIf: 'W1b > 0 UND W4 != 1', auto: { wenn: 'W4 = 1', wert: 0 },
           zeilen: FUNKTIONEN, gruppen: [{ id: 'A', titel: 'Anzahl in den letzten 14 Tagen', optionen: FUNKTION_HAEUFIGKEIT }],
           paarZeilen: 'FUNK_HAEUF',
         },
@@ -296,7 +331,7 @@ const FB2 = {
         },
         {
           id: 'W6b', v: 1, typ: 'einfach', text: 'Wo entstand dieser Bedarf meistens?', showIf: MIT_BEDARF,
-          optionen: ORTE, optionShowIf: { 7: 'W2 > 0 ODER UNBEKANNT(W2)' }, paar: 'INFO_HAEUF_ORT',
+          optionen: ORTE, optionShowIf: { 7: 'W2b > 0 ODER UNBEKANNT(W2b)' }, paar: 'INFO_HAEUF_ORT',
         },
         {
           id: 'W6c', v: 1, typ: 'einfach', text: 'Wie haben Sie ihn meistens gelöst?', showIf: MIT_BEDARF,
@@ -480,7 +515,7 @@ const KB = {
 };
 
 export const FRAGEBOGEN_DEFINITION = Object.freeze({
-  definitionVersion: '1.0.0', // SemVer (Plan 4.2); festgeschrieben vor Studienbeginn (ENTSCHEIDUNGEN Nr. 47)
+  definitionVersion: '1.1.0', // SemVer; 1.0.0 festgeschrieben (Nr. 47); 1.1.0: W1b/W2b/W2c/A8b (Nr. 50)
   stand: '2026-11-08',
   boegen: [FB1, KB, FB2],
 });

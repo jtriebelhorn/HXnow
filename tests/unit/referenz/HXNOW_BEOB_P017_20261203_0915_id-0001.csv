@@ -1,15 +1,15 @@
 ﻿datensatz;format_version;block_id;geraete_id;schema_version;app_version;pseudonym;beobachter;bereich;dienst;phase;arbeitskontext;datum;block_start;block_ende;block_dauer_soll_sek;block_beobachtet_sek;block_pausen_anzahl;block_pausen_sek;block_status;block_ende_art;block_ende_grund;abbruch_code;block_kommentar;hx_geraet_dabei;hx_geraet_automatisch;hx_geraet_markiert;nr;start;ende;dauer_sek;taetigkeit;ort;nutzungsart;haltung;nebentaetigkeiten;NT1;NT3;NT4;NT5;NT6;NT7;NT1_nutzung;NT3_nutzung;NT3_haltung;unvollstaendig;pause_grund;pause_freitext;kommentar;n_zeilen_block
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;1;2026-12-03T09:15:02+01:00;2026-12-03T09:15:49+01:00;47;T1;O1;N2;;;0;0;0;0;0;0;;;;0;;;"Visite; ""kurz""";7
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;2;2026-12-03T09:15:49+01:00;2026-12-03T09:16:03+01:00;14;T3;O4;N1;H1;;0;0;0;0;0;0;;;;0;;;;7
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;3;2026-12-03T09:16:03+01:00;2026-12-03T09:17:03+01:00;60;T5;O2;;;;0;0;0;0;0;0;;;;0;;;;7
-pause;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+pause;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;4;2026-12-03T09:17:03+01:00;2026-12-03T09:18:17+01:00;74;;;;;;;;;;;;;;;;P5;"Alarm; Flur";;7
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;5;2026-12-03T09:18:17+01:00;2026-12-03T09:19:13+01:00;56;T5;O2;;;;0;0;0;0;0;0;;;;0;;;;7
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;6;2026-12-03T09:19:13+01:00;2026-12-03T09:19:25+01:00;12;T3;O2;N2;H9;;0;0;0;0;0;0;;;;1;;;;7
-episode;1.1;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
+episode;1.2;id-0001;geraet-1;2.2;0.0.1-test;P017;B1;NEPH;F;POST;K1;2026-12-03;2026-12-03T09:15:02+01:00;2026-12-03T09:31:16+01:00;900;900;1;74;beendet;regulaer;;;"Station voll
 viel los";J;1;2026-12-03T09:15:49+01:00;7;2026-12-03T09:19:25+01:00;2026-12-03T09:31:16+01:00;711;T3;O2;N2;H9;NT5;0;0;0;1;0;0;;;;1;;;;7

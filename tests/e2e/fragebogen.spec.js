@@ -21,7 +21,7 @@ async function weiter(page) {
   if (await ja.count()) await ja.click();
 }
 
-test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, Statusansicht, Export', async ({ page }) => {
+test('FB1 komplett: Filterpfade A8b = nein und W1b = 0 (mit Rückfrage), Abschluss, langer Druck, Statusansicht, Export', async ({ page }) => {
   await mockeTeilen(page, 'erfolg');
   await oeffne(page);
   await vorbereiten(page);
@@ -37,7 +37,7 @@ test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, S
   await page.locator('[data-test=fb-A3_TXT]').blur();
   await page.click('[data-test=fb-A6_ZNA_BEH]');
   await expect(page.locator('[data-test=fb-summe-A6]')).toHaveText('Summe: 100 %');
-  await page.click('[data-test=fb-A8-2]');
+  await page.click('[data-test=fb-A8b-2]');
   await page.click('[data-test=fb-weiter]');
   await expect(page.locator('[data-test=dialog-bestaetigen], .dialog').first()).toContainText('noch offen');
   await page.click('[data-test=bestaetigen-ja]');
@@ -45,12 +45,22 @@ test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, S
   await expect(page.locator('[data-test=fb-abschnitt]')).toContainText('B');
   await weiter(page);
   await expect(page.locator('[data-test=fb-abschnitt]')).toContainText('W');
-  await page.fill('[data-test=fb-W1]', '3');
-  await page.locator('[data-test=fb-W1]').blur();
+  await expect(page.locator('[data-test=fb-hinweis-W1b]')).toContainText('Urlaub, freie Tage und Krankheit zählen nicht.');
+  await page.fill('[data-test=fb-W1b]', '3');
+  await page.locator('[data-test=fb-W1b]').blur();
   await expect(page.locator('[data-test=fb-hinweis-W3]')).toContainText('auch „0“');
-  await page.fill('[data-test=fb-W1]', '0');
-  await page.locator('[data-test=fb-W1]').blur();
-  await expect(page.locator('[data-test=fb-W3_01_A-0]')).toHaveCount(0); // W1 = 0: Rest von W ausgeblendet
+  await expect(page.locator('[data-test=fb-W2b]')).toHaveCount(0); // A8b = nein → keine Dienste (automatisch 0)
+  // 0 Arbeitstage: erst Rückfrage; „Korrigieren“ behält den alten Wert, „Ja, weiter“ blendet den Abschnitt aus
+  await page.fill('[data-test=fb-W1b]', '0');
+  await page.locator('[data-test=fb-W1b]').blur();
+  await expect(page.locator('[data-test=bestaetigung]')).toContainText('Sie haben 0 Arbeitstage angegeben.');
+  await page.click('[data-test=bestaetigen-nein]');
+  await expect(page.locator('[data-test=fb-W1b]')).toHaveValue('3');
+  await expect(page.locator('[data-test=fb-W3_01_A-0]')).toHaveCount(1);
+  await page.fill('[data-test=fb-W1b]', '0');
+  await page.locator('[data-test=fb-W1b]').blur();
+  await page.click('[data-test=bestaetigen-ja]');
+  await expect(page.locator('[data-test=fb-W3_01_A-0]')).toHaveCount(0); // W1b = 0: Rest von W ausgeblendet
   await weiter(page);
   await expect(page.locator('[data-test=fb-abschnitt]')).toContainText('C');
   await page.click('[data-test=fb-C1-4]');
@@ -76,13 +86,14 @@ test('FB1 komplett: Filterpfade A8 = nein und W1 = 0, Abschluss, langer Druck, S
   const zeilen = datei.text.replace(/^﻿/, '').split('\r\n').filter(Boolean).map((z) => z.split(';'));
   const kopf = zeilen.shift();
   const zeile = (id) => Object.fromEntries(kopf.map((k, i) => [k, zeilen.find((z) => z[kopf.indexOf('item_id')] === id)[i]]));
-  expect(zeilen).toHaveLength(86);
-  expect(zeilen.every((z) => z[kopf.indexOf('n_zeilen')] === '86')).toBe(true);
+  expect(zeilen).toHaveLength(91);
+  expect(zeilen.every((z) => z[kopf.indexOf('n_zeilen')] === '91')).toBe(true);
   expect(zeile('A1')).toMatchObject({ wert: '2', status: 'beantwortet', paar: '' });
   expect(zeile('A3_TXT')).toMatchObject({ wert_text: 'Weiterbildung', status: 'beantwortet' });
   expect(zeile('A6_ZNA_BEH_PCT')).toMatchObject({ wert: '100', status: 'automatisch' });
   expect(zeile('A6_STAT')).toMatchObject({ wert: '0', status: 'beantwortet' });
-  expect(zeile('W2')).toMatchObject({ wert: '0', status: 'automatisch' });
+  expect(zeile('W2b')).toMatchObject({ wert: '0', status: 'automatisch' }); // A8b = nein
+  expect(zeile('W1b')).toMatchObject({ wert: '0', status: 'beantwortet', paar: 'ARBEITSTAGE_14' });
   expect(zeile('W3_01_A')).toMatchObject({ wert: '-88', status: 'gefiltert', paar: 'W3_01_A' });
   expect(zeile('A2')).toMatchObject({ wert: '', status: 'ausgelassen' });
   expect(zeile('C1')).toMatchObject({ wert: '4', erhebungsmodus: 'APP', definition_version: FRAGEBOGEN_DEFINITION.definitionVersion, bogen: 'FB1', testmodus: '0' });
@@ -136,7 +147,7 @@ test('Papier-Nacherfassung: ohne Übergabe, Modus und Datum im Export', async ({
   expect(datei.text.split('\r\n').filter(Boolean)).toHaveLength(11);
 });
 
-test('FB2 freigegeben (Definition 1.0.0): echter Code möglich; weiche Sprungregel bei Nichtnutzung', async ({ page }) => {
+test('FB2 freigegeben (Definition 1.1.0): echter Code möglich; weiche Sprungregel bei Nichtnutzung', async ({ page }) => {
   await oeffne(page);
   await page.click('[data-test=neuer-fragebogen]');
   await expect(page.locator('[data-test=fb-bogen-FB2]')).not.toContainText('Entwurf');
@@ -148,7 +159,7 @@ test('FB2 freigegeben (Definition 1.0.0): echter Code möglich; weiche Sprungreg
   await page.click('[data-test=fb-start]');
   await expect(page.locator('[data-test=probelauf]')).toHaveCount(0);
   // Nichtnutzung → weiche Sprungregel
-  await page.fill('[data-test=fb-W1]', '5'); await page.locator('[data-test=fb-W1]').blur();
+  await page.fill('[data-test=fb-W1b]', '5'); await page.locator('[data-test=fb-W1b]').blur();
   await page.click('[data-test=fb-W4-1]'); // Gerät nie dabei → W5 automatisch 0
   await expect(page.locator('[data-test=fb-sprung]')).toBeVisible();
   await page.click('[data-test=fb-SKIP_HX-1]');

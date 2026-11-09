@@ -1,2 +1,2 @@
 ﻿datensatz;format_version;versuch_id;geraete_id;schema_version;app_version;pseudonym;beobachter;bereich;dienst;phase;datum;zeitpunkt;kommentar
-versuch;1.1;abcdef12-0000-4000-8000-000000000000;g;2.2;1.0.0;P099;B1;ZNA;N;PRE;2026-12-03;2026-12-03T09:15:02+01:00;"OP; ""dringend"""
+versuch;1.2;abcdef12-0000-4000-8000-000000000000;g;2.2;1.0.0;P099;B1;ZNA;N;PRE;2026-12-03;2026-12-03T09:15:02+01:00;"OP; ""dringend"""

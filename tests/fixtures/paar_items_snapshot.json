@@ -1,6 +1,90 @@
 {
-  "definitionVersion": "0.1.0",
+  "definitionVersion": "1.1.0",
   "paare": [
+    {
+      "bogen": "FB1",
+      "paar": "ARBEITSTAGE_14",
+      "zelle": "W1b",
+      "typ": "zahl",
+      "codes": null,
+      "zusatz": null,
+      "umkodierung": null,
+      "min": 0,
+      "max": 14,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB1",
+      "paar": "DIENSTE_14",
+      "zelle": "W2b",
+      "typ": "zahl",
+      "codes": null,
+      "zusatz": null,
+      "umkodierung": null,
+      "min": 0,
+      "max": 14,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB1",
+      "paar": "DIENSTART_14_1",
+      "zelle": "W2c_1",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB1",
+      "paar": "DIENSTART_14_2",
+      "zelle": "W2c_2",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB1",
+      "paar": "DIENSTART_14_3",
+      "zelle": "W2c_3",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB1",
+      "paar": "DIENSTART_14_9",
+      "zelle": "W2c_9",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
     {
       "bogen": "FB1",
       "paar": "W3_01_A",
@@ -877,6 +961,90 @@
         "5": 4,
         "6": 5
       },
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "ARBEITSTAGE_14",
+      "zelle": "W1b",
+      "typ": "zahl",
+      "codes": null,
+      "zusatz": null,
+      "umkodierung": null,
+      "min": 0,
+      "max": 14,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "DIENSTE_14",
+      "zelle": "W2b",
+      "typ": "zahl",
+      "codes": null,
+      "zusatz": null,
+      "umkodierung": null,
+      "min": 0,
+      "max": 14,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "DIENSTART_14_1",
+      "zelle": "W2c_1",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "DIENSTART_14_2",
+      "zelle": "W2c_2",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "DIENSTART_14_3",
+      "zelle": "W2c_3",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
+      "min": null,
+      "max": null,
+      "umpolen": false
+    },
+    {
+      "bogen": "FB2",
+      "paar": "DIENSTART_14_9",
+      "zelle": "W2c_9",
+      "typ": "mehrfach",
+      "codes": [
+        0,
+        1
+      ],
+      "zusatz": null,
+      "umkodierung": null,
       "min": null,
       "max": null,
       "umpolen": false

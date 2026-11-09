@@ -15,6 +15,7 @@ export function exportDateiname(l) {
   if (l.art === 'BLOCK' && ['beendet', 'abgebrochen'].includes(l.status)) return `${p}BEOB_${teil(l.pseudonym)}_${datum}_${uhrzeit}_${id8}.csv`;
   if (l.art === 'VERSUCH') return `${p}VERSUCH_${teil(l.pseudonym)}_${datum}_${uhrzeit}_${id8}.csv`;
   if (['FB1', 'KB', 'FB2'].includes(l.art) && l.status === 'abgeschlossen') return `${p}FB_${l.art}_${teil(l.pseudonym)}_${datum}_${uhrzeit}_${id8}.csv`;
+  if (/^(FB1|KB|FB2)-NACHTRAG$/.test(l.art) && l.status === 'abgeschlossen') return `${p}FB_${l.art.replace('-', '_')}_${teil(l.pseudonym)}_${datum}_${uhrzeit}_${id8}.csv`;
   return null;
 }
 
