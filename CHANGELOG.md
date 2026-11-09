@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1 – 09.11.2026
+Kodierschema 2.1 (nur Anzeige), Exportformat unverändert 1.0:
+- Taste T11 heißt „Diagnostik/ Intervention“ statt „Diagnostik“ (zweizeilig, passt auch auf schmale iPhones).
+  Bedeutung und Kodierregeln unverändert (Kodierhandbuch 2.0).
+
 ## 1.1.0 – 09.11.2026
 Neue Tätigkeit; **Kodierschema 2.0** (geänderte Bedeutung von T5), Exportformat unverändert 1.0, keine Datenbank-Migration:
 - **T11 „Diagnostik/Intervention“**: jede Untersuchung oder Prozedur am Patienten, auch körperliche Untersuchung

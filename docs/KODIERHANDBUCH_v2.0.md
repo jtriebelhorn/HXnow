@@ -1,6 +1,6 @@
 # Kodierhandbuch Fremdbeobachtung: HX Now im Klinikalltag
 
-Version 2.0 vom 09.11.2026 – gilt für Kodierschema `schemaVersion` 2.0 und Exportformat 1.0 (Spalte `format_version`). Gegenüber 1.0 neu: T11 Diagnostik/Intervention; T5 umfasst nur noch das Gespräch mit Patientin/Patient oder Angehörigen. Änderungen nur noch nach Abschnitt 6.3 mit neuer Version.
+Version 2.0 vom 09.11.2026 – gilt für Kodierschema `schemaVersion` 2.0 und 2.1 und Exportformat 1.0 (Spalte `format_version`). Gegenüber 1.0 neu: T11 Diagnostik/Intervention; T5 umfasst nur noch das Gespräch mit Patientin/Patient oder Angehörigen. Änderungen nur noch nach Abschnitt 6.3 mit neuer Version.
 
 > Kopie zur Referenz für die Entwicklung. Maßgeblich ist das Original der Studienleitung.
 
@@ -226,3 +226,4 @@ Notaufnahme, Notaufnahmestation) werden zur Einordnung der Arbeitslast erfasst:
 | 0.3 | 04.11.2026 | Nach den ersten Pilotblöcken: erst Ort, dann Tätigkeit; Orte neu: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege, O4 Flur, O5 Pausenraum, O6 unterwegs, O7 außerhalb, O8 Sonstiges) statt Bereiche wie Notaufnahme/Dialyse/Ambulanz; T9 wird „Gehen“; Nebentätigkeiten NT3–NT7 (4.8); Nutzungsart N5 „Warten“; nicht Angegebenes gilt als Sonstige (N9, H9), keine Nachfrage am Blockende; Mindestdauer nur in der Auswertung (kein Korrekturfenster in der App). |
 | 1.0 | 09.11.2026 | Festschreibung: keine offenen Werte mehr; Zeitgrenzen und Abstand nach Ermessen der beobachtenden Person; Mindestdauer 3 s (Bereinigung nur in der Auswertung, HX Now ausgenommen); unterwegs ist die inhaltliche Tätigkeit Haupttätigkeit (T9 nur bei reinem Gehen); Nutzungsart bei T1/T2 optional; Tageskennzahlen je Teilbereich mit Belegung (stationär) und Tagesumsatz; Pilot und Zweitkodierung außerhalb des Handbuchs. |
 | 2.0 | 09.11.2026 | Neue Tätigkeit T11 „Diagnostik/Intervention“ (körperliche Untersuchung, Blutentnahme, Ultraschall, EKG, Punktion u. a.); T5 nur noch Gespräch mit Patientin/Patient oder Angehörigen (geänderte Bedeutung → Hauptversion); Rangfolge: T11 nach Telefonat, vor T5; T11 nur als Haupttätigkeit. Der Code T11 hatte in den Entwürfen 0.1/0.2 eine andere Bedeutung („nicht beobachtbar“); solche Daten stammen aus der Zeit vor der Festschreibung. |
+| 2.1 (Schema) | 09.11.2026 | Nur Anzeige: Taste T11 heißt „Diagnostik/ Intervention“ statt „Diagnostik“. Bedeutung unverändert. |

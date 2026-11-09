@@ -152,7 +152,8 @@ describe('Bereinigung kurzer Episoden (Mindestdauer 3 s, T3 ausgenommen)', () =>
 });
 
 test('Prüfbericht nennt die Kodierschema-Versionen der Blöcke und warnt bei gemischten', () => {
-  const alt = BLOCK.replace(/^((?:episode|pause|block);1\.0;[^;]*;[^;]*;)2\.0;/gm, '$11.0;').replace(/id-0001/g, 'id-0002');
+  const v = SCHEMA.schemaVersion.replace('.', '\\.');
+  const alt = BLOCK.replace(new RegExp(`^((?:episode|pause|block);1\\.0;[^;]*;[^;]*;)${v};`, 'gm'), '$11.0;').replace(/id-0001/g, 'id-0002');
   const aus = fuehreZusammen([{ name: 'a.csv', text: BLOCK }, { name: 'b.csv', text: alt }], { def: DEF, schema: SCHEMA });
-  assert.match(aus.bericht.join('\n'), /Kodierschema der Blöcke: 2\.0: 1, 1\.0: 1 – GEMISCHT/);
+  assert.match(aus.bericht.join('\n'), new RegExp(`Kodierschema der Blöcke: ${v}: 1, 1\\.0: 1 – GEMISCHT`));
 });

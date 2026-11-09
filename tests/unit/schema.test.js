@@ -172,7 +172,7 @@ test('ladeSchema: HTTP-Fehler und Netzwerkfehler', async () => {
 test('ladeSchema: gültige Datei', async () => {
   const r = await ladeSchema(async () => ({ ok: true, status: 200, text: async () => ORIGINAL_TEXT }));
   assert.deepEqual(r.fehler, []);
-  assert.equal(r.schema.schemaVersion, '2.0');
+  assert.equal(r.schema.schemaVersion, JSON.parse(ORIGINAL_TEXT).schemaVersion);
 });
 
 test('Test-Code und beendenGrund werden geprüft', () => {

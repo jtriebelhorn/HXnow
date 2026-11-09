@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2.0",
+  "schemaVersion": "2.1",
   "studie": "HX Now im Klinikalltag",
   "blockDauerSek": 900,
   "blockDauerOptionenSek": [600, 900],
@@ -53,7 +53,7 @@
     { "code": "T3",  "label": "HX Now",                "kurz": "HX",      "geraet": true, "nurPhase": "POST", "haltung": true, "nutzungsartPflicht": true, "setztGeraetDabei": true },
     { "code": "T4",  "label": "Sonstiges Mobilgerät",  "kurz": "Mobil" },
     { "code": "T5",  "label": "Patientenkontakt (Gespräch)", "kurz": "Patient" },
-    { "code": "T11", "label": "Diagnostik/Intervention", "kurz": "Diagnostik" },
+    { "code": "T11", "label": "Diagnostik/Intervention", "kurz": "Diagnostik/ Intervention" },
     { "code": "T6",  "label": "Gespräch Kollegen/Pflege", "kurz": "Gespräch" },
     { "code": "T7",  "label": "Telefonat",             "kurz": "Telefon" },
     { "code": "T8",  "label": "Papierdokumente",       "kurz": "Papier" },
