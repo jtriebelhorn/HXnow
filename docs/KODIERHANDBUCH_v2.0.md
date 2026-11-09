@@ -1,6 +1,6 @@
 # Kodierhandbuch Fremdbeobachtung: HX Now im Klinikalltag
 
-Version 2.0 vom 09.11.2026 – gilt für Kodierschema `schemaVersion` 2.0 und 2.1 und Exportformat 1.0 (Spalte `format_version`). Gegenüber 1.0 neu: T11 Diagnostik/Intervention; T5 umfasst nur noch das Gespräch mit Patientin/Patient oder Angehörigen. Änderungen nur noch nach Abschnitt 6.3 mit neuer Version.
+Version 2.0 vom 09.11.2026 – gilt für Kodierschema `schemaVersion` 2.0 bis 2.2 und Exportformat 1.0/1.1 (Spalte `format_version`). Gegenüber 1.0 neu: T11 Diagnostik/Intervention; T5 umfasst nur noch das Gespräch mit Patientin/Patient oder Angehörigen. Änderungen nur noch nach Abschnitt 6.3 mit neuer Version.
 
 > Kopie zur Referenz für die Entwicklung. Maßgeblich ist das Original der Studienleitung.
 
@@ -149,6 +149,7 @@ Läuft neben der Haupttätigkeit sichtbar eine weitere Tätigkeit, wird sie als 
 
 | Code | Nebentätigkeit | Entspricht |
 | --- | --- | --- |
+| NT1 | PC stationär (ab Schema 2.2) | T1 |
 | NT3 | HX Now (nur Post) | T3 |
 | NT4 | Sonstiges Mobilgerät | T4 |
 | NT5 | Patientenkontakt | T5 |
@@ -159,6 +160,11 @@ Läuft neben der Haupttätigkeit sichtbar eine weitere Tätigkeit, wird sie als 
 - Wechselt die Nebentätigkeit (z. B. von Gespräch zu Telefonat), die alte abwählen und die neue einschalten. Jeder Wechsel ist eine eigene Episode und steht im Ablauf auf der Abschlussseite und im Export.
 - Wird die Nebentätigkeit zur Haupttätigkeit, entfällt der Schalter automatisch.
 - Unterwegs (O6) ist die inhaltliche Tätigkeit Haupttätigkeit; weitere gleichzeitige Tätigkeiten werden als Nebentätigkeit markiert (z. B. Telefonat mit Blick auf HX Now: T3 mit NT7).
+- **NT1 PC:** Bleibt ein Gespräch, Telefonat, Patientenkontakt oder eine Diagnostik/Intervention die Haupttätigkeit und
+  wird dabei nur kurz am PC nachgesehen, ist das NT1 (Beispiel: Gespräch mit der Pflege, nebenbei Laborwert am PC
+  nachsehen → T6 mit NT1). Wendet sich die Person dem PC zu und arbeitet dort, gilt die Prioritätsregel: T1 als
+  Haupttätigkeit, das Gespräch als NT6. Nutzungsart bei NT1 optional (meist N1 Einsicht). Unterwegs (O6) ist NT1 nicht
+  möglich und endet beim Wechsel nach „Unterwegs“ automatisch.
 - NT3 setzt „Gerät dabei“ (4.6) ebenso wie T3. Zusätzlich können Nutzungsart (4.3) und Haltung (4.4) erfasst werden. Was nicht angegeben wird, gilt automatisch als Sonstige (N9, H9); am Ende des Blocks wird nichts nachgefragt. Das gilt auch für T3.
 - In der App sind die Nebentätigkeiten zugeklappt und werden bei Bedarf geöffnet; eingeschaltete bleiben in der Kopfzeile sichtbar.
 
@@ -173,6 +179,7 @@ Da Haupt- und Nebentätigkeiten vollständig gespeichert werden, kann die Auswer
 | Körperliche Untersuchung (Abhören, Abtasten) mit Gespräch | T11, O2, Nebentätigkeit NT5 | Untersuchung vor Gespräch (Rangfolge) |
 | Blutentnahme oder Zugang legen | T11, O2 | Prozedur |
 | Ultraschall am Bett, Befund wird der Patientin erklärt | T11, O2, Nebentätigkeit NT5 | Diagnostik vor Gespräch |
+| Gespräch mit der Pflege, nebenbei kurz Laborwert am PC nachsehen | T6, O3, Nebentätigkeit NT1 (N1) | Gespräch bleibt Haupttätigkeit |
 | Während des Verbandswechsels Foto mit HX Now | T3, N4, O2 | Geräteinteraktion vor Diagnostik/Intervention; T11 ist keine Nebentätigkeit |
 | Gehen auf dem Flur und dabei HX Now lesen | O6, T3, N1, H1 | Unterwegs; Haupttätigkeit ist die Gerätenutzung |
 | Auf dem Weg telefonieren | O6, T7 | Unterwegs; Haupttätigkeit ist das Telefonat (T9 nur bei reinem Gehen) |
@@ -227,3 +234,4 @@ Notaufnahme, Notaufnahmestation) werden zur Einordnung der Arbeitslast erfasst:
 | 1.0 | 09.11.2026 | Festschreibung: keine offenen Werte mehr; Zeitgrenzen und Abstand nach Ermessen der beobachtenden Person; Mindestdauer 3 s (Bereinigung nur in der Auswertung, HX Now ausgenommen); unterwegs ist die inhaltliche Tätigkeit Haupttätigkeit (T9 nur bei reinem Gehen); Nutzungsart bei T1/T2 optional; Tageskennzahlen je Teilbereich mit Belegung (stationär) und Tagesumsatz; Pilot und Zweitkodierung außerhalb des Handbuchs. |
 | 2.0 | 09.11.2026 | Neue Tätigkeit T11 „Diagnostik/Intervention“ (körperliche Untersuchung, Blutentnahme, Ultraschall, EKG, Punktion u. a.); T5 nur noch Gespräch mit Patientin/Patient oder Angehörigen (geänderte Bedeutung → Hauptversion); Rangfolge: T11 nach Telefonat, vor T5; T11 nur als Haupttätigkeit. Der Code T11 hatte in den Entwürfen 0.1/0.2 eine andere Bedeutung („nicht beobachtbar“); solche Daten stammen aus der Zeit vor der Festschreibung. |
 | 2.1 (Schema) | 09.11.2026 | Nur Anzeige: Taste T11 heißt „Diagnostik/ Intervention“ statt „Diagnostik“. Bedeutung unverändert. |
+| 2.2 (Schema) | 09.11.2026 | PC als Nebentätigkeit NT1 (kurzes Nachsehen am PC während einer anderen Haupttätigkeit); unterwegs nicht möglich. Exportformat 1.1 (Spalten NT1, NT1_nutzung). |

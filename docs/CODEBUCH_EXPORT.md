@@ -1,6 +1,7 @@
 # Codebuch der Exportdateien
 
-**Exportformat 1.0** – festgeschrieben mit App 1.0.0 am 09.11.2026; gilt unverändert ab App 1.1.0 mit Kodierschema 2.0
+**Exportformat 1.1** (ab App 1.2.0, Kodierschema 2.2: neue Spalten `NT1`, `NT1_nutzung`). Format 1.0 wurde mit App 1.0.0 am 09.11.2026
+festgeschrieben; 1.1 ergänzt nur Spalten. Gilt mit Kodierschema 2.0–2.2
 (Fragebogen-Definition 1.0.0, [Kodierhandbuch 2.0](KODIERHANDBUCH_v2.0.md)). Die Bedeutung der Codes hängt von
 `schema_version` ab: ab 2.0 ist T11 Diagnostik/Intervention und T5 nur noch das Gespräch mit Patient/Angehörigen. Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`.
@@ -82,7 +83,8 @@ Eine Zeile je Episode und je Pause, chronologisch (Long-Format). Die Blockangabe
 | `nutzungsart` | Nutzungsart | `N1`–`N5` (`N5` = Warten), `N9` = Sonstige; nur bei T1–T3. T3 ohne Auswahl: `N9`; T1/T2 ohne Auswahl: leer |
 | `haltung` | Körperhaltung | `H1`–`H4`, `H9` = Sonstige (auch ohne Auswahl); nur bei T3; am Ort O6 immer `H1` |
 | `nebentaetigkeiten` | laufende Nebentätigkeiten, lesbar | z. B. `NT3+NT6`; leer = keine |
-| `NT3`, `NT4`, `NT5`, `NT6`, `NT7` | Nebentätigkeit HX Now, Mobilgerät, Patientenkontakt, Gespräch Kollegen/Pflege, Telefonat | `1` = läuft, `0` = nicht; leer bei Pause. Welche es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
+| `NT1`, `NT3`, `NT4`, `NT5`, `NT6`, `NT7` | Nebentätigkeit PC (ab Format 1.1), HX Now, Mobilgerät, Patientenkontakt, Gespräch Kollegen/Pflege, Telefonat | `1` = läuft, `0` = nicht; leer bei Pause. Welche es gibt, legt `nebentaetigkeiten` im Kodierschema fest |
+| `NT1_nutzung` | Nutzungsart bei der Nebentätigkeit PC (ab Format 1.1) | `N1`–`N3`, `N5`, `N9`; leer, wenn NT1 nicht läuft |
 | `NT3_nutzung` | was bei der Nebentätigkeit HX Now gemacht wird | `N1`–`N5`, `N9` = Sonstige (auch wenn nichts gewählt wurde); leer, wenn NT3 nicht läuft |
 | `NT3_haltung` | Haltung bei der Nebentätigkeit HX Now | `H1`–`H4`, `H9` = Sonstige (auch wenn nichts gewählt wurde); am Ort O6 immer `H1`; leer, wenn NT3 nicht läuft |
 | `unvollstaendig` | Nutzungsart oder Haltung bei T3 wurde nicht gewählt und gilt deshalb als Sonstige (`N9`, `H9`) | `1`, `0`; leer bei Pause |

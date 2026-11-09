@@ -14,6 +14,7 @@ import { pruefeBlock, pruefeRohdaten, pruefeEinzelCsv } from './abgleich.js';
 import { isoBerlin } from './lesen.js';
 import { schreibeBericht } from './bericht.js';
 import { mockeTeilen, geteilt, leseDb, waehleCode } from '../e2e/hilfen.js';
+import { EXPORT_FORMAT } from '../../js/export.js';
 
 const SCHEMA = JSON.parse(readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8'));
 const APP_VERSION = /APP_VERSION = '([^']+)'/.exec(readFileSync(new URL('../../js/version.js', import.meta.url), 'utf8'))[1];
@@ -90,7 +91,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
     await tippe('tag-speichern');
     await expect(page.locator('[data-test=eintrag-tag]').first()).toBeVisible();
     tagErwartet.push({ bereich, teil, datum: isoBerlin(ts).slice(0, 10), werte: {
-      datensatz: 'tageskennzahlen', format_version: '1.0', datum: isoBerlin(ts).slice(0, 10), bereich, teilbereich: teil,
+      datensatz: 'tageskennzahlen', format_version: EXPORT_FORMAT, datum: isoBerlin(ts).slice(0, 10), bereich, teilbereich: teil,
       belegung: belegung === null ? '' : String(belegung), aufnahmen: String(aufnahmen), entlassungen: String(entlassungen),
       ambulant: ambulant === null ? '' : String(ambulant), umsatz: String(aufnahmen + entlassungen + (ambulant ?? 0)),
       aerzte_anwesend: String(aerzte), ereignisse: ereignis, beobachter: SCHEMA.beobachter[0],

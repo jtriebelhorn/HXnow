@@ -803,7 +803,7 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
     assert.deepEqual(aktuell(zurueck.zustand).neben, []);
     const pre = neuerBlock(ctx.bei(0), ANGABEN_PRE, ['T5', 'O2']);
     abgelehnt(B.tippeNeben(pre, 'T3', ctx.bei(10)), 'NUR_PHASE');
-    abgelehnt(B.tippeNeben(pre, 'T1', ctx.bei(10)), 'CODE_UNBEKANNT');
+    abgelehnt(B.tippeNeben(pre, 'T8', ctx.bei(10)), 'CODE_UNBEKANNT'); // Papier ist keine Nebentätigkeit
   });
 
   test('vor der ersten Episode und während der Pause nicht möglich; Fortsetzen übernimmt die Schalter', () => {
@@ -819,11 +819,26 @@ describe('Gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)', () => {
   });
 });
 
+describe('PC als Nebentätigkeit NT1 (Kodierschema 2.2)', () => {
+  test('Gespräch, nebenbei am PC nachsehen; unterwegs endet NT1 und ist nicht wählbar', () => {
+    const ctx = testKontext();
+    let z = neuerBlock(ctx.bei(0), ANGABEN_PRE, ['T6', 'O3']);
+    z = ok(B.tippeNeben(z, 'T1', ctx.bei(10))).zustand;
+    assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).neben], ['T6', ['T1']]);
+    z = ok(B.tippeNebenNutzung(z, 'T1', 'N1', ctx.bei(11))).zustand;
+    assert.deepEqual(aktuell(z).nebenNutzung, { T1: 'N1' });
+    z = ok(B.tippeOrt(z, 'O6', ctx.bei(30))).zustand; // Gespräch geht unterwegs weiter, PC nicht
+    assert.deepEqual([aktuell(z).taetigkeit, aktuell(z).ort, aktuell(z).neben, aktuell(z).nebenNutzung], ['T6', 'O6', [], {}]);
+    abgelehnt(B.tippeNeben(z, 'T1', ctx.bei(35)), 'ORTSFEST');
+    abgelehnt(B.tippeNeben(neuerBlock(ctx.bei(0), ANGABEN_PRE, ['T1', 'O1']), 'T1', ctx.bei(5)), 'GLEICHE_TAETIGKEIT');
+  });
+});
+
 describe('Nutzungsart gleichzeitiger Geräte (HX Now gleichzeitig, ENTSCHEIDUNGEN Nr. 23)', () => {
   test('erst setzen ohne neue Episode, Wechsel → neue Episode; entfällt mit dem Schalter', () => {
     const ctx = testKontext();
     let z = neuerBlock(ctx.bei(0), ANGABEN_POST, ['T5', 'O2']);
-    assert.deepEqual(B.nebenMitNutzung(SCHEMA), ['T3']);
+    assert.deepEqual(B.nebenMitNutzung(SCHEMA), ['T1', 'T3']);
     abgelehnt(B.tippeNebenNutzung(z, 'T3', 'N1', ctx.bei(5)), 'NICHT_GLEICHZEITIG');
     z = ok(B.tippeNeben(z, 'T3', ctx.bei(10))).zustand;
     assert.deepEqual(aktuell(z).nebenNutzung, {});

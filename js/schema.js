@@ -280,7 +280,7 @@ export function validiereSchema(s) {
       for (const tc of s.nebentaetigkeiten) {
         const t = eintraege(s.taetigkeiten).find((x) => x.code === tc);
         if (!t) f(`„nebentaetigkeiten“ verweist auf unbekannte Tätigkeit „${tc}“.`);
-        else if (t.nurGehen || t.ortsfest) f(`„nebentaetigkeiten“: ${tc} kann nicht gleichzeitig erfasst werden (ortsfest bzw. nur Gehen).`);
+        else if (t.nurGehen) f(`„nebentaetigkeiten“: ${tc} kann nicht gleichzeitig erfasst werden (nur Gehen).`);
       }
       for (const d of duplikate(s.nebentaetigkeiten)) f(`„nebentaetigkeiten“: ${d} kommt mehrfach vor.`);
     }

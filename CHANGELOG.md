@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.2.0 – 09.11.2026
+PC als Nebentätigkeit; **Kodierschema 2.2**, **Exportformat 1.1** (neue Spalten), keine Datenbank-Migration:
+- Unter „Nebentätigkeit“ gibt es jetzt **PC (NT1)**: z. B. Gespräch mit der Pflege und nebenbei kurz am PC nachsehen
+  (T6 mit NT1). Arbeitet die Person am PC, bleibt es T1 mit NT6. Nutzungsart optional.
+- Unterwegs ist NT1 nicht wählbar und endet beim Wechsel nach „Unterwegs“ automatisch.
+- Export: neue Spalten `NT1` und `NT1_nutzung` (Format 1.1); das Zusammenführungstool liest nach Spaltennamen,
+  ältere Dateien ohne diese Spalten bleiben gültig.
+
 ## 1.1.1 – 09.11.2026
 Kodierschema 2.1 (nur Anzeige), Exportformat unverändert 1.0:
 - Taste T11 heißt „Diagnostik/ Intervention“ statt „Diagnostik“ (zweizeilig, passt auch auf schmale iPhones).

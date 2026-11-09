@@ -4,8 +4,8 @@ Progressive Web App für die Time-Motion-Studie „HX Now im Klinikalltag“. Re
 kein Backend, keine externen Abhängigkeiten zur Laufzeit. Verbindliche Spezifikation:
 [docs/ENTWICKLUNGSPLAN.md](docs/ENTWICKLUNGSPLAN.md).
 
-Stand 1.1.0: Beobachtung nach [Kodierhandbuch 2.0](docs/KODIERHANDBUCH_v2.0.md) und Kodierschema 2.0
-(Festschreibung 09.11.2026 mit 1.0; seitdem T11 Diagnostik/Intervention), Fragebögen FB1, Kurzbogen und FB2 (Definition 1.0.0), Exportformat 1.0, Teilnehmerliste und Logbuch mit Studienübersicht, Updates mit Migration, Sicherung nach jeder Sitzung,
+Stand 1.2.0: Beobachtung nach [Kodierhandbuch 2.0](docs/KODIERHANDBUCH_v2.0.md) und Kodierschema 2.2
+(Festschreibung 09.11.2026 mit 1.0; seitdem T11 Diagnostik/Intervention), Fragebögen FB1, Kurzbogen und FB2 (Definition 1.0.0), Exportformat 1.1, Teilnehmerliste und Logbuch mit Studienübersicht, Updates mit Migration, Sicherung nach jeder Sitzung,
 Wiederherstellen, Korrekturen mit PIN, Widerruf und Zusammenführungstool. Pläne: [docs/plaene/](docs/plaene/);
 abgestimmte Abweichungen: [docs/ENTSCHEIDUNGEN.md](docs/ENTSCHEIDUNGEN.md).
 

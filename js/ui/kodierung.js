@@ -248,7 +248,7 @@ export async function zeigeKodierung(app, { blockId }) {
       return el('button', {
         type: 'button', class: 'taste n',
         'aria-pressed': !p && an ? 'true' : 'false',
-        disabled: p || !akt || (!an && c === akt.taetigkeit),
+        disabled: p || !akt || (!an && c === akt.taetigkeit) || (!an && B.istOrtsfestUnterwegs(schema, c, akt.ort)),
         'data-test': `neben-${c}`,
         onclick: () => ausfuehren((z2, ctx) => B.tippeNeben(z2, c, ctx)),
       }, el('span', { class: 'kurz' }, finde('taetigkeiten', c)?.kurz ?? c), el('span', { class: 'code' }, ntCode(c)));

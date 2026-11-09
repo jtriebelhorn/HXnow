@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import * as B from '../../js/block.js';
 import * as X from '../../js/export.js';
 import { SCHEMA, START, testKontext, ANGABEN_POST, ANGABEN_PRE } from './hilfen.js';
@@ -35,7 +35,9 @@ function referenzBlock() {
 
 test('Block-CSV entspricht exakt der Referenzdatei (BOM, Semikolon, CRLF, Quoting, Pausen, Rundung)', () => {
   const datei = X.blockDatei(referenzBlock(), SCHEMA);
-  const referenz = readFileSync(new URL('./referenz/HXNOW_BEOB_P017_20261203_0915_id-0001.csv', import.meta.url), 'utf8');
+  const pfad = new URL('./referenz/HXNOW_BEOB_P017_20261203_0915_id-0001.csv', import.meta.url);
+  if (process.env.REFERENZ_SCHREIBEN === '1') writeFileSync(pfad, datei.inhalt); // nur nach bewusster Formatänderung
+  const referenz = readFileSync(pfad, 'utf8');
   assert.equal(datei.dateiname, 'HXNOW_BEOB_P017_20261203_0915_id-0001.csv');
   assert.equal(datei.inhalt, referenz);
   assert.equal(datei.typ, 'text/csv');
@@ -191,8 +193,8 @@ test('versucheTeilen: ohne canShare → null; Abbruch → „abgebrochen“; Erf
 test('Spalten: nebentaetigkeiten, NT<n> und Angaben zu HX Now direkt nach „haltung“', () => {
   const k = X.spaltenBeobachtung(SCHEMA);
   const i = k.indexOf('haltung');
-  assert.deepEqual(k.slice(i + 1, i + 9), ['nebentaetigkeiten', 'NT3', 'NT4', 'NT5', 'NT6', 'NT7', 'NT3_nutzung', 'NT3_haltung']);
-  assert.equal(k[i + 9], 'unvollstaendig');
+  assert.deepEqual(k.slice(i + 1, i + 11), ['nebentaetigkeiten', 'NT1', 'NT3', 'NT4', 'NT5', 'NT6', 'NT7', 'NT1_nutzung', 'NT3_nutzung', 'NT3_haltung']);
+  assert.equal(k[i + 11], 'unvollstaendig');
 });
 
 test('Wechsel der Nebentätigkeit ist je Zeile nachvollziehbar; HX Now ohne Angabe = Sonstige', () => {

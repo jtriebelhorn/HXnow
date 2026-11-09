@@ -22,8 +22,8 @@ test('Teilen aus der Abschlussseite: direkt aus der Geste, Status offen → expo
   expect(zeilen).toHaveLength(3);
   // …;nr;start;ende;dauer_sek;taetigkeit;ort;nutzungsart;haltung;nebentaetigkeiten;NT3;NT4;NT5;NT6;NT7;NT3_nutzung;NT3_haltung;unvollstaendig;pause_grund;pause_freitext;kommentar;n_zeilen_block
   expect(zeilen[1]).toContain(';K1;2026-12-03;2026-12-03T09:15:00+01:00;2026-12-03T09:30:00+01:00;900;900;0;0;beendet;regulaer;;;;N;0;;');
-  expect(zeilen[1]).toContain(';1;2026-12-03T09:15:00+01:00;2026-12-03T09:17:00+01:00;120;T1;O1;;;;0;0;0;0;0;;;0;;;;2');
-  expect(zeilen[2]).toContain(';2;2026-12-03T09:17:00+01:00;2026-12-03T09:30:00+01:00;780;T5;O1;;;;0;0;0;0;0;;;0;;;;2');
+  expect(zeilen[1]).toContain(';1;2026-12-03T09:15:00+01:00;2026-12-03T09:17:00+01:00;120;T1;O1;;;;0;0;0;0;0;0;;;;0;;;;2'); // NT1 = 0, NT1_nutzung leer (Format 1.1)
+  expect(zeilen[2]).toContain(';2;2026-12-03T09:17:00+01:00;2026-12-03T09:30:00+01:00;780;T5;O1;;;;0;0;0;0;0;0;;;;0;;;;2');
 
   let db = await leseDb(page);
   expect(db.bloecke[0].exportStatus).toBe('exportiert');

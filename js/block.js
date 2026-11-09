@@ -473,6 +473,9 @@ export function tippeNeben(zustand, code, ctx) {
   if (an && code === akt.taetigkeit) {
     return abgelehnt(zustand, 'GLEICHE_TAETIGKEIT', `${finde(schema.taetigkeiten, code).label} ist bereits die Tätigkeit.`);
   }
+  if (an && istOrtsfestUnterwegs(schema, code, akt.ort)) {
+    return abgelehnt(zustand, 'ORTSFEST', `${finde(schema.taetigkeiten, code).label} ist unterwegs nicht möglich.`);
+  }
   const ep = baueEpisode(zustand, ctx, schema, {
     taetigkeit: akt.taetigkeit, ort: akt.ort, ...zusatzUebernehmen(akt),
     ...nebenWerte(akt), neben: an ? [...neben, code] : neben.filter((c) => c !== code),
@@ -936,12 +939,16 @@ function haltungAmOrt(schema, t, oVorher, o, zusatz) {
   return zusatz;
 }
 
-/** Gleichzeitige Tätigkeiten in Schema-Reihenfolge, ohne die Tätigkeit der Episode selbst. */
-function sortiereNeben(schema, neben, t) {
-  return nebentaetigkeiten(schema).filter((c) => c !== t && neben.includes(c));
+/**
+ * Gleichzeitige Tätigkeiten in Schema-Reihenfolge, ohne die Tätigkeit der Episode selbst. Ortsfeste (PC) enden
+ * unterwegs automatisch (Kodierschema 2.2, NT1).
+ */
+function sortiereNeben(schema, neben, t, o = null) {
+  return nebentaetigkeiten(schema).filter((c) => c !== t && neben.includes(c) && !istOrtsfestUnterwegs(schema, c, o));
 }
 
-function istOrtsfestUnterwegs(schema, t, o) {
+/** Ortsfeste Tätigkeit (PC, Visitenwagen) an einem Ort „unterwegs“? */
+export function istOrtsfestUnterwegs(schema, t, o) {
   return Boolean(t && o && finde(schema.taetigkeiten, t)?.ortsfest && finde(schema.orte, o)?.unterwegs);
 }
 
@@ -989,7 +996,7 @@ function baueEpisodeRoh(zustand, ctx, schema, werte, startTs) {
     nutzungsart: werte.nutzungsart ?? null,
     haltung: werte.haltung ?? null,
     offeneZusaetze: werte.offeneZusaetze ?? [],
-    neben: sortiereNeben(schema, werte.neben ?? [], werte.taetigkeit), // gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)
+    neben: sortiereNeben(schema, werte.neben ?? [], werte.taetigkeit, werte.ort), // gleichzeitige Tätigkeiten (ENTSCHEIDUNGEN Nr. 19)
     nebenNutzung: {}, // Angaben zu Nebentätigkeiten, z. B. { T3: 'N1' } (ENTSCHEIDUNGEN Nr. 23, 25)
     nebenHaltung: {},
     kommentar: '',

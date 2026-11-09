@@ -1,5 +1,6 @@
 // Abgleich Soll (simulierte Eingaben) gegen Ist (Export-CSV und Rohdaten in IndexedDB).
 import { leseCsv, isoBerlin, isoZuMs, ISO_MUSTER } from './lesen.js';
+import { EXPORT_FORMAT } from '../../js/export.js';
 
 // Erwarteter Spaltenkopf laut Spezifikation v2 Abschnitt 8 und docs/ENTSCHEIDUNGEN.md (Nr. 6, 7, 17, 19, hx_geraet_markiert)
 const FESTE_SPALTEN = [
@@ -41,7 +42,7 @@ export function pruefeBlock(soll, csvText, db) {
   const p = new Pruefliste();
   const { kopf, zeilen, fehler } = leseCsv(csvText);
   p.pruefe('CSV-Format (BOM, Semikolon, \\r\\n, Quoting)', fehler.length === 0, fehler.join('; '));
-  p.pruefe('format_version 1.0 in jeder Zeile', zeilen.every((z) => z.format_version === '1.0'), '');
+  p.pruefe(`format_version ${EXPORT_FORMAT} in jeder Zeile`, zeilen.every((z) => z.format_version === EXPORT_FORMAT), '');
   p.pruefe('Spaltenkopf wie spezifiziert', JSON.stringify(kopf) === JSON.stringify(erwarteteSpalten(soll.schema)),
     `erhalten: ${kopf.join(';')}`);
 

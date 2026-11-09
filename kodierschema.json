@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2.1",
+  "schemaVersion": "2.2",
   "studie": "HX Now im Klinikalltag",
   "blockDauerSek": 900,
   "blockDauerOptionenSek": [600, 900],
@@ -70,7 +70,7 @@
     { "code": "O7", "label": "Außerhalb Bereich" },
     { "code": "O8", "label": "Sonstiges" }
   ],
-  "nebentaetigkeiten": ["T3", "T4", "T5", "T6", "T7"],
+  "nebentaetigkeiten": ["T1", "T3", "T4", "T5", "T6", "T7"],
   "nutzungsart": [
     { "code": "N1", "label": "Einsicht",        "giltFuer": ["T1", "T2", "T3"] },
     { "code": "N2", "label": "Texteingabe",     "giltFuer": ["T1", "T2", "T3"] },

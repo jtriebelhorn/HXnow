@@ -12,7 +12,7 @@ import { zipDatei } from '../../js/auswertung/zip.js';
 import { leseCsv } from '../../js/csvlesen.js';
 import { logbuchDatei } from '../../js/logbuchdatei.js';
 import { fbDatei } from '../../js/fb/export.js';
-import { versuchDatei } from '../../js/export.js';
+import { versuchDatei, EXPORT_FORMAT } from '../../js/export.js';
 import { bogen, alleZellen } from '../../js/fb/definition.js';
 import { FRAGEBOGEN_DEFINITION as DEF } from '../../js/frageboegen.js';
 import { SCHEMA, START } from './hilfen.js';
@@ -153,7 +153,8 @@ describe('Bereinigung kurzer Episoden (Mindestdauer 3 s, T3 ausgenommen)', () =>
 
 test('Prüfbericht nennt die Kodierschema-Versionen der Blöcke und warnt bei gemischten', () => {
   const v = SCHEMA.schemaVersion.replace('.', '\\.');
-  const alt = BLOCK.replace(new RegExp(`^((?:episode|pause|block);1\\.0;[^;]*;[^;]*;)${v};`, 'gm'), '$11.0;').replace(/id-0001/g, 'id-0002');
+  const fmt = EXPORT_FORMAT.replace('.', '\\.');
+  const alt = BLOCK.replace(new RegExp(`^((?:episode|pause|block);${fmt};[^;]*;[^;]*;)${v};`, 'gm'), '$11.0;').replace(/id-0001/g, 'id-0002');
   const aus = fuehreZusammen([{ name: 'a.csv', text: BLOCK }, { name: 'b.csv', text: alt }], { def: DEF, schema: SCHEMA });
   assert.match(aus.bericht.join('\n'), new RegExp(`Kodierschema der Blöcke: ${v}: 1, 1\\.0: 1 – GEMISCHT`));
 });

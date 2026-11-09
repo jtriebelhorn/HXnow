@@ -189,14 +189,15 @@ test('Test-Code und beendenGrund werden geprüft', () => {
 test('Gleichzeitige Tätigkeiten und Unterwegs werden geprüft (ENTSCHEIDUNGEN Nr. 19, 20)', () => {
   const mit = (aendern) => { const s = original(); aendern(s); return validiereSchema(s).join(' '); };
   const t = (s, code) => s.taetigkeiten.find((x) => x.code === code);
-  assert.deepEqual(nebentaetigkeiten(original()), ['T3', 'T4', 'T5', 'T6', 'T7']);
+  assert.deepEqual(nebentaetigkeiten(original()), ['T1', 'T3', 'T4', 'T5', 'T6', 'T7']); // T1 PC ab Schema 2.2
   assert.equal(ntCode('T3'), 'NT3');
   assert.match(mit((s) => { s.haltung = s.haltung.filter((h) => h.code !== 'H9'); }), /H9/);
   assert.deepEqual(nebentaetigkeiten({ ...original(), nebentaetigkeiten: undefined }), []);
   assert.equal(mit((s) => { delete s.nebentaetigkeiten; }), '');
   assert.match(mit((s) => { s.nebentaetigkeiten = 'T5'; }), /nebentaetigkeiten/);
   assert.match(mit((s) => { s.nebentaetigkeiten.push('T99'); }), /unbekannte Tätigkeit „T99“/);
-  assert.match(mit((s) => { s.nebentaetigkeiten.push('T1'); }), /T1 kann nicht gleichzeitig/);
+  assert.match(mit((s) => { s.nebentaetigkeiten.push('T9'); }), /T9 kann nicht gleichzeitig erfasst werden \(nur Gehen\)/);
+  assert.doesNotMatch(mit(() => {}), /T1/); // PC (ortsfest) ist ab Schema 2.2 als Nebentätigkeit erlaubt
   assert.match(mit((s) => { s.nebentaetigkeiten.push('T9'); }), /T9 kann nicht gleichzeitig/);
   assert.match(mit((s) => { s.nebentaetigkeiten.push('T5'); }), /T5 kommt mehrfach vor/);
   assert.match(mit((s) => { s.orte.find((o) => o.unterwegs).haltung = 'H7'; }), /unbekannte Haltung „H7“/);
