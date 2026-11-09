@@ -1,6 +1,6 @@
 # Anleitung für die Doktorandin
 
-Gilt ab App-Version 1.0.0 (Kodierhandbuch 1.0). Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
+Gilt ab App-Version 1.1.0 (Kodierhandbuch 2.0). Die App läuft auf dem Studien-iPhone als Symbol auf dem Home-Bildschirm
 („Beobachtung“). Alle Daten liegen nur auf dem iPhone, bis Sie sie in den Exportordner teilen.
 
 > **Wichtigste Regel:** Nach jeder Sitzung (Block, Fragebogen, „nicht angetroffen“) sofort **Exportieren** und die

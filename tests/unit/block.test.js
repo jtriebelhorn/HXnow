@@ -134,11 +134,13 @@ describe('Episodenwechsel', () => {
     }
   });
 
-  test('frühere Codes T11 und O9 gibt es nicht mehr', () => {
+  test('O9 gibt es nicht mehr; T11 ist ab Schema 2.0 „Diagnostik/Intervention“ (nicht mehr „nicht beobachtbar“)', () => {
     const ctx = testKontext();
     const z = neuerBlock(ctx);
-    abgelehnt(B.tippeTaetigkeit(z, 'T11', ctx), 'CODE_UNBEKANNT');
     abgelehnt(B.tippeOrt(z, 'O9', ctx), 'CODE_UNBEKANNT');
+    const r = B.tippeTaetigkeit(B.tippeOrt(z, 'O2', ctx).zustand, 'T11', ctx);
+    assert.ok(r.ok);
+    assert.equal(SCHEMA.taetigkeiten.find((t) => t.code === 'T11').label, 'Diagnostik/Intervention');
   });
 
   test('Zustand wird nicht verändert (reine Funktionen)', () => {

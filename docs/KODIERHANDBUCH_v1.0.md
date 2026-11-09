@@ -1,5 +1,7 @@
 # Kodierhandbuch Fremdbeobachtung: HX Now im Klinikalltag
 
+> **Abgelöst durch [Version 2.0](KODIERHANDBUCH_v2.0.md)** (T11 Diagnostik/Intervention, T5 nur Gespräch).
+
 Version 1.0 vom 09.11.2026 – festgeschrieben vor Beginn der Prä-Phase. Gilt für Kodierschema `schemaVersion` 1.0 und Exportformat 1.0 (Spalte `format_version`). Änderungen nur noch nach Abschnitt 6.3 mit neuer Version.
 
 > Kopie zur Referenz für die Entwicklung. Maßgeblich ist das Original der Studienleitung.

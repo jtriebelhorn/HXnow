@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 – 09.11.2026
+Neue Tätigkeit; **Kodierschema 2.0** (geänderte Bedeutung von T5), Exportformat unverändert 1.0, keine Datenbank-Migration:
+- **T11 „Diagnostik/Intervention“**: jede Untersuchung oder Prozedur am Patienten, auch körperliche Untersuchung
+  (Blutentnahme, Zugang, Ultraschall, EKG, Punktion, Injektion, BGA, Verbandswechsel). Taste direkt neben T5.
+- **T5** heißt „Patientenkontakt (Gespräch)“ und umfasst nur noch das Gespräch mit Patient oder Angehörigen.
+- Rangfolge: Gerätenutzung, Telefonat, T11, T5, T6, T8, T9, T10; T11 nur als Haupttätigkeit.
+- [Kodierhandbuch 2.0](docs/KODIERHANDBUCH_v2.0.md) mit Grenzfällen; Zusammenführungstool nennt im Prüfbericht die
+  Schema-Versionen der Blöcke und warnt bei gemischten Versionen.
+
 ## 1.0.0 – 09.11.2026
 **Festschreibung für den Studienbeginn** (ENTSCHEIDUNGEN Nr. 47); keine Datenbank-Migration:
 - **Kodierschema 1.0** und **[Kodierhandbuch 1.0](docs/KODIERHANDBUCH_v1.0.md)**: keine offenen Werte mehr; Mindestdauer

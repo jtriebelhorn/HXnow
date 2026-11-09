@@ -1,5 +1,7 @@
 // Phase 3: Bedienung im iPhone-Profil.
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+const SCHEMA_VERSION = JSON.parse(readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8')).schemaVersion;
 import { oeffne, starteBlock, tippe, leseDb, mockeTeilen, geteilt, pauseUndWeiter , waehleCode } from './hilfen.js';
 
 /** Alle sichtbaren Tasten müssen mindestens 48 × 48 px groß sein. */
@@ -211,11 +213,12 @@ test('Blockdauer 10 min: Countdown, reguläres Ende nach 10:00, Spalte im Export
   await expect(page.locator('[data-test=dauer-600]')).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('Prä-Phase: T3 deaktiviert, kein Gerät-Schalter, keine Abschlussfrage; T11/O9 gibt es nicht mehr', async ({ page }) => {
+test('Prä-Phase: T3 deaktiviert, kein Gerät-Schalter, keine Abschlussfrage; O9 gibt es nicht mehr, T11 ist Diagnostik/Intervention', async ({ page }) => {
   await oeffne(page);
   await starteBlock(page, { phase: 'PRE', kontext: 'K6', bereich: 'ZNA' });
   await expect(page.locator('[data-test=t-T3]')).toBeDisabled();
-  await expect(page.locator('[data-test=t-T11]')).toHaveCount(0);
+  await expect(page.locator('[data-test=t-T11]')).toContainText('Diagnostik'); // ab Kodierschema 2.0, direkt nach T5
+  await expect(page.locator('[data-test^=t-T]').nth(5)).toHaveAttribute('data-test', 't-T11');
   await expect(page.locator('[data-test=o-O9]')).toHaveCount(0);
   await expect(page.locator('[data-test=geraet-dabei]')).toHaveCount(0);
   await tippe(page, 'o-O2');
@@ -395,7 +398,7 @@ test('Info und Datensicherung ohne Platzhaltertexte', async ({ page }) => {
   await page.click('[data-test=zurueck]');
   await page.click('[data-test=menue-info]');
   await pruefeTastengroessen(page, 'Info');
-  await expect(page.locator('[data-test=info-schema-version]')).toHaveText('1.0');
+  await expect(page.locator('[data-test=info-schema-version]')).toHaveText(SCHEMA_VERSION);
   await expect(page.locator('[data-test=info-geraete-id]')).toHaveText(/^[0-9a-f-]{36}$/);
 });
 

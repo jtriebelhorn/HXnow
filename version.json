@@ -1,5 +1,5 @@
 {
-  "appVersion": "1.0.0",
+  "appVersion": "1.1.0",
   "datum": "2026-11-09",
-  "hinweis": "Festschreibung für den Studienbeginn: Kodierschema 1.0, Fragebögen 1.0.0 (FB2 freigegeben), Exportformat 1.0, neue Tageskennzahlen (Belegung, Tagesumsatz)."
+  "hinweis": "Neue Tätigkeit T11 Diagnostik/Intervention (Kodierschema 2.0): körperliche Untersuchung, Blutentnahme, Ultraschall u. a.; T5 = Gespräch mit Patient/Angehörigen."
 }

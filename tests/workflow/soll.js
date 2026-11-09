@@ -1,4 +1,4 @@
-// Soll-Protokoll für den Prüf-Workflow: bildet die Kodierregeln (Kodierhandbuch v0.3 + docs/ENTSCHEIDUNGEN.md)
+// Soll-Protokoll für den Prüf-Workflow: bildet die Kodierregeln (Kodierhandbuch v2.0 + docs/ENTSCHEIDUNGEN.md)
 // unabhängig vom App-Code nach. Jeder simulierte Tipp wird mit seinem Zeitstempel eingetragen; daraus ergibt
 // sich, was die App gespeichert und exportiert haben muss.
 // Bewusst KEIN Import aus js/ – sonst würde die App gegen sich selbst geprüft.

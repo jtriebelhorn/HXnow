@@ -1,7 +1,8 @@
 # Codebuch der Exportdateien
 
-**Exportformat 1.0** – festgeschrieben mit App 1.0.0 am 09.11.2026 (Kodierschema 1.0, Fragebogen-Definition 1.0.0,
-[Kodierhandbuch 1.0](KODIERHANDBUCH_v1.0.md)). Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
+**Exportformat 1.0** – festgeschrieben mit App 1.0.0 am 09.11.2026; gilt unverändert ab App 1.1.0 mit Kodierschema 2.0
+(Fragebogen-Definition 1.0.0, [Kodierhandbuch 2.0](KODIERHANDBUCH_v2.0.md)). Die Bedeutung der Codes hängt von
+`schema_version` ab: ab 2.0 ist T11 Diagnostik/Intervention und T5 nur noch das Gespräch mit Patient/Angehörigen. Beschreibt jede Spalte der CSV-Dateien, die die Beobachtungs-App
 exportiert. Die Bedeutung der Codes (T1–T10, O1–O8 usw.) steht im Kodierhandbuch und in `kodierschema.json`.
 
 ## Versionen und Gültigkeit

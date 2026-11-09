@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+const SCHEMA_VERSION = JSON.parse(readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8')).schemaVersion;
 import { readFileSync } from 'node:fs';
 
 const SCHEMA = JSON.parse(readFileSync(new URL('../../kodierschema.json', import.meta.url), 'utf8'));
@@ -14,7 +15,7 @@ test('App lädt, Schema ist gültig, Startseite erscheint', async ({ page }) => 
 
   await page.goto('./');
   await expect(page.locator('[data-test=neuer-block]')).toBeEnabled();
-  await expect(page.locator('[data-test=info]')).toContainText('Schema-Version 1.0');
+  await expect(page.locator('[data-test=info]')).toContainText(`Schema-Version ${SCHEMA_VERSION}`);
   await expect(page.locator('[data-test=schema-fehler]')).toHaveCount(0);
 
   expect(fremde).toEqual([]);

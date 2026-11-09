@@ -145,6 +145,9 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
   const bereinigt = [...jeBlock.values()].flatMap((z) => bereinigeBlock(z, regeln));
   const zusammengelegt = bereinigt.reduce((s, z) => s + (z.datensatz === 'episode' ? z.zusammengelegt - 1 : 0), 0);
   ausgaben.push({ name: 'beobachtung_bereinigt.csv', inhalt: csvText([...roh.kopf, 'zusammengelegt'], bereinigt.map((z) => [...roh.kopf.map((k) => z[k] ?? ''), z.zusammengelegt])) });
+  // Kodierschema-Versionen der Blöcke: bei gemischten Versionen Codes mit geänderter Bedeutung beachten (z. B. T5 ab 2.0)
+  const schemaJeBlock = new Map(roh.zeilen.map((z) => [z.block_id, z.schema_version]));
+  const schemaZaehlung = [...schemaJeBlock.values()].reduce((m, v) => m.set(v, (m.get(v) ?? 0) + 1), new Map());
   const gehenMitNeben = roh.zeilen.filter((z) => z.datensatz === 'episode' && z.taetigkeit === 'T9' && z.nebentaetigkeiten).length;
   langDatei('versuch', 'versuche.csv', 'versuch_id', 'phase');
   langDatei('tag', 'tageskennzahlen.csv', null, null);
@@ -271,6 +274,7 @@ export function fuehreZusammen(dateien, { def, schema, jetzt = Date.now() }) {
     `Ungültig markiert: ${wirksam.filter((e) => !e.gueltig).length} · anderem Code zugeordnet: ${wirksam.filter((e) => e.pseudonymOriginal).length} · Phase geändert: ${wirksam.filter((e) => e.phaseOriginal).length}`,
     `Widerrufene Codes: ${widerrufen.size ? [...widerrufen].sort().join(', ') : 'keine'} · verworfene Sitzungsdateien: ${zahlen.widerrufen}`,
     `Konflikte (Änderungen von mehreren Geräten): ${wirksam.filter((e) => e.konflikt).length}`,
+    `Kodierschema der Blöcke: ${[...schemaZaehlung].map(([v, n]) => `${v}: ${n}`).join(', ') || '–'}${schemaZaehlung.size > 1 ? ' – GEMISCHT: Codes mit geänderter Bedeutung beachten (Kodierhandbuch, Versionstabelle; ab 2.0 ist körperliche Untersuchung T11 statt T5)' : ''}`,
     `Bereinigung: ${zusammengelegt} kurze bzw. gleich kodierte Episoden zusammengelegt (Mindestdauer ${regeln.mindestdauerSek} s, ausgenommen ${regeln.mindestdauerAusnahmen.join(', ')}) → beobachtung_bereinigt.csv`,
     `Gehen (T9) mit Nebentätigkeit: ${gehenMitNeben} Episoden – laut Kodierhandbuch 1.0 ist dann die Nebentätigkeit (z. B. Telefon) Haupttätigkeit mit Ort Unterwegs`,
     '',

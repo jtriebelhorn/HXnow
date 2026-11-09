@@ -150,3 +150,9 @@ describe('Bereinigung kurzer Episoden (Mindestdauer 3 s, T3 ausgenommen)', () =>
     assert.match(aus.bericht.join('\n'), /Vor der Festschreibung erzeugt/);
   });
 });
+
+test('Prüfbericht nennt die Kodierschema-Versionen der Blöcke und warnt bei gemischten', () => {
+  const alt = BLOCK.replace(/^((?:episode|pause|block);1\.0;[^;]*;[^;]*;)2\.0;/gm, '$11.0;').replace(/id-0001/g, 'id-0002');
+  const aus = fuehreZusammen([{ name: 'a.csv', text: BLOCK }, { name: 'b.csv', text: alt }], { def: DEF, schema: SCHEMA });
+  assert.match(aus.bericht.join('\n'), /Kodierschema der Blöcke: 2\.0: 1, 1\.0: 1 – GEMISCHT/);
+});

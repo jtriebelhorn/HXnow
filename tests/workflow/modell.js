@@ -1,5 +1,5 @@
 // Verhaltensmodell der Beobachtung: realitätsnahe Abfolgen und Dauern je Arbeitskontext.
-// Grundlage: Kategorien und Grenzfälle aus dem Kodierhandbuch v0.3. Zufall mit Seed → jeder Lauf reproduzierbar.
+// Grundlage: Kategorien und Grenzfälle aus dem Kodierhandbuch v2.0. Zufall mit Seed → jeder Lauf reproduzierbar.
 
 /** Deterministischer Zufallsgenerator (mulberry32). */
 export function zufall(seed) {
@@ -32,24 +32,24 @@ export function zufall(seed) {
 // Typische Dauer je Tätigkeit (Sekunden, min–max)
 export const DAUER = {
   T1: [20, 240], T2: [15, 120], T3: [4, 90], T4: [4, 40], T5: [20, 180],
-  T6: [8, 120], T7: [15, 150], T8: [10, 90], T9: [4, 40], T10: [8, 60],
+  T6: [8, 120], T7: [15, 150], T8: [10, 90], T9: [4, 40], T10: [8, 60], T11: [30, 300],
 };
 
 // Häufigkeit der Tätigkeiten je Arbeitskontext
 const T_GEWICHTE = {
-  K1: { T5: 5, T2: 4, T6: 2, T9: 3, T3: 3, T7: 1, T8: 1, T1: 1, T4: 0.5, T10: 0.5 }, // Visite
-  K3: { T1: 5, T7: 2, T6: 2, T8: 2, T3: 3, T9: 1, T10: 1, T5: 1, T4: 0.5, T2: 0.5 }, // Stationsarbeit
-  K4: { T5: 4, T1: 2, T6: 2, T9: 2, T3: 2, T7: 1, T8: 1, T10: 0.5, T4: 0.5 }, // Funktionsbereich
-  K6: { T5: 4, T9: 3, T7: 2, T6: 2, T1: 2, T3: 2, T2: 1, T4: 0.5, T10: 0.5 }, // Notaufnahme
+  K1: { T5: 5, T2: 4, T6: 2, T9: 3, T3: 3, T7: 1, T8: 1, T1: 1, T4: 0.5, T10: 0.5, T11: 2 }, // Visite
+  K3: { T1: 5, T7: 2, T6: 2, T8: 2, T3: 3, T9: 1, T10: 1, T5: 1, T4: 0.5, T2: 0.5, T11: 0.5 }, // Stationsarbeit
+  K4: { T5: 4, T1: 2, T6: 2, T9: 2, T3: 2, T7: 1, T8: 1, T10: 0.5, T4: 0.5, T11: 3 }, // Funktionsbereich
+  K6: { T5: 4, T9: 3, T7: 2, T6: 2, T1: 2, T3: 2, T2: 1, T4: 0.5, T10: 0.5, T11: 3 }, // Notaufnahme
 };
 
 // Plausible Orte je Kontext und Tätigkeit: wo im Bereich (O1 Arztzimmer, O2 beim Patienten, O3 bei der Pflege,
 // O4 Flur, O5 Pausenraum, O6 unterwegs; T9 „Gehen“ nur unterwegs)
 const ORTE = {
-  K1: { T1: ['O1', 'O3'], T2: ['O2', 'O4'], T3: ['O2', 'O6', 'O1'], T4: ['O6', 'O1'], T5: ['O2'], T6: ['O3', 'O4', 'O6'], T7: ['O6', 'O1'], T8: ['O1', 'O2'], T9: ['O6'], T10: ['O5', 'O8'] },
-  K3: { T1: ['O1', 'O3'], T2: ['O4', 'O2'], T3: ['O1', 'O6', 'O3'], T4: ['O1', 'O5'], T5: ['O2'], T6: ['O3', 'O1', 'O4'], T7: ['O1', 'O6'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O8'] },
-  K4: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O3', 'O6'], T4: ['O1'], T5: ['O2'], T6: ['O3', 'O4'], T7: ['O1', 'O6'], T8: ['O3'], T9: ['O6'], T10: ['O5'] },
-  K6: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O6', 'O8'], T4: ['O4'], T5: ['O2', 'O6'], T6: ['O3', 'O4', 'O1'], T7: ['O6', 'O1', 'O3'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O1'] },
+  K1: { T1: ['O1', 'O3'], T2: ['O2', 'O4'], T3: ['O2', 'O6', 'O1'], T4: ['O6', 'O1'], T5: ['O2'], T6: ['O3', 'O4', 'O6'], T7: ['O6', 'O1'], T8: ['O1', 'O2'], T9: ['O6'], T10: ['O5', 'O8'], T11: ['O2'] },
+  K3: { T1: ['O1', 'O3'], T2: ['O4', 'O2'], T3: ['O1', 'O6', 'O3'], T4: ['O1', 'O5'], T5: ['O2'], T6: ['O3', 'O1', 'O4'], T7: ['O1', 'O6'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O8'], T11: ['O2'] },
+  K4: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O3', 'O6'], T4: ['O1'], T5: ['O2'], T6: ['O3', 'O4'], T7: ['O1', 'O6'], T8: ['O3'], T9: ['O6'], T10: ['O5'], T11: ['O2'] },
+  K6: { T1: ['O1', 'O3'], T2: ['O2'], T3: ['O2', 'O6', 'O8'], T4: ['O4'], T5: ['O2', 'O6'], T6: ['O3', 'O4', 'O1'], T7: ['O6', 'O1', 'O3'], T8: ['O1', 'O3'], T9: ['O6'], T10: ['O5', 'O1'], T11: ['O2'] },
 };
 
 /** Nächste Tätigkeit (≠ aktuelle) für Kontext und Phase. */

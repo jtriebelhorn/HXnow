@@ -155,7 +155,7 @@ test('Simulierte Beobachtungstage: Eingaben vollständig gespeichert und wieder 
       }
     }
 
-    // Wechsel wie im Kodierhandbuch v0.3: erst der Ort (falls er sich ändert), dann die Tätigkeit
+    // Wechsel wie im Kodierhandbuch v2.0: erst der Ort (falls er sich ändert), dann die Tätigkeit
     async function wechsleT(t) {
       const a = soll.akt;
       const o = ortFuer(r, kontext, t, a?.o);
